@@ -1,0 +1,15 @@
+//In case of polarized photonbeam:
+
+Ant -i Geant_files/pol_brems_gp_ppi0_100kEvs_geant_mc.root -i Pluto_files/pol_brems_gp_ppi0_100kEvs_pluto_mc.root -p scratch_damaurer_MC_ppi0_pgg -s Setup_2018_05 -o Ant_files/pol/pol_brems_gp_ppi0_100kEvs_ant_output.root
+
+//..unpolarized beam:
+
+Ant -i Geant_files/unpol_brems_gp_ppi0_100kEvs_geant_mc.root -i Pluto_files/unpol_brems_gp_ppi0_100kEvs_pluto_mc.root -p scratch_damaurer_MC_ppi0_pgg -s Setup_2018_05 -o Ant_files/unpol/unpol_brems_gp_ppi0_100kEvs_ant_output.root
+
+//..polarized beam with Primakoff cross section:
+
+Ant -i Geant_files/pol_brems_Primakoff_gp_ppi0_100kEvs_geant_mc.root -i Pluto_files/pol_brems_Primakoff_gp_ppi0_100kEvs_pluto_mc.root -p scratch_damaurer_MC_ppi0_pgg -s Setup_2018_05 -o Ant_files/pol_Primakoff/pol_brems_Primakoff_gp_ppi0_100kEvs_ant_output.root
+
+//..unpolarized beam with Primakoff cross section:
+
+Ant -i Geant_files/unpol_brems_Primakoff_gp_ppi0_100kEvs_geant_mc.root -i Pluto_files/unpol_brems_Primakoff_gp_ppi0_100kEvs_pluto_mc.root -p scratch_damaurer_MC_ppi0_pgg -s Setup_2018_05 -o Ant_files/unpol_Primakoff/unpol_brems_Primakoff_gp_ppi0_100kEvs_ant_output.root
