@@ -16,6 +16,11 @@
 
 // the physics classes reside in this nested namespace
 namespace ant {
+
+namespace expconfig {
+namespace detector {
+    struct TAPS;
+}}
 namespace analysis {
 namespace physics {
 
@@ -81,16 +86,16 @@ private:
     double PhotonPolarAngles_CB = 0.0;
     double ProtonPolarAngles_CB = 0.0;
 
-    double count_first = 0;
-    double count_second = 0;
-    double count_third = 0;
-    double count_fourth = 0;
-    double count_fifth = 0;
-    double count_sixth = 0;
-    double count_seventh = 0;
-    double count_eigth = 0;
-    double count_nineth = 0;
-    double count_tenth = 0;
+    double count_first = 0.0;
+    double count_second = 0.0;
+    double count_third = 0.0;
+    double count_fourth = 0.0;
+    double count_fifth = 0.0;
+    double count_sixth = 0.0;
+    double count_seventh = 0.0;
+    double count_eigth = 0.0;
+    double count_nineth = 0.0;
+    double count_tenth = 0.0;
 
     double max_particles = 300000.0;
     double Photons_max = 200000.0;
@@ -106,9 +111,13 @@ private:
     double ProtonPolarAngles_TAPS_err;
     double ProtonPolarAngles_CB_err;
 
-    Int_t number_of_bins = 110;
+    double weight_res = 0;
+
+    std::shared_ptr<expconfig::detector::TAPS> taps;
+
+    Int_t number_of_bins = 70;
     Int_t lower_edge = 0;
-    Int_t upper_edge = 11;
+    Int_t upper_edge = 7;
     int steps = (int)(number_of_bins/(upper_edge-lower_edge));
 };
 

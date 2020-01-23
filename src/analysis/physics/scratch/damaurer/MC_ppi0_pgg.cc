@@ -12,6 +12,7 @@
 #include "TCanvas.h"
 #include "TH1D.h"
 #include "TLorentzVector.h"
+#include "expconfig/detectors/TAPS.h"
 
 #include <iostream>
 #include <memory>
@@ -26,6 +27,7 @@ using namespace ant::analysis::physics;
 scratch_damaurer_MC_ppi0_pgg::scratch_damaurer_MC_ppi0_pgg(const string& name, OptionsPtr opts) :
     Physics(name, opts)
 {
+    taps = make_shared<expconfig::detector::TAPS_2013_11>(false, false, false);
 
     const BinSettings tagger_time_bins(1000, -200, 200);
     const BinSettings Veto_Energy_bins(1000, 0, 40);
@@ -45,10 +47,11 @@ scratch_damaurer_MC_ppi0_pgg::scratch_damaurer_MC_ppi0_pgg(const string& name, O
     // using the make methods
 
     auto hfTagger = new HistogramFactory("Tagger", HistFac, "");
-    auto hfTheta = new HistogramFactory("PolarAngles", HistFac, "");
-    auto hfPhi = new HistogramFactory("AzimuthAngles", HistFac, "");
+    auto hfTheta = new HistogramFactory("Polar angles", HistFac, "");
+    auto hfPhi = new HistogramFactory("Azimuth angles", HistFac, "");
     auto hfIm = new HistogramFactory("Invariant mass", HistFac, "");
     auto hfEnergy = new HistogramFactory("Particle energies", HistFac, "");
+    auto hfStatistics = new HistogramFactory("Statistics hist", HistFac, "");
 
     h_TaggerTime = hfTagger->makeTH1D("Tagger Time",     // title
                                     "t [ns]", "#",     // xlabel, ylabel
@@ -152,7 +155,6 @@ scratch_damaurer_MC_ppi0_pgg::scratch_damaurer_MC_ppi0_pgg(const string& name, O
                                        "h_PhotonETheta_TAPS", true    // ROOT object name, auto-generated if omitted
                                        );
 
-
     h_ProtonETheta = hfEnergy->makeTH2D("Proton energy vs theta", //title
                                         "Theta [deg]","E [MeV]", // xlabel, ylabel
                                         theta_bins, E_Proton_bins,    // our binnings
@@ -171,10 +173,10 @@ scratch_damaurer_MC_ppi0_pgg::scratch_damaurer_MC_ppi0_pgg(const string& name, O
                                         "h_ProtonEPhi", true    // ROOT object name, auto-generated if omitted
                                         );
 
-    h_Reconstructed_Data_Statistics = hfTheta->makeTH1D("Statistics",     // title
-                                     "Cases", "%",     // xlabel, ylabel
+    h_Reconstructed_Data_Statistics = hfStatistics->makeTH1D("Statistics Hist",     // title
+                                     "Cases", "Reconstruction efficiency",     // xlabel, ylabel
                                      statistic_bins,  // our binnings
-                                     "h_Reconstructed_Data_Statistics", false    // ROOT object name, auto-generated if omitted
+                                     "h_Reconstructed_Data_Statistics", true    // ROOT object name, auto-generated if omitted
                                      );
     
     // define some prompt and random windows (in nanoseconds)
@@ -228,8 +230,51 @@ void scratch_damaurer_MC_ppi0_pgg::ProcessEvent(const TEvent& event, manager_t&)
 
     double pi0gg_IM=-100;
     TParticle pi0gg2g;
-    TLorentzVector proton;
+    TParticle g1;
+    TParticle g2;
+    /*
+    vector<bool> g1CB;
+    vector<bool> g1BaF2;
+    vector<bool> g1PbWO;
+    vector<bool> g1undetected;
+    vector<bool> g2CB;
+    vector<bool> g2BaF2;
+    vector<bool> g2PbWO;
+    vector<bool> g2undetected;
+    */
+    bool isg1CB = false;
+    bool isg1BaF2 = false;
+    bool isg1PbWO = false;
+    //bool isg1undetected = false;
+    bool isg2CB = false;
+    bool isg2BaF2 = false;
+    bool isg2PbWO = false;
+    //bool isg2undetected = false;
+
     if(NeuCanCaloE.size() == 2){
+
+        g1 = TParticle(ParticleTypeDatabase::Photon, neutral[0]);
+        g2 = TParticle(ParticleTypeDatabase::Photon, neutral[1]);
+
+        auto g1channel = neutral[0]->FindCaloCluster()->CentralElement;
+        auto g2channel = neutral[1]->FindCaloCluster()->CentralElement;
+
+        if(neutral[0]->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB)
+        {isg1CB = true;}
+        if(neutral[0]->FindCaloCluster()->DetectorType == Detector_t::Type_t::TAPS){
+            if(taps->IsPbWO4(g1channel)){isg1PbWO = true;}else{isg1BaF2 = true;}
+        }
+        //if(!isg1CB && !isg1BaF2 && !isg1PbWO)
+        //{isg1undetected = true;}
+
+        if(neutral[1]->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB)
+        {isg2CB = true;}
+        if(neutral[1]->FindCaloCluster()->DetectorType == Detector_t::Type_t::TAPS){
+            if(taps->IsPbWO4(g2channel)){isg2PbWO = true;}else{isg2BaF2 = true;}
+        }
+        //if(!isg2CB && !isg2BaF2 && !isg2PbWO)
+        //{isg2undetected = true;}
+
         double pi0gg2g_time = 0;
         for (const auto& photon : neutral) {
             pi0gg2g+=TParticle(ParticleTypeDatabase::Photon, photon);
@@ -238,15 +283,27 @@ void scratch_damaurer_MC_ppi0_pgg::ProcessEvent(const TEvent& event, manager_t&)
                 PhotonTheCB.push_back(photon->Theta*radtodeg);
             if(photon->FindCaloCluster()->DetectorType == Detector_t::Type_t::TAPS)
                 PhotonTheTAPS.push_back(photon->Theta*radtodeg);
+
             PhotonThe.push_back(photon->Theta*radtodeg);
             PhotonPhi.push_back(photon->Phi*radtodeg);
             PhotonE.push_back(photon->CaloEnergy);
         }
         pi0gg_IM = pi0gg2g.M();
+        /*
+        g1CB.push_back(isg1CB);
+        g1BaF2.push_back(isg1BaF2);
+        g1PbWO.push_back(isg1PbWO);
+        g1undetected.push_back(isg1undetected);
+        g2CB.push_back(isg2CB);
+        g2BaF2.push_back(isg2BaF2);
+        g2PbWO.push_back(isg2PbWO);
+        g2undetected.push_back(isg2undetected);
+        */
     }
 
     //Looping over the taggerhits
 
+    TParticle proton;
     for (const auto& taggerhit : event.Reconstructed().TaggerHits) { // Event loop
 
         promptrandom.SetTaggerTime(triggersimu.GetCorrectedTaggerTime(taggerhit));
@@ -255,11 +312,12 @@ void scratch_damaurer_MC_ppi0_pgg::ProcessEvent(const TEvent& event, manager_t&)
             continue;
 
         const double weight = promptrandom.FillWeight();
+        weight_res += weight;
 
         TLorentzVector InitialPhotonVec = taggerhit.GetPhotonBeam();
         TLorentzVector InitialProtonVec = LorentzVec(vec3(0,0,0),ParticleTypeDatabase::Proton.Mass());
 
-        proton = InitialPhotonVec+InitialProtonVec-pi0gg2g;
+        proton = TParticle(ParticleTypeDatabase::Proton,(TLorentzVector)(InitialPhotonVec+InitialProtonVec-(g1+g2)));
 
         //filling the histograms
 
@@ -289,9 +347,9 @@ void scratch_damaurer_MC_ppi0_pgg::ProcessEvent(const TEvent& event, manager_t&)
 
         if(NeuCanCaloE.size() == 2){
             h_ProtonPolarAngles->Fill(proton.Theta()*radtodeg,weight);
-            h_ProtonETheta->Fill(proton.Theta()*radtodeg,proton.E(),weight);
+            h_ProtonETheta->Fill(proton.Theta()*radtodeg,proton.E,weight);
             if (proton.Theta()*radtodeg < 20){ProtonPolarAngles_TAPS += 1.0;}
-            if (proton.Theta()*radtodeg >= 20){ProtonPolarAngles_CB += 1.0;}
+            if (proton.Theta()*radtodeg >= 20 && proton.Theta()*radtodeg < 160){ProtonPolarAngles_CB += 1.0;}
         }
 
         for (unsigned int i=0; i<Phi.size(); i++){
@@ -305,7 +363,7 @@ void scratch_damaurer_MC_ppi0_pgg::ProcessEvent(const TEvent& event, manager_t&)
 
         if(NeuCanCaloE.size() == 2){
             h_ProtonAzimuthAngles->Fill(proton.Phi()*radtodeg,weight);
-            h_ProtonEPhi->Fill(proton.Phi()*radtodeg,proton.E(),weight);
+            h_ProtonEPhi->Fill(proton.Phi()*radtodeg,proton.E,weight);
         }
 
         if(NeuCanCaloE.size() == 2){
@@ -319,6 +377,19 @@ void scratch_damaurer_MC_ppi0_pgg::ProcessEvent(const TEvent& event, manager_t&)
             if(proton.Theta()*radtodeg > 80){h_ProtonImAbove80->Fill(proton.M(),weight);}
         }
 
+        //Filling the statistical histogram
+
+        if (isg1CB && isg2CB){count_first++;}
+        if ((isg1CB && isg2BaF2)||(isg2CB && isg1BaF2)){count_second++;}
+        if ((isg1CB && isg2PbWO)||(isg2CB && isg1PbWO)){count_third++;}
+        if (isg1BaF2 && isg2BaF2){count_fourth++;}
+        if ((isg1BaF2 && isg2PbWO)||(isg2BaF2 && isg1PbWO)){count_fifth++;}
+        if (isg1PbWO && isg2PbWO){count_sixth++;}
+        //if ((isg1PbWO && isg2undetected)||(isg2PbWO && isg1undetected)){count_seventh++;}
+        //if ((isg1BaF2 && isg2undetected)||(isg2BaF2 && isg1undetected)){count_eigth++;}
+        //if ((isg1CB && isg2undetected)||(isg2CB && isg1undetected)){count_nineth++;}
+        //if (isg1undetected && isg2undetected){count_tenth++;}
+
         //Filling the tree for further analysis
 
         t.TaggW = promptrandom.FillWeight();
@@ -331,7 +402,7 @@ void scratch_damaurer_MC_ppi0_pgg::ProcessEvent(const TEvent& event, manager_t&)
         t.AzimuthAngles = Phi;
         t.PhotonAzimuthAngles = PhotonPhi;
         t.ProtonAzimuthAngles = proton.Phi()*radtodeg;
-        t.ProtonE = proton.E();
+        t.ProtonE = proton.E;
         t.PhotonE = PhotonE;      
         t.ProtonIm = proton.M();
         t.PhotonIm = pi0gg_IM;
@@ -342,12 +413,31 @@ void scratch_damaurer_MC_ppi0_pgg::ProcessEvent(const TEvent& event, manager_t&)
     }      
 
     h_nClusters->Fill(event.Reconstructed().Clusters.size());
-    h_Reconstructed_Data_Statistics->SetBinContent(7*steps+1,10);
 
 }
 
 void scratch_damaurer_MC_ppi0_pgg::ShowResult()
 {
+    h_Reconstructed_Data_Statistics->SetBinContent(1*steps,(float)count_first/(float)weight_res);
+    h_Reconstructed_Data_Statistics->SetBinContent(1*steps+1,(float)count_first/(float)weight_res);
+    h_Reconstructed_Data_Statistics->SetBinContent(2*steps,(float)count_second/(float)weight_res);
+    h_Reconstructed_Data_Statistics->SetBinContent(2*steps+1,(float)count_second/(float)weight_res);
+    h_Reconstructed_Data_Statistics->SetBinContent(3*steps,(float)count_third/(float)weight_res);
+    h_Reconstructed_Data_Statistics->SetBinContent(3*steps+1,(float)count_third/(float)weight_res);
+    h_Reconstructed_Data_Statistics->SetBinContent(4*steps,(float)count_fourth/(float)weight_res);
+    h_Reconstructed_Data_Statistics->SetBinContent(4*steps+1,(float)count_fourth/(float)weight_res);
+    h_Reconstructed_Data_Statistics->SetBinContent(5*steps,(float)count_fifth/(float)weight_res);
+    h_Reconstructed_Data_Statistics->SetBinContent(5*steps+1,(float)count_fifth/(float)weight_res);
+    h_Reconstructed_Data_Statistics->SetBinContent(6*steps,(float)count_sixth/(float)weight_res);
+    h_Reconstructed_Data_Statistics->SetBinContent(6*steps+1,(float)count_sixth/(float)weight_res);
+    /*
+    h_Reconstructed_Data_Statistics->SetBinContent(7*steps,weight_res);
+    h_Reconstructed_Data_Statistics->SetBinContent(7*steps,count_seventh);
+    h_Reconstructed_Data_Statistics->SetBinContent(8*steps,count_eigth);
+    h_Reconstructed_Data_Statistics->SetBinContent(9*steps,count_nineth);
+    h_Reconstructed_Data_Statistics->SetBinContent(10*steps,count_tenth);
+    */
+
     ant::canvas(GetName()+": tagger stuff")
             << h_TaggerTime
             << h_nClusters
@@ -394,6 +484,10 @@ void scratch_damaurer_MC_ppi0_pgg::ShowResult()
             << h_ProtonImAbove80
             << endc; // actually draws the canvas
 
+    ant::canvas(GetName()+": Statistics histogram")
+            << h_Reconstructed_Data_Statistics
+            << endc; // actually draws the canvas
+
 }
 
 void scratch_damaurer_MC_ppi0_pgg::Finish()
@@ -424,18 +518,18 @@ void scratch_damaurer_MC_ppi0_pgg::Finish()
     cout << "Proton amount falling into TAPS: " << 100*ProtonPolarAngles_TAPS_frac << "% with error: " << 100*ProtonPolarAngles_TAPS_err << "%" << endl;
     cout << "Proton amount falling into CB: " << 100*ProtonPolarAngles_CB_frac << "% with error: " << 100*ProtonPolarAngles_CB_err << "%" << endl;
     cout << "" << endl;
-    /*
-    cout << "1) Both CB: " << (float)100*((float)count_first/(float)nentries) << "%" << endl;
-    cout << "2) CB & BaF2: " << (float)100*((float)count_second/(float)nentries) << "%" << endl;
-    cout << "3) CB & PbWO: " << (float)100*((float)count_third/(float)nentries) << "%" << endl;
-    cout << "4) Both BaF2: " << (float)100*((float)count_fourth/(float)nentries) << "%" << endl;
-    cout << "5) BaF2 & PbWO: " << (float)100*((float)count_fifth/(float)nentries) << "%" << endl;
-    cout << "6) Both PbWO: " << (float)100*((float)count_sixth/(float)nentries) << "%" << endl;
-    cout << "7) PbWO & not detected: " << (float)100*((float)count_seventh/(float)nentries) << "%" << endl;
-    cout << "8) BaF2 & not detected: " << (float)100*((float)count_eigth/(float)nentries) << "%" << endl;
-    cout << "9) CB & not detected: " << (float)100*((float)count_nineth/(float)nentries) << "%" << endl;
-    cout << "10) Both not detected: " << (float)100*((float)count_tenth/(float)nentries) << "%" << endl;
-    */
+
+    cout << "1) Both CB: " << (float)100*((float)count_first/(float)weight_res) << "%" << endl;
+    cout << "2) CB & BaF2: " << (float)100*((float)count_second/(float)weight_res) << "%" << endl;
+    cout << "3) CB & PbWO: " << (float)100*((float)count_third/(float)weight_res) << "%" << endl;
+    cout << "4) Both BaF2: " << (float)100*((float)count_fourth/(float)weight_res) << "%" << endl;
+    cout << "5) BaF2 & PbWO: " << (float)100*((float)count_fifth/(float)weight_res) << "%" << endl;
+    cout << "6) Both PbWO: " << (float)100*((float)count_sixth/(float)weight_res) << "%" << endl;
+    //cout << "7) PbWO & not detected: " << (float)100*((float)count_seventh/(float)weight_res) << "%" << endl;
+    //cout << "8) BaF2 & not detected: " << (float)100*((float)count_eigth/(float)weight_res) << "%" << endl;
+    //cout << "9) CB & not detected: " << (float)100*((float)count_nineth/(float)weight_res) << "%" << endl;
+    //cout << "10) Both not detected: " << (float)100*((float)count_tenth/(float)weight_res) << "%" << endl;
+
 }
 
 AUTO_REGISTER_PHYSICS(scratch_damaurer_MC_ppi0_pgg)

@@ -1,6 +1,11 @@
 # Ignore build directory
 /build*
 
+# Ignore root and pdf files
+/src/analysis/physics/scratch/damaurer/Ant_files/
+/src/analysis/physics/scratch/damaurer/Geant_files/
+/src/analysis/physics/scratch/damaurer/Pluto_files/
+
 # Doxygen output
 /doxygen/
 

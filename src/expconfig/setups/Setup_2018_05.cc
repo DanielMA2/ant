@@ -37,7 +37,7 @@ public:
         // Broken, BadTDC or NoCalib elements
         CB->SetElementFlag(Detector_t::ElementFlag_t::Broken, {17,125,189,265,461,557,678});
         CB->SetElementFlag(Detector_t::ElementFlag_t::BadTDC, {582,586,672,696});
-        TAPS->SetElementFlag(Detector_t::ElementFlag_t::Broken, TAPS->GetPbWO4Channels()); //All the PbWO were turned off
+        //TAPS->SetElementFlag(Detector_t::ElementFlag_t::Broken, TAPS->GetPbWO4Channels()); //All the PbWO were turned off
         TAPS->SetElementFlag(Detector_t::ElementFlag_t::Broken, {114,137}); //And two more
         TAPS->SetElementFlag(Detector_t::ElementFlag_t::NoCalibFill, {138,145,218,283,346,356,357,364});
         TAPSVeto->SetElementFlag(Detector_t::ElementFlag_t::Broken, {0,1,2,3,5,6,15,31,36,41,64,65,66,71,75,92,119,128,129,
