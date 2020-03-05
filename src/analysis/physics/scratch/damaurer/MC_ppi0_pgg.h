@@ -69,15 +69,18 @@ private:
     TH1D* h_nClusters_pr;
     TH1D* h_PhotonIm;
     TH1D* h_ProtonIm;
-    TH1D* h_ProtonImAbove80;
+    TH1D* h_ProtonPeak;
+    TH1D* h_alp_Photons_CB_TAPS;
+    TH1D* h_Reconstructed_Data_Statistics;
     TH2D* h_ProtonETheta;
     TH2D* h_PhotonETheta;
     TH2D* h_PhotonETheta_CB;
     TH2D* h_PhotonETheta_TAPS;
     TH2D* h_ProtonEPhi;
     TH2D* h_PhotonEPhi;
-    TH1D* h_alp_Photons_CB_TAPS;
-    TH1D* h_Reconstructed_Data_Statistics;
+    TH2D* h_doubly_ap_DCS_reconstructed_lab;
+    TH2D* h_doubly_ap_DCS_reconstructed_cmFrame;
+
     PromptRandom::Switch promptrandom;
     utils::TriggerSimulation triggersimu;
 
@@ -112,6 +115,16 @@ private:
     double ProtonPolarAngles_CB_err;
 
     double weight_res = 0;
+    double pi = 4*atan(1);
+
+    long double sigma = 12;
+    long double m = 134.9766;
+    long double mp = 938.2720813;
+    long double energyGamma_max = 855;
+
+    double_t s_square_min = mp+m;
+    double_t s_square_max = sqrt(2*mp*energyGamma_max+mp*mp);;
+    //double_t s_square_max = sqrt(2*mp*energyGamma_max+mp*mp);
 
     std::shared_ptr<expconfig::detector::TAPS> taps;
 

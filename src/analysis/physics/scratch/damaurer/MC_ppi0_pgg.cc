@@ -35,12 +35,14 @@ scratch_damaurer_MC_ppi0_pgg::scratch_damaurer_MC_ppi0_pgg(const string& name, O
     const BinSettings theta_bins_CB(140, 19, 160);
     const BinSettings theta_bins_TAPS(25, 0, 25);
     const BinSettings phi_bins(100, -180, 180);
-    const BinSettings E_Photon_bins(1000, 0, 800);
-    const BinSettings E_Proton_bins(1000, 800, 1600);
+    const BinSettings E_Photon_bins(100, 0, 1000);
+    const BinSettings E_Proton_bins(100, 900, 1600);
     const BinSettings Im_photon_bins(1000, 0, 300);
     const BinSettings Im_proton_bins(1000, 800, 1600);
     const BinSettings initialBeamE_bins(1000,0,0.9);
     const BinSettings statistic_bins(number_of_bins,lower_edge,upper_edge);
+    const BinSettings cos_bins(100,-1,1);
+    const BinSettings sqrt_S_bins(100,s_square_min,s_square_max);
 
     // HistFac is a protected member of the base class "Physics"
     // use it to conveniently create histograms (and other ROOT objects) at the right location
@@ -52,6 +54,7 @@ scratch_damaurer_MC_ppi0_pgg::scratch_damaurer_MC_ppi0_pgg(const string& name, O
     auto hfIm = new HistogramFactory("Invariant mass", HistFac, "");
     auto hfEnergy = new HistogramFactory("Particle energies", HistFac, "");
     auto hfStatistics = new HistogramFactory("Statistics hist", HistFac, "");
+    auto hfCrossCheck = new HistogramFactory("Cross section check", HistFac, "");
 
     h_TaggerTime = hfTagger->makeTH1D("Tagger Time",     // title
                                     "t [ns]", "#",     // xlabel, ylabel
@@ -130,7 +133,7 @@ scratch_damaurer_MC_ppi0_pgg::scratch_damaurer_MC_ppi0_pgg(const string& name, O
                                   "h_ProtonIm", false     // ROOT object name, auto-generated if omitted
                                   );
 
-    h_ProtonImAbove80 = hfIm->makeTH1D("Proton reconstructed events above 80 degrees",     // title
+    h_ProtonPeak = hfIm->makeTH1D("Missing particle reconstructed events around proton mass",     // title
                                   "M [MeV]", "#",     // xlabel, ylabel
                                   Im_proton_bins,  // our binnings
                                   "h_ProtonImAbove80", false     // ROOT object name, auto-generated if omitted
@@ -178,7 +181,19 @@ scratch_damaurer_MC_ppi0_pgg::scratch_damaurer_MC_ppi0_pgg(const string& name, O
                                      statistic_bins,  // our binnings
                                      "h_Reconstructed_Data_Statistics", true    // ROOT object name, auto-generated if omitted
                                      );
+
+    h_doubly_ap_DCS_reconstructed_lab = hfCrossCheck->makeTH2D("Cross section check in lab-frame", //title
+                                                                        "cos_Theta [deg]","sqrt_S [GeV]", // xlabel, ylabel
+                                                                        cos_bins, sqrt_S_bins,    // our binnings
+                                                                        "h_doubly_ap_DCS_reconstructed_lab", true    // ROOT object name, auto-generated if omitted
+                                                                        );
     
+    h_doubly_ap_DCS_reconstructed_cmFrame = hfCrossCheck->makeTH2D("Cross section check in cm-frame", //title
+                                                                        "cos_Theta* [deg]","sqrt_S [GeV]", // xlabel, ylabel
+                                                                        cos_bins, sqrt_S_bins,    // our binnings
+                                                                        "h_doubly_ap_DCS_reconstructed_cmFrame", true    // ROOT object name, auto-generated if omitted
+                                                                        );
+
     // define some prompt and random windows (in nanoseconds)
     promptrandom.AddPromptRange({ -7,   7}); // in nanoseconds
     promptrandom.AddRandomRange({-50, -10});
@@ -311,84 +326,91 @@ void scratch_damaurer_MC_ppi0_pgg::ProcessEvent(const TEvent& event, manager_t&)
         if (promptrandom.State() == PromptRandom::Case::Outside)
             continue;
 
-        const double weight = promptrandom.FillWeight();
-        weight_res += weight;
-
         TLorentzVector InitialPhotonVec = taggerhit.GetPhotonBeam();
         TLorentzVector InitialProtonVec = LorentzVec(vec3(0,0,0),ParticleTypeDatabase::Proton.Mass());
 
         proton = TParticle(ParticleTypeDatabase::Proton,(TLorentzVector)(InitialPhotonVec+InitialProtonVec-(g1+g2)));
 
-        //filling the histograms
+        TLorentzVector Lpion = (TLorentzVector)(g1+g2);
+        TLorentzVector Linitial = (TLorentzVector)(InitialPhotonVec+InitialProtonVec);
+        TLorentzVector LpionBoosted = Lpion;
+        LpionBoosted.Boost(-Linitial.BoostVector());
+
+        //Adding selections & filling histograms
+
+        const double weight = promptrandom.FillWeight();
 
         h_TaggerTime->Fill(taggerhit.Time, weight);
         h_InitialBeamE->Fill(InitialPhotonVec.E()/1000,weight);
 
-        for (unsigned int i=0; i<The.size(); i++){
-            h_PolarAngles->Fill(The[i],weight);
-        }
-
-        for (unsigned int i=0; i<PhotonThe.size(); i++){
-            h_PhotonPolarAngles->Fill(PhotonThe[i],weight);
-            h_PhotonETheta->Fill(PhotonThe[i],PhotonE[i],weight);
-            //if (PhotonThe[i] < 20){PhotonPolarAngles_TAPS += 1.0;}
-            //if (PhotonThe[i] >= 20){PhotonPolarAngles_CB += 1.0;}
-        }
-
-        for (unsigned int i=0; i<PhotonTheCB.size(); i++){
-            h_PhotonPolarAngles_CB->Fill(PhotonTheCB[i],weight);
-            h_PhotonETheta_CB->Fill(PhotonTheCB[i],PhotonE[i],weight);
-        }
-
-        for (unsigned int i=0; i<PhotonTheTAPS.size(); i++){
-            h_PhotonPolarAngles_TAPS->Fill(PhotonTheTAPS[i],weight);
-            h_PhotonETheta_TAPS->Fill(PhotonTheTAPS[i],PhotonE[i],weight);
-        }
-
         if(NeuCanCaloE.size() == 2){
-            h_ProtonPolarAngles->Fill(proton.Theta()*radtodeg,weight);
-            h_ProtonETheta->Fill(proton.Theta()*radtodeg,proton.E,weight);
-            if (proton.Theta()*radtodeg < 20){ProtonPolarAngles_TAPS += 1.0;}
-            if (proton.Theta()*radtodeg >= 20 && proton.Theta()*radtodeg < 160){ProtonPolarAngles_CB += 1.0;}
-        }
 
-        for (unsigned int i=0; i<Phi.size(); i++){
-            h_AzimuthAngles->Fill(Phi[i],weight);
-        }
-
-        for (unsigned int i=0; i<PhotonPhi.size(); i++){
-            h_PhotonAzimuthAngles->Fill(PhotonPhi[i],weight);
-            h_PhotonEPhi->Fill(PhotonPhi[i],PhotonE[i],weight);
-        }
-
-        if(NeuCanCaloE.size() == 2){
-            h_ProtonAzimuthAngles->Fill(proton.Phi()*radtodeg,weight);
-            h_ProtonEPhi->Fill(proton.Phi()*radtodeg,proton.E,weight);
-        }
-
-        if(NeuCanCaloE.size() == 2){
-            h_PhotonIm->Fill(pi0gg_IM,weight);
-            t.PhotonIm = pi0gg_IM;
-        }
-
-        if(NeuCanCaloE.size() == 2){
             h_ProtonIm->Fill(proton.M(),weight);
             t.ProtonIm = proton.M();
-            if(proton.Theta()*radtodeg > 80){h_ProtonImAbove80->Fill(proton.M(),weight);}
+
+            if(proton.M()<(mp+sigma) && proton.M()>(mp-sigma)){
+
+                h_PhotonIm->Fill(pi0gg_IM,weight);
+                t.PhotonIm = pi0gg_IM;
+
+                for (unsigned int i=0; i<The.size(); i++){
+                    h_PolarAngles->Fill(The[i],weight);
+                }
+
+                for (unsigned int i=0; i<Phi.size(); i++){
+                    h_AzimuthAngles->Fill(Phi[i],weight);
+                }
+
+                for (unsigned int i=0; i<PhotonThe.size(); i++){
+                    h_PhotonPolarAngles->Fill(PhotonThe[i],weight);
+                    h_PhotonETheta->Fill(PhotonThe[i],PhotonE[i],weight);
+                    //if (PhotonThe[i] < 20){PhotonPolarAngles_TAPS += 1.0;}
+                    //if (PhotonThe[i] >= 20){PhotonPolarAngles_CB += 1.0;}
+                    h_doubly_ap_DCS_reconstructed_lab->Fill(cos(Lpion.Theta()),Linitial.M(),weight);
+                    h_doubly_ap_DCS_reconstructed_cmFrame->Fill(cos(Linitial.Angle(LpionBoosted.Vect())),Linitial.M(),weight);
+                }
+
+                for (unsigned int i=0; i<PhotonTheCB.size(); i++){
+                    h_PhotonPolarAngles_CB->Fill(PhotonTheCB[i],weight);
+                    h_PhotonETheta_CB->Fill(PhotonTheCB[i],PhotonE[i],weight);
+                }
+
+                for (unsigned int i=0; i<PhotonTheTAPS.size(); i++){
+                    h_PhotonPolarAngles_TAPS->Fill(PhotonTheTAPS[i],weight);
+                    h_PhotonETheta_TAPS->Fill(PhotonTheTAPS[i],PhotonE[i],weight);
+                }
+
+                h_ProtonPolarAngles->Fill(proton.Theta()*radtodeg,weight);
+                h_ProtonETheta->Fill(proton.Theta()*radtodeg,proton.E,weight);
+                if (proton.Theta()*radtodeg < 20){ProtonPolarAngles_TAPS += 1.0;}
+                if (proton.Theta()*radtodeg >= 20 && proton.Theta()*radtodeg < 160){ProtonPolarAngles_CB += 1.0;}
+
+                for (unsigned int i=0; i<PhotonPhi.size(); i++){
+                    h_PhotonAzimuthAngles->Fill(PhotonPhi[i],weight);
+                    h_PhotonEPhi->Fill(PhotonPhi[i],PhotonE[i],weight);
+                }
+
+                h_ProtonAzimuthAngles->Fill(proton.Phi()*radtodeg,weight);
+                h_ProtonEPhi->Fill(proton.Phi()*radtodeg,proton.E,weight);
+
+                h_ProtonPeak->Fill(proton.M(),weight);
+
+                //Filling the statistical histogram
+
+                if (isg1CB && isg2CB){count_first+=promptrandom.FillWeight();}
+                if ((isg1CB && isg2BaF2)||(isg2CB && isg1BaF2)){count_second+=promptrandom.FillWeight();}
+                if ((isg1CB && isg2PbWO)||(isg2CB && isg1PbWO)){count_third+=promptrandom.FillWeight();}
+                if (isg1BaF2 && isg2BaF2){count_fourth+=promptrandom.FillWeight();}
+                if ((isg1BaF2 && isg2PbWO)||(isg2BaF2 && isg1PbWO)){count_fifth+=promptrandom.FillWeight();}
+                if (isg1PbWO && isg2PbWO){count_sixth+=promptrandom.FillWeight();}
+                //if ((isg1PbWO && isg2undetected)||(isg2PbWO && isg1undetected)){count_seventh++;}
+                //if ((isg1BaF2 && isg2undetected)||(isg2BaF2 && isg1undetected)){count_eigth++;}
+                //if ((isg1CB && isg2undetected)||(isg2CB && isg1undetected)){count_nineth++;}
+                //if (isg1undetected && isg2undetected){count_tenth++;}
+
+                weight_res += weight;
+            }
         }
-
-        //Filling the statistical histogram
-
-        if (isg1CB && isg2CB){count_first++;}
-        if ((isg1CB && isg2BaF2)||(isg2CB && isg1BaF2)){count_second++;}
-        if ((isg1CB && isg2PbWO)||(isg2CB && isg1PbWO)){count_third++;}
-        if (isg1BaF2 && isg2BaF2){count_fourth++;}
-        if ((isg1BaF2 && isg2PbWO)||(isg2BaF2 && isg1PbWO)){count_fifth++;}
-        if (isg1PbWO && isg2PbWO){count_sixth++;}
-        //if ((isg1PbWO && isg2undetected)||(isg2PbWO && isg1undetected)){count_seventh++;}
-        //if ((isg1BaF2 && isg2undetected)||(isg2BaF2 && isg1undetected)){count_eigth++;}
-        //if ((isg1CB && isg2undetected)||(isg2CB && isg1undetected)){count_nineth++;}
-        //if (isg1undetected && isg2undetected){count_tenth++;}
 
         //Filling the tree for further analysis
 
@@ -481,11 +503,17 @@ void scratch_damaurer_MC_ppi0_pgg::ShowResult()
     ant::canvas(GetName()+": Particle Invariant masses")
             << h_PhotonIm
             << h_ProtonIm
-            << h_ProtonImAbove80
+            << h_ProtonPeak
             << endc; // actually draws the canvas
 
     ant::canvas(GetName()+": Statistics histogram")
             << h_Reconstructed_Data_Statistics
+            << endc; // actually draws the canvas
+
+    ant::canvas(GetName()+": Cross section checks")
+            << drawoption("Surf")
+            << h_doubly_ap_DCS_reconstructed_lab
+            << h_doubly_ap_DCS_reconstructed_cmFrame
             << endc; // actually draws the canvas
 
 }
