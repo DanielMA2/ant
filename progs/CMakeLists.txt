@@ -108,6 +108,14 @@ option(AntProgs_EtapDalitz "Build EtaPrime Dalitz Tools" OFF)
 
 if(AntProgs_EtapDalitz)
     add_ant_executable(EtapDalitz_fit)
+    # check if C++17 standard is supported by the compiler
+    CHECK_CXX_COMPILER_FLAG("-std=c++17" COMPILER_SUPPORTS_CXX17)
+    if(COMPILER_SUPPORTS_CXX17)
+      set_property(TARGET EtapDalitz_fit PROPERTY CXX_STANDARD 17)
+      message(STATUS "C++17 will be used for EtapDalitz_fit")
+    else()
+      message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++17 support. Please use a different C++ compiler.")
+    endif()
     target_link_libraries(EtapDalitz_fit RooFit RooFitCore roofit_extensions)
 endif()
 
@@ -115,9 +123,4 @@ option(AntProgs_PCA "Build Principal Component Analysis Tools" OFF)
 
 if(AntProgs_PCA)
     add_ant_executable(PCA)
-endif()
-
-option(AntProgs_Pi0Dalitz "Build Pi0Dalitz tools" OFF)
-if(AntProgs_Pi0Dalitz)
-        add_ant_executable(Pi0Dalitz_anaplot)
 endif()
