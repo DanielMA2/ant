@@ -19,3 +19,4 @@ add_ant_physics(wettig/CBEfficiencyCheck.cc)
 
 add_ant_physics(damaurer/MC_ppi0_pgg.cc)
 add_ant_physics(damaurer/Tutorial_test.cc)
+add_ant_physics(damaurer/MC_pw_ppi0g_p3g.cc)
