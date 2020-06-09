@@ -32,77 +32,73 @@ public:
     virtual void Finish() override;
 
     struct tree_t : WrapTTree {
-        ADD_BRANCH_T(unsigned, nClusters)
-        ADD_BRANCH_T(double, TaggW)
+        /*
         ADD_BRANCH_T(double, InitialBeamE)
         ADD_BRANCH_T(double, ProtonIm)
         ADD_BRANCH_T(double, PhotonIm)
         ADD_BRANCH_T(double, ProtonE)
         ADD_BRANCH_T(double, ProtonPolarAngles)
-        ADD_BRANCH_T(double, ProtonAzimuthAngles)
-        ADD_BRANCH_T(std::vector<double>, PolarAngles)
-        ADD_BRANCH_T(std::vector<double>, AzimuthAngles)
-        ADD_BRANCH_T(std::vector<double>, PhotonE)
+        ADD_BRANCH_T(double, missing_proton_Im)
+        */
+        ADD_BRANCH_T(unsigned, nClusters)
+        ADD_BRANCH_T(double, TaggW)
+        ADD_BRANCH_T(std::vector<double>, PhotonAzimuthAngles)
         ADD_BRANCH_T(std::vector<double>, PhotonPolarAngles)
         ADD_BRANCH_T(std::vector<double>, PhotonPolarAnglesCB)
         ADD_BRANCH_T(std::vector<double>, PhotonPolarAnglesTAPS)
-        ADD_BRANCH_T(std::vector<double>, PhotonAzimuthAngles)
     };
 
 protected:
     static constexpr auto radtodeg = std_ext::radian_to_degree(1.0);
 
+//-- Histograms
+static const int nrCuts = 2;
+
 private:
+
     tree_t t;
+
+    TH1D *h_missing_proton_Im[nrCuts];
+    TH1D *h_wOnly3g_Im[nrCuts];
+    TH1D *h_Pi0Only2g_Im[nrCuts];
+    TH1D *h_pi0g_BackToBack[nrCuts];
+
     TH1D* h_TaggerTime;
     TH1D* h_InitialBeamE;
     TH1D* h_VetoEnergies;
-    TH1D* h_PolarAngles;
-    TH1D* h_ProtonPolarAngles;
-    TH1D* h_PhotonPolarAngles;
-    TH1D* h_PhotonPolarAngles_CB;
-    TH1D* h_PhotonPolarAngles_TAPS;
-    TH1D* h_AzimuthAngles;
-    TH1D* h_ProtonAzimuthAngles;
-    TH1D* h_PhotonAzimuthAngles;
     TH1D* h_nClusters;
     TH1D* h_nClusters_pr;
-    TH1D* h_PhotonIm;
-    TH1D* h_ProtonIm;
-    TH1D* h_ProtonPeak;
-    TH1D* h_alp_Photons_CB_TAPS;
-    TH1D* h_Reconstructed_Data_Statistics;
-    TH2D* h_ProtonETheta;
-    TH2D* h_PhotonETheta;
-    TH2D* h_PhotonETheta_CB;
-    TH2D* h_PhotonETheta_TAPS;
-    TH2D* h_ProtonEPhi;
-    TH2D* h_PhotonEPhi;
-    TH2D* h_doubly_ap_DCS_reconstructed_lab;
-    TH2D* h_doubly_ap_DCS_reconstructed_cmFrame;
+
+    TH1D* h_ALL_AzimuthAngles;
+    TH1D* h_ALL_PolarAngles;
+    TH1D* h_missingChaPolarAngles;
+    TH1D* h_missingChaAzimuthAngles;
+    TH1D* h_3gPolarAngles;
+    TH1D* h_3gPolarAnglesCB;
+    TH1D* h_3gPolarAnglesTAPS;
+    TH1D* h_3gAzimuthAngles;
+
+    TH2D* h_3g_EvTheta_CB;
+    TH2D* h_3g_EvTheta_TAPS;
+    TH2D* h_missingP_EvTheta;
+    TH2D* h_w_EvTheta;
+    TH2D* h_wg_EvTheta;
+    TH2D* h_wpi0_EvTheta;
+
+    TH2D* h_doubly_wp_DCS_reconstructed_lab;
+    TH2D* h_doubly_wp_DCS_reconstructed_cmFrame;
+    //TH1D* h_Reconstructed_Data_Statistics;
 
     PromptRandom::Switch promptrandom;
     utils::TriggerSimulation triggersimu;
 
-    double PhotonPolarAngles_TAPS = 0.0;
-    double ProtonPolarAngles_TAPS = 0.0;
-    double PhotonPolarAngles_CB = 0.0;
-    double ProtonPolarAngles_CB = 0.0;
+    double max_particles = 1000000;
 
-    double count_first = 0.0;
-    double count_second = 0.0;
-    double count_third = 0.0;
-    double count_fourth = 0.0;
-    double count_fifth = 0.0;
-    double count_sixth = 0.0;
-    double count_seventh = 0.0;
-    double count_eigth = 0.0;
-    double count_nineth = 0.0;
-    double count_tenth = 0.0;
-
-    double max_particles = 300000.0;
-    double Photons_max = 200000.0;
-    double Protons_max = 100000.0;
+    long double m = 134.9766;
+    long double mp = 938.2720813;
+    long double mw = 762.65;
+    long double energyGamma_min = 1105;
+    long double energyGamma_max = 1500;
 
     double PhotonPolarAngles_TAPS_frac;
     double ProtonPolarAngles_TAPS_frac;
@@ -114,24 +110,11 @@ private:
     double ProtonPolarAngles_TAPS_err;
     double ProtonPolarAngles_CB_err;
 
-    double weight_res = 0;
-    double pi = 4*atan(1);
-
-    long double sigma = 12;
-    long double m = 134.9766;
-    long double mp = 938.2720813;
-    long double energyGamma_max = 855;
-
-    double_t s_square_min = mp+m;
-    double_t s_square_max = sqrt(2*mp*energyGamma_max+mp*mp);;
-    //double_t s_square_max = sqrt(2*mp*energyGamma_max+mp*mp);
+    double_t s_square_min = sqrt(2*mp*energyGamma_min+mp*mp);
+    double_t s_square_max = sqrt(2*mp*energyGamma_max+mp*mp);
 
     std::shared_ptr<expconfig::detector::TAPS> taps;
 
-    Int_t number_of_bins = 70;
-    Int_t lower_edge = 0;
-    Int_t upper_edge = 7;
-    int steps = (int)(number_of_bins/(upper_edge-lower_edge));
 };
 
 }}}

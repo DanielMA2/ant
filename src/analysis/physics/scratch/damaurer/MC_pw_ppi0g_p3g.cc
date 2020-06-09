@@ -31,30 +31,60 @@ scratch_damaurer_MC_pw_ppi0g_p3g::scratch_damaurer_MC_pw_ppi0g_p3g(const string&
 
     const BinSettings tagger_time_bins(1000, -200, 200);
     const BinSettings Veto_Energy_bins(1000, 0, 40);
+    const BinSettings initialBeamE_bins(1000,1,1.6);
+    const BinSettings cos_bins(100,-1,1);
+    const BinSettings sqrt_S_bins(100,s_square_min,s_square_max);
+    const BinSettings phi_bins(100, -180, 180);
+
     const BinSettings theta_bins(180, 0, 180);
     const BinSettings theta_bins_CB(140, 19, 160);
     const BinSettings theta_bins_TAPS(25, 0, 25);
-    const BinSettings phi_bins(100, -180, 180);
-    const BinSettings E_Photon_bins(100, 0, 1000);
-    const BinSettings E_Proton_bins(100, 900, 1600);
-    const BinSettings Im_photon_bins(1000, 0, 300);
-    const BinSettings Im_proton_bins(1000, 800, 1600);
-    const BinSettings initialBeamE_bins(1000,0,0.9);
-    const BinSettings statistic_bins(number_of_bins,lower_edge,upper_edge);
-    const BinSettings cos_bins(100,-1,1);
-    const BinSettings sqrt_S_bins(100,s_square_min,s_square_max);
+
+    const BinSettings Im_missing_proton_bins(100, 0, 1600);
+    const BinSettings Im_omega_bins(100, 0, 1600);
+    const BinSettings Im_pi0_bins(100, 0, 1600);
+
+    const BinSettings E_photon_bins(100, 0, 1600);
+    const BinSettings E_missingP_bins(100, 0, 1600);
+    const BinSettings E_omega_bins(100, 0, 1600);
+    const BinSettings E_pi0_bins(100, 0, 1600);
 
     // HistFac is a protected member of the base class "Physics"
     // use it to conveniently create histograms (and other ROOT objects) at the right location
     // using the make methods
 
     auto hfTagger = new HistogramFactory("Tagger", HistFac, "");
-    auto hfTheta = new HistogramFactory("Polar angles", HistFac, "");
-    auto hfPhi = new HistogramFactory("Azimuth angles", HistFac, "");
-    auto hfIm = new HistogramFactory("Invariant mass", HistFac, "");
-    auto hfEnergy = new HistogramFactory("Particle energies", HistFac, "");
-    auto hfStatistics = new HistogramFactory("Statistics hist", HistFac, "");
+    auto hfOnlyEnergy = new HistogramFactory("All the candidate energies", HistFac, "");
+    auto hfOnlyAngles = new HistogramFactory("All the candidate angles", HistFac, "");
     auto hfCrossCheck = new HistogramFactory("Cross section check", HistFac, "");
+    auto hf_wpi0g_EvsTheta = new HistogramFactory("Energy vs theta dists", HistFac, "");
+    auto hf_wpi0g_IM = new HistogramFactory("Invariant mass dists", HistFac, "");
+    auto hf_extras = new HistogramFactory("Some additional extra-hists", HistFac, "");
+
+    for (unsigned int i=0; i<nrCuts; i++){
+
+        h_missing_proton_Im[i] = hf_wpi0g_IM->makeTH1D("Missing particle invariant mass",     // title
+                                                             "M [MeV]", "#",     // xlabel, ylabel
+                                                             Im_missing_proton_bins,  // our binnings
+                                                             "h_missing_proton_Im", false     // ROOT object name, auto-generated if omitted
+                                                             );
+        h_wOnly3g_Im[i] = hf_wpi0g_IM->makeTH1D("Rec. Omega invariant mass",     // title
+                                            "M [MeV]", "#",     // xlabel, ylabel
+                                            Im_omega_bins,  // our binnings
+                                            "h_wOnly3g_Im", false     // ROOT object name, auto-generated if omitted
+                                            );
+        h_Pi0Only2g_Im[i] = hf_wpi0g_IM->makeTH1D("Rec. Pi0 invariant mass",     // title
+                                             "M [MeV]", "#",     // xlabel, ylabel
+                                             Im_pi0_bins,  // our binnings
+                                             "h_Pi0Only2g_Im", false     // ROOT object name, auto-generated if omitted
+                                             );
+        h_pi0g_BackToBack[i] = hfOnlyAngles->makeTH1D("w_pi0g angles in cm of rec. omega meson",     // title
+                                                         "cos_Theta* [deg]", "#",     // xlabel, ylabel
+                                                         cos_bins,  // our binnings
+                                                         "h_pi0g_BackToBack", false     // ROOT object name, auto-generated if omitted
+                                                         );
+
+    }
 
     h_TaggerTime = hfTagger->makeTH1D("Tagger Time",     // title
                                     "t [ns]", "#",     // xlabel, ylabel
@@ -62,7 +92,7 @@ scratch_damaurer_MC_pw_ppi0g_p3g::scratch_damaurer_MC_pw_ppi0g_p3g(const string&
                                     "h_TaggerTime"     // ROOT object name, auto-generated if omitted
                                     );
     
-    h_InitialBeamE = hfTagger->makeTH1D("Photon beam - Energy distribution",     // title
+    h_InitialBeamE = hfOnlyEnergy->makeTH1D("Photon beam - Energy distribution",     // title
                                    "E [GeV]", "#",     // xlabel, ylabel
                                    initialBeamE_bins,  // our binnings
                                    "h_InitialBeamE"     // ROOT object name, auto-generated if omitted
@@ -73,125 +103,100 @@ scratch_damaurer_MC_pw_ppi0g_p3g::scratch_damaurer_MC_pw_ppi0g_p3g(const string&
     h_VetoEnergies = hfTagger->makeTH1D("Veto Energies", "E [MeV]", "#", Veto_Energy_bins, "h_VetoEnergies");
 
 
-    h_PolarAngles = hfTheta->makeTH1D("Polarangles",     // title
+    h_ALL_PolarAngles = hfOnlyAngles->makeTH1D("All candidate polarangles",     // title
                                        "#Theta [deg]", "#",     // xlabel, ylabel
                                        theta_bins,  // our binnings
-                                       "h_PolarAngles", false     // ROOT object name, auto-generated if omitted
+                                       "h_ALL_PolarAngles", false     // ROOT object name, auto-generated if omitted
                                        );
 
-    h_ProtonPolarAngles = hfTheta->makeTH1D("Proton Polarangles",     // title
-                                       "#Theta [deg]", "#",     // xlabel, ylabel
-                                       theta_bins,  // our binnings
-                                       "h_ProtonPolarAngles", false     // ROOT object name, auto-generated if omitted
-                                       );
-
-    h_PhotonPolarAngles = hfTheta->makeTH1D("Photon Polarangles",     // title
-                                       "#Theta [deg]", "#",     // xlabel, ylabel
-                                       theta_bins,  // our binnings
-                                       "h_PhotonPolarAngles", false    // ROOT object name, auto-generated if omitted
-                                       );
-
-    h_PhotonPolarAngles_CB = hfTheta->makeTH1D("Photon Polarangles CB",     // title
-                                       "#Theta [deg]", "#",     // xlabel, ylabel
-                                       theta_bins_CB,  // our binnings
-                                       "h_PhotonPolarAngles_CB", false    // ROOT object name, auto-generated if omitted
-                                       );
-
-    h_PhotonPolarAngles_TAPS = hfTheta->makeTH1D("Photon Polarangles TAPS",     // title
-                                       "#Theta [deg]", "#",     // xlabel, ylabel
-                                       theta_bins_TAPS,  // our binnings
-                                       "h_PhotonPolarAngles_TAPS", false    // ROOT object name, auto-generated if omitted
-                                       );
-
-    h_AzimuthAngles = hfPhi->makeTH1D("AzimuthAngles",     // title
+    h_ALL_AzimuthAngles = hfOnlyAngles->makeTH1D("All candidate azimuthangles",     // title
                                        "#Phi [deg]", "#",     // xlabel, ylabel
                                        phi_bins,  // our binnings
-                                       "h_AzimuthAngles", false     // ROOT object name, auto-generated if omitted
+                                       "h_ALL_AzimuthAngles", false     // ROOT object name, auto-generated if omitted
                                        );
 
-    h_PhotonAzimuthAngles = hfPhi->makeTH1D("Photon AzimuthAngles",     // title
-                                       "#Phi [deg]", "#",     // xlabel, ylabel
-                                       phi_bins,  // our binnings
-                                       "h_PhotonAzimuthAngles", false     // ROOT object name, auto-generated if omitted
-                                       );
+    h_missingChaPolarAngles = hfOnlyAngles->makeTH1D("Missing particle polarangles",     // title
+                                                    "#Theta [deg]", "#",     // xlabel, ylabel
+                                                    theta_bins,  // our binnings
+                                                    "h_missingChaPolarAngles", false     // ROOT object name, auto-generated if omitted
+                                                    );
 
-    h_ProtonAzimuthAngles = hfPhi->makeTH1D("Proton AzimuthAngles",     // title
-                                       "#Phi [deg]", "#",     // xlabel, ylabel
-                                       phi_bins,  // our binnings
-                                       "h_ProtonAzimuthAngles", false     // ROOT object name, auto-generated if omitted
-                                       );
+    h_missingChaAzimuthAngles = hfOnlyAngles->makeTH1D("Missing particle azimuthangles",     // title
+                                                    "#Phi [deg]", "#",     // xlabel, ylabel
+                                                    phi_bins,  // our binnings
+                                                    "h_missingChaAzimuthAngles", false     // ROOT object name, auto-generated if omitted
+                                                    );
 
-    h_PhotonIm = hfIm->makeTH1D("Photons invariant mass",     // title
-                                  "M [MeV]", "#",     // xlabel, ylabel
-                                  Im_photon_bins,  // our binnings
-                                  "h_PhotonIm", false     // ROOT object name, auto-generated if omitted
-                                  );
+    h_3gPolarAngles = hfOnlyAngles->makeTH1D("Rec. Photons polarangles",     // title
+                                             "#Theta [deg]", "#",     // xlabel, ylabel
+                                             theta_bins,  // our binnings
+                                             "h_3gPolarAngles", false     // ROOT object name, auto-generated if omitted
+                                             );
 
-    h_ProtonIm = hfIm->makeTH1D("Protons invariant mass",     // title
-                                  "M [MeV]", "#",     // xlabel, ylabel
-                                  Im_proton_bins,  // our binnings
-                                  "h_ProtonIm", false     // ROOT object name, auto-generated if omitted
-                                  );
+    h_3gPolarAnglesCB = hfOnlyAngles->makeTH1D("Rec. Photons polarangles only in CB",     // title
+                                             "#Theta [deg]", "#",     // xlabel, ylabel
+                                             theta_bins_CB,  // our binnings
+                                             "h_3gPolarAnglesCB", false     // ROOT object name, auto-generated if omitted
+                                             );
 
-    h_ProtonPeak = hfIm->makeTH1D("Missing particle reconstructed events around proton mass",     // title
-                                  "M [MeV]", "#",     // xlabel, ylabel
-                                  Im_proton_bins,  // our binnings
-                                  "h_ProtonImAbove80", false     // ROOT object name, auto-generated if omitted
-                                  );
+    h_3gPolarAnglesTAPS = hfOnlyAngles->makeTH1D("Rec. Photons polarangles only in TAPS",     // title
+                                             "#Theta [deg]", "#",     // xlabel, ylabel
+                                             theta_bins_TAPS,  // our binnings
+                                             "h_3gPolarAnglesTAPS", false     // ROOT object name, auto-generated if omitted
+                                             );
 
+    h_3gAzimuthAngles = hfOnlyAngles->makeTH1D("Rec. Photons azimuthangles",     // title
+                                               "#Phi [deg]", "#",     // xlabel, ylabel
+                                               phi_bins,  // our binnings
+                                               "h_3gAzimuthAngles", false     // ROOT object name, auto-generated if omitted
+                                               );
 
-    h_PhotonETheta = hfEnergy->makeTH2D("Photon energy vs theta", //title
+    h_3g_EvTheta_CB = hf_wpi0g_EvsTheta->makeTH2D("Photon energy vs theta only in CB", //title
                                        "Theta [deg]","E [MeV]",  // xlabel, ylabel
-                                       theta_bins, E_Photon_bins,    // our binnings
-                                       "h_PhotonETheta", true    // ROOT object name, auto-generated if omitted
+                                       theta_bins_CB, E_photon_bins,    // our binnings
+                                       "h_3g_EvTheta_CB", true    // ROOT object name, auto-generated if omitted
                                        );
 
-    h_PhotonETheta_CB = hfEnergy->makeTH2D("Photon energy vs theta", //title
+    h_3g_EvTheta_TAPS = hf_wpi0g_EvsTheta->makeTH2D("Photon energy vs theta only in TAPS", //title
                                        "Theta [deg]","E [MeV]",  // xlabel, ylabel
-                                       theta_bins_CB, E_Photon_bins,    // our binnings
-                                       "h_PhotonETheta_CB", true    // ROOT object name, auto-generated if omitted
+                                       theta_bins_TAPS, E_photon_bins,    // our binnings
+                                       "h_3g_EvTheta_TAPS", true    // ROOT object name, auto-generated if omitted
                                        );
 
-    h_PhotonETheta_TAPS = hfEnergy->makeTH2D("Photon energy vs theta", //title
+    h_missingP_EvTheta = hf_wpi0g_EvsTheta->makeTH2D("Missing particle energy vs theta", //title
                                        "Theta [deg]","E [MeV]",  // xlabel, ylabel
-                                       theta_bins_TAPS, E_Photon_bins,    // our binnings
-                                       "h_PhotonETheta_TAPS", true    // ROOT object name, auto-generated if omitted
+                                       theta_bins, E_missingP_bins,    // our binnings
+                                       "h_missingP_EvTheta", true    // ROOT object name, auto-generated if omitted
                                        );
 
-    h_ProtonETheta = hfEnergy->makeTH2D("Proton energy vs theta", //title
+    h_w_EvTheta = hf_wpi0g_EvsTheta->makeTH2D("Rec. omega meson energy vs theta", //title
+                                                 "Theta [deg]","E [MeV]",  // xlabel, ylabel
+                                                 theta_bins, E_omega_bins,    // our binnings
+                                                 "h_w_EvTheta", true    // ROOT object name, auto-generated if omitted
+                                                 );
+
+    h_wg_EvTheta = hf_wpi0g_EvsTheta->makeTH2D("Rec. omega decay-photon energy vs theta", //title
+                                       "Theta [deg]","E [MeV]",  // xlabel, ylabel
+                                       theta_bins, E_photon_bins,    // our binnings
+                                       "h_wg_EvTheta", true    // ROOT object name, auto-generated if omitted
+                                       );
+
+    h_wpi0_EvTheta = hf_wpi0g_EvsTheta->makeTH2D("Rec. Pi0 energy vs theta", //title
                                         "Theta [deg]","E [MeV]", // xlabel, ylabel
-                                        theta_bins, E_Proton_bins,    // our binnings
-                                        "h_ProtonETheta", true    // ROOT object name, auto-generated if omitted
+                                        theta_bins, E_pi0_bins,    // our binnings
+                                        "h_wpi0_EvTheta", true    // ROOT object name, auto-generated if omitted
                                         );
 
-    h_PhotonEPhi = hfEnergy->makeTH2D("Photon energy vs phi", //title
-                                       "Phi [deg]","E [MeV]",  // xlabel, ylabel
-                                       phi_bins, E_Photon_bins,    // our binnings
-                                       "h_PhotonEPhi", true    // ROOT object name, auto-generated if omitted
-                                       );
-
-    h_ProtonEPhi = hfEnergy->makeTH2D("Proton energy vs phi", //title
-                                        "Phi [deg]","E [MeV]", // xlabel, ylabel
-                                        phi_bins, E_Proton_bins,    // our binnings
-                                        "h_ProtonEPhi", true    // ROOT object name, auto-generated if omitted
-                                        );
-
-    h_Reconstructed_Data_Statistics = hfStatistics->makeTH1D("Statistics Hist",     // title
-                                     "Cases", "Reconstruction efficiency",     // xlabel, ylabel
-                                     statistic_bins,  // our binnings
-                                     "h_Reconstructed_Data_Statistics", true    // ROOT object name, auto-generated if omitted
-                                     );
-
-    h_doubly_ap_DCS_reconstructed_lab = hfCrossCheck->makeTH2D("Cross section check in lab-frame", //title
+    h_doubly_wp_DCS_reconstructed_lab = hfCrossCheck->makeTH2D("Cross section check in lab-frame", //title
                                                                         "cos_Theta [deg]","sqrt_S [GeV]", // xlabel, ylabel
                                                                         cos_bins, sqrt_S_bins,    // our binnings
-                                                                        "h_doubly_ap_DCS_reconstructed_lab", true    // ROOT object name, auto-generated if omitted
+                                                                        "h_doubly_wp_DCS_reconstructed_lab", true    // ROOT object name, auto-generated if omitted
                                                                         );
     
-    h_doubly_ap_DCS_reconstructed_cmFrame = hfCrossCheck->makeTH2D("Cross section check in cm-frame", //title
+    h_doubly_wp_DCS_reconstructed_cmFrame = hfCrossCheck->makeTH2D("Cross section check in cm-frame", //title
                                                                         "cos_Theta* [deg]","sqrt_S [GeV]", // xlabel, ylabel
                                                                         cos_bins, sqrt_S_bins,    // our binnings
-                                                                        "h_doubly_ap_DCS_reconstructed_cmFrame", true    // ROOT object name, auto-generated if omitted
+                                                                        "h_doubly_wp_DCS_reconstructed_cmFrame", true    // ROOT object name, auto-generated if omitted
                                                                         );
 
     // define some prompt and random windows (in nanoseconds)
@@ -223,6 +228,7 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
     vector<double> PhotonTheTAPS;
     vector<double> PhotonPhi;
     vector<double> PhotonE;
+    vector<double> wpi0g_times;
 
     for(const auto& cand : candidates.get_iter()) {
         h_VetoEnergies->Fill(cand->VetoEnergy);
@@ -243,37 +249,23 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
 
     //getting access to the pi0 decay photons
 
-    double pi0gg_IM=-100;
-    TParticle pi0gg2g;
+    double wpi0gOnly3g_IM=-100;
+    TParticle w;
+    TParticle pi0;
     TParticle g1;
     TParticle g2;
-    /*
-    vector<bool> g1CB;
-    vector<bool> g1BaF2;
-    vector<bool> g1PbWO;
-    vector<bool> g1undetected;
-    vector<bool> g2CB;
-    vector<bool> g2BaF2;
-    vector<bool> g2PbWO;
-    vector<bool> g2undetected;
-    */
-    bool isg1CB = false;
-    bool isg1BaF2 = false;
-    bool isg1PbWO = false;
-    //bool isg1undetected = false;
-    bool isg2CB = false;
-    bool isg2BaF2 = false;
-    bool isg2PbWO = false;
-    //bool isg2undetected = false;
+    TParticle g3;
 
-    if(NeuCanCaloE.size() == 2){
+    if(NeuCanCaloE.size() == 3){
 
         g1 = TParticle(ParticleTypeDatabase::Photon, neutral[0]);
         g2 = TParticle(ParticleTypeDatabase::Photon, neutral[1]);
+        g3 = TParticle(ParticleTypeDatabase::Photon, neutral[2]);
 
+        /*
         auto g1channel = neutral[0]->FindCaloCluster()->CentralElement;
         auto g2channel = neutral[1]->FindCaloCluster()->CentralElement;
-
+        auto g3channel = neutral[2]->FindCaloCluster()->CentralElement;       
         if(neutral[0]->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB)
         {isg1CB = true;}
         if(neutral[0]->FindCaloCluster()->DetectorType == Detector_t::Type_t::TAPS){
@@ -289,36 +281,32 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
         }
         //if(!isg2CB && !isg2BaF2 && !isg2PbWO)
         //{isg2undetected = true;}
+        */
 
-        double pi0gg2g_time = 0;
+        TParticle wpi0gOnly3g;
+        double wpi0gOnly3g_time = 0;
         for (const auto& photon : neutral) {
-            pi0gg2g+=TParticle(ParticleTypeDatabase::Photon, photon);
-            pi0gg2g_time+=photon->Time;
+            wpi0gOnly3g += TParticle(ParticleTypeDatabase::Photon, photon);
+            wpi0gOnly3g_time+=photon->Time;
             if(photon->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB)
                 PhotonTheCB.push_back(photon->Theta*radtodeg);
             if(photon->FindCaloCluster()->DetectorType == Detector_t::Type_t::TAPS)
                 PhotonTheTAPS.push_back(photon->Theta*radtodeg);
-
             PhotonThe.push_back(photon->Theta*radtodeg);
             PhotonPhi.push_back(photon->Phi*radtodeg);
             PhotonE.push_back(photon->CaloEnergy);
         }
-        pi0gg_IM = pi0gg2g.M();
-        /*
-        g1CB.push_back(isg1CB);
-        g1BaF2.push_back(isg1BaF2);
-        g1PbWO.push_back(isg1PbWO);
-        g1undetected.push_back(isg1undetected);
-        g2CB.push_back(isg2CB);
-        g2BaF2.push_back(isg2BaF2);
-        g2PbWO.push_back(isg2PbWO);
-        g2undetected.push_back(isg2undetected);
-        */
+        wpi0gOnly3g_IM = wpi0gOnly3g.M();
+        wpi0gOnly3g_time = wpi0gOnly3g_time/2.;
+        wpi0g_times.push_back(wpi0gOnly3g_time);
+
     }
 
     //Looping over the taggerhits
 
-    TParticle proton;
+    TParticle proton_missing_particle;
+    TParticle omega;
+    TParticle pion;
     for (const auto& taggerhit : event.Reconstructed().TaggerHits) { // Event loop
 
         promptrandom.SetTaggerTime(triggersimu.GetCorrectedTaggerTime(taggerhit));
@@ -329,12 +317,13 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
         TLorentzVector InitialPhotonVec = taggerhit.GetPhotonBeam();
         TLorentzVector InitialProtonVec = LorentzVec(vec3(0,0,0),ParticleTypeDatabase::Proton.Mass());
 
-        proton = TParticle(ParticleTypeDatabase::Proton,(TLorentzVector)(InitialPhotonVec+InitialProtonVec-(g1+g2)));
+        proton_missing_particle = TParticle(ParticleTypeDatabase::Proton,(TLorentzVector)(InitialPhotonVec+InitialProtonVec-(g1+g2+g3)));
+        omega = TParticle(ParticleTypeDatabase::Omega,(TLorentzVector)(g1+g2+g3));
 
-        TLorentzVector Lpion = (TLorentzVector)(g1+g2);
+        TLorentzVector Lw = (TLorentzVector)(omega);
         TLorentzVector Linitial = (TLorentzVector)(InitialPhotonVec+InitialProtonVec);
-        TLorentzVector LpionBoosted = Lpion;
-        LpionBoosted.Boost(-Linitial.BoostVector());
+        TLorentzVector LwBoosted = Lw;
+        LwBoosted.Boost(-Linitial.BoostVector());
 
         //Adding selections & filling histograms
 
@@ -343,15 +332,16 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
         h_TaggerTime->Fill(taggerhit.Time, weight);
         h_InitialBeamE->Fill(InitialPhotonVec.E()/1000,weight);
 
+        /*
         if(NeuCanCaloE.size() == 2){
 
-            h_ProtonIm->Fill(proton.M(),weight);
-            t.ProtonIm = proton.M();
+            h_ProtonIm->Fill(proton_missing_particle.M(),weight);
+            t.ProtonIm = proton_missing_particle.M();
 
-            if(proton.M()<(mp+sigma) && proton.M()>(mp-sigma)){
+            if(proton_missing_particle.M()<(mp+sigma) && proton_missing_particle.M()>(mp-sigma)){
 
-                h_PhotonIm->Fill(pi0gg_IM,weight);
-                t.PhotonIm = pi0gg_IM;
+                h_PhotonIm->Fill(wpi0g_3g_IM,weight);
+                t.PhotonIm = wpi0g_3g_IM;
 
                 for (unsigned int i=0; i<The.size(); i++){
                     h_PolarAngles->Fill(The[i],weight);
@@ -366,8 +356,8 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
                     h_PhotonETheta->Fill(PhotonThe[i],PhotonE[i],weight);
                     //if (PhotonThe[i] < 20){PhotonPolarAngles_TAPS += 1.0;}
                     //if (PhotonThe[i] >= 20){PhotonPolarAngles_CB += 1.0;}
-                    h_doubly_ap_DCS_reconstructed_lab->Fill(cos(Lpion.Theta()),Linitial.M(),weight);
-                    h_doubly_ap_DCS_reconstructed_cmFrame->Fill(cos(Linitial.Angle(LpionBoosted.Vect())),Linitial.M(),weight);
+                    h_doubly_ap_DCS_reconstructed_lab->Fill(cos(Lw.Theta()),Linitial.M(),weight);
+                    h_doubly_ap_DCS_reconstructed_cmFrame->Fill(cos(Linitial.Angle(LwBoosted.Vect())),Linitial.M(),weight);
                 }
 
                 for (unsigned int i=0; i<PhotonTheCB.size(); i++){
@@ -380,20 +370,20 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
                     h_PhotonETheta_TAPS->Fill(PhotonTheTAPS[i],PhotonE[i],weight);
                 }
 
-                h_ProtonPolarAngles->Fill(proton.Theta()*radtodeg,weight);
-                h_ProtonETheta->Fill(proton.Theta()*radtodeg,proton.E,weight);
-                if (proton.Theta()*radtodeg < 20){ProtonPolarAngles_TAPS += 1.0;}
-                if (proton.Theta()*radtodeg >= 20 && proton.Theta()*radtodeg < 160){ProtonPolarAngles_CB += 1.0;}
+                h_ProtonPolarAngles->Fill(proton_missing_particle.Theta()*radtodeg,weight);
+                h_ProtonETheta->Fill(proton_missing_particle.Theta()*radtodeg,proton_missing_particle.E,weight);
+                if (proton_missing_particle.Theta()*radtodeg < 20){ProtonPolarAngles_TAPS += 1.0;}
+                if (proton_missing_particle.Theta()*radtodeg >= 20 && proton_missing_particle.Theta()*radtodeg < 160){ProtonPolarAngles_CB += 1.0;}
 
                 for (unsigned int i=0; i<PhotonPhi.size(); i++){
                     h_PhotonAzimuthAngles->Fill(PhotonPhi[i],weight);
                     h_PhotonEPhi->Fill(PhotonPhi[i],PhotonE[i],weight);
                 }
 
-                h_ProtonAzimuthAngles->Fill(proton.Phi()*radtodeg,weight);
-                h_ProtonEPhi->Fill(proton.Phi()*radtodeg,proton.E,weight);
+                h_ProtonAzimuthAngles->Fill(proton_missing_particle.Phi()*radtodeg,weight);
+                h_ProtonEPhi->Fill(proton_missing_particle.Phi()*radtodeg,proton_missing_particle.E,weight);
 
-                h_ProtonPeak->Fill(proton.M(),weight);
+                h_ProtonPeak->Fill(proton_missing_particle.M(),weight);
 
                 //Filling the statistical histogram
 
@@ -411,25 +401,16 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
                 weight_res += weight;
             }
         }
+        */
 
         //Filling the tree for further analysis
 
         t.TaggW = promptrandom.FillWeight();
         t.nClusters = event.Reconstructed().Clusters.size();
-        t.PolarAngles = The;
+        t.PhotonAzimuthAngles = PhotonPhi;
         t.PhotonPolarAngles = PhotonThe;
         t.PhotonPolarAnglesCB = PhotonTheCB;
         t.PhotonPolarAnglesTAPS = PhotonTheTAPS;
-        t.ProtonPolarAngles = proton.Theta()*radtodeg;
-        t.AzimuthAngles = Phi;
-        t.PhotonAzimuthAngles = PhotonPhi;
-        t.ProtonAzimuthAngles = proton.Phi()*radtodeg;
-        t.ProtonE = proton.E;
-        t.PhotonE = PhotonE;      
-        t.ProtonIm = proton.M();
-        t.PhotonIm = pi0gg_IM;
-        t.InitialBeamE = InitialPhotonVec.E();
-
         t.Tree->Fill();
 
     }      
@@ -439,26 +420,7 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
 }
 
 void scratch_damaurer_MC_pw_ppi0g_p3g::ShowResult()
-{
-    h_Reconstructed_Data_Statistics->SetBinContent(1*steps,(float)count_first/(float)weight_res);
-    h_Reconstructed_Data_Statistics->SetBinContent(1*steps+1,(float)count_first/(float)weight_res);
-    h_Reconstructed_Data_Statistics->SetBinContent(2*steps,(float)count_second/(float)weight_res);
-    h_Reconstructed_Data_Statistics->SetBinContent(2*steps+1,(float)count_second/(float)weight_res);
-    h_Reconstructed_Data_Statistics->SetBinContent(3*steps,(float)count_third/(float)weight_res);
-    h_Reconstructed_Data_Statistics->SetBinContent(3*steps+1,(float)count_third/(float)weight_res);
-    h_Reconstructed_Data_Statistics->SetBinContent(4*steps,(float)count_fourth/(float)weight_res);
-    h_Reconstructed_Data_Statistics->SetBinContent(4*steps+1,(float)count_fourth/(float)weight_res);
-    h_Reconstructed_Data_Statistics->SetBinContent(5*steps,(float)count_fifth/(float)weight_res);
-    h_Reconstructed_Data_Statistics->SetBinContent(5*steps+1,(float)count_fifth/(float)weight_res);
-    h_Reconstructed_Data_Statistics->SetBinContent(6*steps,(float)count_sixth/(float)weight_res);
-    h_Reconstructed_Data_Statistics->SetBinContent(6*steps+1,(float)count_sixth/(float)weight_res);
-    /*
-    h_Reconstructed_Data_Statistics->SetBinContent(7*steps,weight_res);
-    h_Reconstructed_Data_Statistics->SetBinContent(7*steps,count_seventh);
-    h_Reconstructed_Data_Statistics->SetBinContent(8*steps,count_eigth);
-    h_Reconstructed_Data_Statistics->SetBinContent(9*steps,count_nineth);
-    h_Reconstructed_Data_Statistics->SetBinContent(10*steps,count_tenth);
-    */
+{    
 
     ant::canvas(GetName()+": tagger stuff")
             << h_TaggerTime
@@ -468,52 +430,59 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ShowResult()
             << TTree_drawable(t.Tree, "nClusters >> (20,0,20)", "TaggW")
             << endc; // actually draws the canvas
 
-    ant::canvas(GetName()+": Polarangles whole setup")
-            << h_PolarAngles
-            << h_PhotonPolarAngles
-            << h_ProtonPolarAngles
+    ant::canvas(GetName()+": Polarangles in whole setup")
+            << h_ALL_PolarAngles
+            << h_3gPolarAngles
+            << h_missingChaPolarAngles
             << endc; // actually draws the canvas
 
-    ant::canvas(GetName()+": Photon Polarangles CB/TAPS")
-            << h_PhotonPolarAngles_CB
-            << h_PhotonPolarAngles_TAPS
-            << h_Reconstructed_Data_Statistics
+    ant::canvas(GetName()+": Azimuthangles in whole setup")
+            << h_ALL_AzimuthAngles
+            << h_3gAzimuthAngles
+            << h_missingChaAzimuthAngles
             << endc; // actually draws the canvas
 
-    ant::canvas(GetName()+": Azimuthangles")
-            << h_AzimuthAngles
-            << h_PhotonAzimuthAngles
-            << h_ProtonAzimuthAngles
+    ant::canvas(GetName()+": 3 Photons Polarangles in CB/TAPS")
+            << h_3gPolarAnglesCB
+            << h_3gPolarAnglesTAPS
             << endc; // actually draws the canvas
 
-    ant::canvas(GetName()+": Energy vs angles")
+    ant::canvas(GetName()+": Particle Kinematics: Energy vs angles")
             << drawoption("pcolz")
-            << h_PhotonETheta
-            << h_ProtonETheta
-            << h_PhotonEPhi
-            << h_ProtonEPhi
+            << h_w_EvTheta
+            << h_wg_EvTheta
+            << h_wpi0_EvTheta
+            << h_missingP_EvTheta
             << endc; // actually draws the canvas
 
     ant::canvas(GetName()+": Photon energy vs angles CB/TAPS")
             << drawoption("pcolz")
-            << h_PhotonETheta_CB
-            << h_PhotonETheta_TAPS
+            << h_3g_EvTheta_CB
+            << h_3g_EvTheta_TAPS
             << endc; // actually draws the canvas
 
-    ant::canvas(GetName()+": Particle Invariant masses")
-            << h_PhotonIm
-            << h_ProtonIm
-            << h_ProtonPeak
-            << endc; // actually draws the canvas
+    for (unsigned int i=0; i<nrCuts; i++){
 
-    ant::canvas(GetName()+": Statistics histogram")
-            << h_Reconstructed_Data_Statistics
-            << endc; // actually draws the canvas
+        stringstream ss;
+        ss << i;
+        string myString = ss.str();
+
+        ant::canvas(GetName()+": Rec. particles invariant masses after "+myString+ " applied cuts")
+                << h_missing_proton_Im[i]
+                << h_wOnly3g_Im[i]
+                << h_Pi0Only2g_Im[i]
+                << endc; // actually draws the canvas
+
+        ant::canvas(GetName()+": w_pi0g angles in cm of rec. omega meson after "+myString+ " applied cuts")
+                << h_pi0g_BackToBack[i]
+                << endc; // actually draws the canvas
+
+    }
 
     ant::canvas(GetName()+": Cross section checks")
             << drawoption("Surf")
-            << h_doubly_ap_DCS_reconstructed_lab
-            << h_doubly_ap_DCS_reconstructed_cmFrame
+            << h_doubly_wp_DCS_reconstructed_lab
+            << h_doubly_wp_DCS_reconstructed_cmFrame
             << endc; // actually draws the canvas
 
 }
@@ -521,6 +490,27 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ShowResult()
 void scratch_damaurer_MC_pw_ppi0g_p3g::Finish()
 {
 
+    int max_particles_detected = h_ALL_PolarAngles->GetEntries();
+    int Photons_max_detected = h_3gPolarAngles->GetEntries();
+    int MissingCHA_max_detected = h_missingChaPolarAngles->GetEntries();
+
+    PhotonPolarAngles_TAPS_frac = (h_3gPolarAnglesTAPS->GetEntries())/Photons_max_detected;
+    PhotonPolarAngles_CB_frac = (h_3gPolarAnglesCB->GetEntries())/Photons_max_detected;
+    //ProtonPolarAngles_TAPS_frac = ProtonPolarAngles_TAPS/MissingCHA_max_detected;
+    //ProtonPolarAngles_CB_frac = ProtonPolarAngles_CB/MissingCHA_max_detected;
+
+    PhotonPolarAngles_TAPS_err = sqrt((PhotonPolarAngles_TAPS_frac*(1-PhotonPolarAngles_TAPS_frac))/Photons_max_detected);
+    PhotonPolarAngles_CB_err = sqrt((PhotonPolarAngles_CB_frac*(1-PhotonPolarAngles_CB_frac))/Photons_max_detected);
+    //ProtonPolarAngles_TAPS_err = sqrt((ProtonPolarAngles_TAPS_frac*(1-ProtonPolarAngles_TAPS_frac))/MissingCHA_max_detected);
+    //ProtonPolarAngles_CB_err = sqrt((ProtonPolarAngles_CB_frac*(1-ProtonPolarAngles_CB_frac))/MissingCHA_max_detected);
+
+    cout << "" << endl;
+    cout << "Finished processing events, total #events: " << h_nClusters->GetEntries() << endl;
+    cout << "Integrated amount of found clusters in total: " << h_nClusters->Integral() << endl;
+    cout << "Detection efficiency: " << max_particles_detected/max_particles << endl;
+    cout << "Max number of detected photons: " << Photons_max_detected << endl;
+
+    /*
     int max_particles_detected = h_PolarAngles->GetEntries();
     int Photons_max_detected = h_PhotonPolarAngles->GetEntries();
     int Protons_max_detected = h_ProtonPolarAngles->GetEntries();
@@ -557,6 +547,7 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::Finish()
     //cout << "8) BaF2 & not detected: " << (float)100*((float)count_eigth/(float)weight_res) << "%" << endl;
     //cout << "9) CB & not detected: " << (float)100*((float)count_nineth/(float)weight_res) << "%" << endl;
     //cout << "10) Both not detected: " << (float)100*((float)count_tenth/(float)weight_res) << "%" << endl;
+    */
 
 }
 
