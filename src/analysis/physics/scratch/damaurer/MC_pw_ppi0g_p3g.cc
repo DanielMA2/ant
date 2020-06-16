@@ -1,4 +1,4 @@
-#include "MC_pw_ppi0g_p3g.h"
+﻿#include "MC_pw_ppi0g_p3g.h"
 #include "base/WrapTFile.h"
 
 #include "base/ParticleType.h"
@@ -30,9 +30,11 @@ scratch_damaurer_MC_pw_ppi0g_p3g::scratch_damaurer_MC_pw_ppi0g_p3g(const string&
     taps = make_shared<expconfig::detector::TAPS_2013_11>(false, false, false);
 
     const BinSettings tagger_time_bins(1000, -200, 200);
-    const BinSettings Veto_Energy_bins(1000, 0, 40);
+    const BinSettings Veto_Energy_bins(100, 0, 200);
+    const BinSettings Calo_Energy_bins(100, 0, 200);
     const BinSettings initialBeamE_bins(1000,1,1.6);
     const BinSettings cos_bins(100,-1,1);
+    //const BinSettings cos_bins_BackToBack(1000,-1,1);
     const BinSettings sqrt_S_bins(100,s_square_min,s_square_max);
     const BinSettings phi_bins(100, -180, 180);
 
@@ -42,7 +44,7 @@ scratch_damaurer_MC_pw_ppi0g_p3g::scratch_damaurer_MC_pw_ppi0g_p3g(const string&
 
     const BinSettings Im_missing_proton_bins(100, 0, 1600);
     const BinSettings Im_omega_bins(100, 0, 1600);
-    const BinSettings Im_pi0_bins(100, 0, 1600);
+    const BinSettings Im_pi0_bins(100, 0, 1000);
 
     const BinSettings E_photon_bins(100, 0, 1600);
     const BinSettings E_missingP_bins(100, 0, 1600);
@@ -59,32 +61,66 @@ scratch_damaurer_MC_pw_ppi0g_p3g::scratch_damaurer_MC_pw_ppi0g_p3g(const string&
     auto hfCrossCheck = new HistogramFactory("Cross section check", HistFac, "");
     auto hf_wpi0g_EvsTheta = new HistogramFactory("Energy vs theta dists", HistFac, "");
     auto hf_wpi0g_IM = new HistogramFactory("Invariant mass dists", HistFac, "");
-    auto hf_extras = new HistogramFactory("Some additional extra-hists", HistFac, "");
+    //auto hf_extras = new HistogramFactory("Some additional extra-hists", HistFac, "");
 
-    for (unsigned int i=0; i<nrCuts; i++){
+    for (unsigned int i=0; i<nrCuts_IM; i++){
+        stringstream ss;
+        ss << i;
+        string myString = ss.str();
 
         h_missing_proton_Im[i] = hf_wpi0g_IM->makeTH1D("Missing particle invariant mass",     // title
                                                              "M [MeV]", "#",     // xlabel, ylabel
                                                              Im_missing_proton_bins,  // our binnings
-                                                             "h_missing_proton_Im", false     // ROOT object name, auto-generated if omitted
+                                                             "h_missing_proton_Im"+myString, false     // ROOT object name, auto-generated if omitted
                                                              );
         h_wOnly3g_Im[i] = hf_wpi0g_IM->makeTH1D("Rec. Omega invariant mass",     // title
                                             "M [MeV]", "#",     // xlabel, ylabel
                                             Im_omega_bins,  // our binnings
-                                            "h_wOnly3g_Im", false     // ROOT object name, auto-generated if omitted
+                                            "h_wOnly3g_Im"+myString, false     // ROOT object name, auto-generated if omitted
                                             );
+    }
+
+    for (unsigned int i=0; i<nrCuts_IM_pi0; i++){
+        stringstream ss;
+        ss << i;
+        string myString = ss.str();
+
         h_Pi0Only2g_Im[i] = hf_wpi0g_IM->makeTH1D("Rec. Pi0 invariant mass",     // title
-                                             "M [MeV]", "#",     // xlabel, ylabel
-                                             Im_pi0_bins,  // our binnings
-                                             "h_Pi0Only2g_Im", false     // ROOT object name, auto-generated if omitted
-                                             );
-        h_pi0g_BackToBack[i] = hfOnlyAngles->makeTH1D("w_pi0g angles in cm of rec. omega meson",     // title
-                                                         "cos_Theta* [deg]", "#",     // xlabel, ylabel
-                                                         cos_bins,  // our binnings
-                                                         "h_pi0g_BackToBack", false     // ROOT object name, auto-generated if omitted
-                                                         );
+                                         "M [MeV]", "#",     // xlabel, ylabel
+                                         Im_pi0_bins,  // our binnings
+                                         "h_Pi0Only2g_Im"+myString, false     // ROOT object name, auto-generated if omitted
+                                         );
 
     }
+
+    for (unsigned int i=0; i<nrCuts_VetoSel; i++){
+        stringstream ss;
+        ss << i;
+        string myString = ss.str();
+
+        h_VetoVSCaloEnergies[i] = hfTagger->makeTH2D("Deposited Veto VS Calo energy",     // title
+                                         "Veto E [MeV]","Calo E [MeV]",  // xlabel, ylabel
+                                         Veto_Energy_bins, Calo_Energy_bins,    // our binnings
+                                         "h_VetoVSCaloEnergies"+myString, true    // ROOT object name, auto-generated if omitted
+                                         );
+
+    }
+
+    /*
+    for (unsigned int i=0; i<nrCuts_BackToBack; i++){
+        stringstream ss;
+        ss << i;
+        string myString = ss.str();
+
+        h_pi0g_BackToBack[i] = hfOnlyAngles->makeTH1D("w_pi0g angles in cm of rec. omega meson",     // title
+                                                     "cos_Theta*", "#",     // xlabel, ylabel
+                                                     cos_bins_BackToBack,  // our binnings
+                                                     "h_pi0g_BackToBack"+myString, false     // ROOT object name, auto-generated if omitted
+                                                     );
+
+    }
+    */
+
 
     h_TaggerTime = hfTagger->makeTH1D("Tagger Time",     // title
                                     "t [ns]", "#",     // xlabel, ylabel
@@ -188,13 +224,13 @@ scratch_damaurer_MC_pw_ppi0g_p3g::scratch_damaurer_MC_pw_ppi0g_p3g(const string&
                                         );
 
     h_doubly_wp_DCS_reconstructed_lab = hfCrossCheck->makeTH2D("Cross section check in lab-frame", //title
-                                                                        "cos_Theta [deg]","sqrt_S [GeV]", // xlabel, ylabel
+                                                                        "cos_Theta","sqrt_S [GeV]", // xlabel, ylabel
                                                                         cos_bins, sqrt_S_bins,    // our binnings
                                                                         "h_doubly_wp_DCS_reconstructed_lab", true    // ROOT object name, auto-generated if omitted
                                                                         );
     
     h_doubly_wp_DCS_reconstructed_cmFrame = hfCrossCheck->makeTH2D("Cross section check in cm-frame", //title
-                                                                        "cos_Theta* [deg]","sqrt_S [GeV]", // xlabel, ylabel
+                                                                        "cos_Theta*","sqrt_S [GeV]", // xlabel, ylabel
                                                                         cos_bins, sqrt_S_bins,    // our binnings
                                                                         "h_doubly_wp_DCS_reconstructed_cmFrame", true    // ROOT object name, auto-generated if omitted
                                                                         );
@@ -232,9 +268,11 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
 
     for(const auto& cand : candidates.get_iter()) {
         h_VetoEnergies->Fill(cand->VetoEnergy);
+        h_VetoVSCaloEnergies[0]->Fill(cand->VetoEnergy,cand->CaloEnergy);
         The.push_back(cand->Theta*radtodeg);
         Phi.push_back(cand->Phi*radtodeg);
-        if(cand->VetoEnergy == 0) {
+        if(cand->VetoEnergy <= maxVeto) {
+            h_VetoVSCaloEnergies[1]->Fill(cand->VetoEnergy,cand->CaloEnergy);
             neutral.emplace_back(cand);
             NeuCanCluSize.push_back(cand->ClusterSize);
             NeuCanCaloE.push_back(cand->CaloEnergy);
@@ -250,38 +288,15 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
     //getting access to the pi0 decay photons
 
     double wpi0gOnly3g_IM=-100;
-    TParticle w;
-    TParticle pi0;
     TParticle g1;
     TParticle g2;
     TParticle g3;
 
-    if(NeuCanCaloE.size() == 3){
+    if(NeuCanCaloE.size() == nrSel){
 
         g1 = TParticle(ParticleTypeDatabase::Photon, neutral[0]);
         g2 = TParticle(ParticleTypeDatabase::Photon, neutral[1]);
         g3 = TParticle(ParticleTypeDatabase::Photon, neutral[2]);
-
-        /*
-        auto g1channel = neutral[0]->FindCaloCluster()->CentralElement;
-        auto g2channel = neutral[1]->FindCaloCluster()->CentralElement;
-        auto g3channel = neutral[2]->FindCaloCluster()->CentralElement;       
-        if(neutral[0]->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB)
-        {isg1CB = true;}
-        if(neutral[0]->FindCaloCluster()->DetectorType == Detector_t::Type_t::TAPS){
-            if(taps->IsPbWO4(g1channel)){isg1PbWO = true;}else{isg1BaF2 = true;}
-        }
-        //if(!isg1CB && !isg1BaF2 && !isg1PbWO)
-        //{isg1undetected = true;}
-
-        if(neutral[1]->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB)
-        {isg2CB = true;}
-        if(neutral[1]->FindCaloCluster()->DetectorType == Detector_t::Type_t::TAPS){
-            if(taps->IsPbWO4(g2channel)){isg2PbWO = true;}else{isg2BaF2 = true;}
-        }
-        //if(!isg2CB && !isg2BaF2 && !isg2PbWO)
-        //{isg2undetected = true;}
-        */
 
         TParticle wpi0gOnly3g;
         double wpi0gOnly3g_time = 0;
@@ -305,8 +320,8 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
     //Looping over the taggerhits
 
     TParticle proton_missing_particle;
-    TParticle omega;
-    TParticle pion;
+    TParticle omega_tmp;
+
     for (const auto& taggerhit : event.Reconstructed().TaggerHits) { // Event loop
 
         promptrandom.SetTaggerTime(triggersimu.GetCorrectedTaggerTime(taggerhit));
@@ -317,13 +332,15 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
         TLorentzVector InitialPhotonVec = taggerhit.GetPhotonBeam();
         TLorentzVector InitialProtonVec = LorentzVec(vec3(0,0,0),ParticleTypeDatabase::Proton.Mass());
 
-        proton_missing_particle = TParticle(ParticleTypeDatabase::Proton,(TLorentzVector)(InitialPhotonVec+InitialProtonVec-(g1+g2+g3)));
-        omega = TParticle(ParticleTypeDatabase::Omega,(TLorentzVector)(g1+g2+g3));
+        omega_tmp = TParticle(ParticleTypeDatabase::Omega,(TLorentzVector)(g1+g2+g3));
+        proton_missing_particle = TParticle(ParticleTypeDatabase::Proton,(TLorentzVector)(InitialPhotonVec+InitialProtonVec-omega_tmp));
 
-        TLorentzVector Lw = (TLorentzVector)(omega);
         TLorentzVector Linitial = (TLorentzVector)(InitialPhotonVec+InitialProtonVec);
-        TLorentzVector LwBoosted = Lw;
-        LwBoosted.Boost(-Linitial.BoostVector());
+
+        TLorentzVector Lw_tmp = (TLorentzVector)(omega_tmp);
+
+        //TLorentzVector LpionBoosted = Lpion;
+        //LwBoosted.Boost(-Linitial.BoostVector());
 
         //Adding selections & filling histograms
 
@@ -332,76 +349,116 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
         h_TaggerTime->Fill(taggerhit.Time, weight);
         h_InitialBeamE->Fill(InitialPhotonVec.E()/1000,weight);
 
-        /*
-        if(NeuCanCaloE.size() == 2){
+        if(NeuCanCaloE.size() == nrSel){
 
-            h_ProtonIm->Fill(proton_missing_particle.M(),weight);
-            t.ProtonIm = proton_missing_particle.M();
+            h_wOnly3g_Im[0]->Fill(omega_tmp.M(),weight);
+            h_missing_proton_Im[0]->Fill(proton_missing_particle.M(),weight);
 
-            if(proton_missing_particle.M()<(mp+sigma) && proton_missing_particle.M()>(mp-sigma)){
+            for (unsigned int i=0; i<The.size(); i++){
+                h_ALL_PolarAngles->Fill(The[i],weight);
+            }
 
-                h_PhotonIm->Fill(wpi0g_3g_IM,weight);
-                t.PhotonIm = wpi0g_3g_IM;
+            for (unsigned int i=0; i<Phi.size(); i++){
+                h_ALL_AzimuthAngles->Fill(Phi[i],weight);
+            }
 
-                for (unsigned int i=0; i<The.size(); i++){
-                    h_PolarAngles->Fill(The[i],weight);
+            //t.ProtonIm = proton_missing_particle.M();
+
+            double cut_shift1 = mp*0.15;
+            if(proton_missing_particle.M()>(mp-cut_shift1) && proton_missing_particle.M()<(mp+cut_shift1)){
+
+                h_missing_proton_Im[1]->Fill(proton_missing_particle.M(),weight);
+                h_wOnly3g_Im[1]->Fill(omega_tmp.M(),weight);
+
+                TLorentzVector Lw = Lw_tmp;
+                TLorentzVector Lw_boosted = Lw;
+                Lw_boosted.Boost(-Linitial.BoostVector());
+
+                h_doubly_wp_DCS_reconstructed_lab->Fill(cos(Lw.Theta()),Linitial.M(),weight);
+                h_doubly_wp_DCS_reconstructed_cmFrame->Fill(cos(Linitial.Angle(Lw_boosted.Vect())),Linitial.M(),weight);
+
+                //LorentzBoost-Stuff with opening angle selections:
+
+                /*
+                TParticle wpi0_tmp1 = TParticle(ParticleTypeDatabase::Photon,(TLorentzVector)(g1+g2));
+                TParticle wpi0_tmp2 = TParticle(ParticleTypeDatabase::Photon,(TLorentzVector)(g1+g3));
+                TParticle wpi0_tmp3 = TParticle(ParticleTypeDatabase::Photon,(TLorentzVector)(g2+g3));
+
+                TParticle wg_tmp1 = TParticle(ParticleTypeDatabase::Photon,(TLorentzVector)(g3));
+                TParticle wg_tmp2 = TParticle(ParticleTypeDatabase::Photon,(TLorentzVector)(g2));
+                TParticle wg_tmp3 = TParticle(ParticleTypeDatabase::Photon,(TLorentzVector)(g1));
+
+                TLorentzVector wpi0_tmp1_boosted = (TLorentzVector)wpi0_tmp1;
+                TLorentzVector wpi0_tmp2_boosted = (TLorentzVector)wpi0_tmp2;
+                TLorentzVector wpi0_tmp3_boosted = (TLorentzVector)wpi0_tmp3;
+
+                TLorentzVector wg_tmp1_boosted = (TLorentzVector)wg_tmp1;
+                TLorentzVector wg_tmp2_boosted = (TLorentzVector)wg_tmp2;
+                TLorentzVector wg_tmp3_boosted = (TLorentzVector)wg_tmp3;                
+
+                wpi0_tmp1_boosted.Boost(-Lw.BoostVector());
+                wpi0_tmp2_boosted.Boost(-Lw.BoostVector());
+                wpi0_tmp3_boosted.Boost(-Lw.BoostVector());
+
+                wg_tmp1_boosted.Boost(-Lw.BoostVector());
+                wg_tmp2_boosted.Boost(-Lw.BoostVector());
+                wg_tmp3_boosted.Boost(-Lw.BoostVector());
+
+                double cmAngleComb1 = cos(wpi0_tmp1_boosted.Angle(wg_tmp1_boosted.Vect()));
+                double cmAngleComb2 = cos(wpi0_tmp2_boosted.Angle(wg_tmp2_boosted.Vect()));
+                double cmAngleComb3 = cos(wpi0_tmp3_boosted.Angle(wg_tmp3_boosted.Vect()));
+
+                double array[] = {1.2,1.1,1.4,1.5,0.9};
+                double min_i;
+                double min = 10;
+                int arraySize = sizeof(array)/sizeof(array[0]);
+
+                for (int i=0; i<arraySize; i++){
+                    //array[i] = i;
+                    if(array[i] <= min){min = array[i]; min_i = i;}
+                    cout << "Arrayelement = " << array[i] << endl;
                 }
 
-                for (unsigned int i=0; i<Phi.size(); i++){
-                    h_AzimuthAngles->Fill(Phi[i],weight);
+                */
+
+                TLorentzVector w_decayComb1 = (TLorentzVector)(g1 + g2);
+                TLorentzVector w_decayComb2 = (TLorentzVector)(g1 + g3);
+                TLorentzVector w_decayComb3 = (TLorentzVector)(g2 + g3);
+
+                TParticle wpi0_tmp1 = TParticle(ParticleTypeDatabase::Pi0,(TLorentzVector)(g1+g2));
+                TParticle wpi0_tmp2 = TParticle(ParticleTypeDatabase::Pi0,(TLorentzVector)(g1+g3));
+                TParticle wpi0_tmp3 = TParticle(ParticleTypeDatabase::Pi0,(TLorentzVector)(g2+g3));
+
+                h_Pi0Only2g_Im[0]->Fill((wpi0_tmp1).M(),weight);
+                h_Pi0Only2g_Im[0]->Fill((wpi0_tmp2).M(),weight);
+                h_Pi0Only2g_Im[0]->Fill((wpi0_tmp3).M(),weight);
+
+                TParticle wg_tmp1 = TParticle(ParticleTypeDatabase::Photon,(TLorentzVector)(g3));
+                TParticle wg_tmp2 = TParticle(ParticleTypeDatabase::Photon,(TLorentzVector)(g2));
+                TParticle wg_tmp3 = TParticle(ParticleTypeDatabase::Photon,(TLorentzVector)(g1));
+
+                TLorentzVector wpi0;
+                TLorentzVector wg;
+
+                double pi0_absMassDiff1 = abs(sqrt(Lw.M2()-w_decayComb2.M2()-w_decayComb3.M2())-mpi0);
+                double pi0_absMassDiff2 = abs(sqrt(Lw.M2()-w_decayComb1.M2()-w_decayComb3.M2())-mpi0);
+                double pi0_absMassDiff3 = abs(sqrt(Lw.M2()-w_decayComb1.M2()-w_decayComb2.M2())-mpi0);
+
+                if(pi0_absMassDiff1 <= pi0_absMassDiff2 && pi0_absMassDiff1 <= pi0_absMassDiff3){wpi0 = wpi0_tmp1; wg = wg_tmp1;}
+                else if(pi0_absMassDiff2 <= pi0_absMassDiff1 && pi0_absMassDiff2 <= pi0_absMassDiff3){wpi0 = wpi0_tmp2; wg = wg_tmp2;}
+                else{wpi0 = wpi0_tmp3; wg = wg_tmp3;}
+
+                double cut_shift2 = mpi0*0.15;
+
+                h_Pi0Only2g_Im[1]->Fill(wpi0.M(),weight);
+
+                if(wpi0.M()>(mpi0-cut_shift2) && wpi0.M()<(mpi0+cut_shift2)){
+                    h_Pi0Only2g_Im[2]->Fill(wpi0.M(),weight);
                 }
-
-                for (unsigned int i=0; i<PhotonThe.size(); i++){
-                    h_PhotonPolarAngles->Fill(PhotonThe[i],weight);
-                    h_PhotonETheta->Fill(PhotonThe[i],PhotonE[i],weight);
-                    //if (PhotonThe[i] < 20){PhotonPolarAngles_TAPS += 1.0;}
-                    //if (PhotonThe[i] >= 20){PhotonPolarAngles_CB += 1.0;}
-                    h_doubly_ap_DCS_reconstructed_lab->Fill(cos(Lw.Theta()),Linitial.M(),weight);
-                    h_doubly_ap_DCS_reconstructed_cmFrame->Fill(cos(Linitial.Angle(LwBoosted.Vect())),Linitial.M(),weight);
-                }
-
-                for (unsigned int i=0; i<PhotonTheCB.size(); i++){
-                    h_PhotonPolarAngles_CB->Fill(PhotonTheCB[i],weight);
-                    h_PhotonETheta_CB->Fill(PhotonTheCB[i],PhotonE[i],weight);
-                }
-
-                for (unsigned int i=0; i<PhotonTheTAPS.size(); i++){
-                    h_PhotonPolarAngles_TAPS->Fill(PhotonTheTAPS[i],weight);
-                    h_PhotonETheta_TAPS->Fill(PhotonTheTAPS[i],PhotonE[i],weight);
-                }
-
-                h_ProtonPolarAngles->Fill(proton_missing_particle.Theta()*radtodeg,weight);
-                h_ProtonETheta->Fill(proton_missing_particle.Theta()*radtodeg,proton_missing_particle.E,weight);
-                if (proton_missing_particle.Theta()*radtodeg < 20){ProtonPolarAngles_TAPS += 1.0;}
-                if (proton_missing_particle.Theta()*radtodeg >= 20 && proton_missing_particle.Theta()*radtodeg < 160){ProtonPolarAngles_CB += 1.0;}
-
-                for (unsigned int i=0; i<PhotonPhi.size(); i++){
-                    h_PhotonAzimuthAngles->Fill(PhotonPhi[i],weight);
-                    h_PhotonEPhi->Fill(PhotonPhi[i],PhotonE[i],weight);
-                }
-
-                h_ProtonAzimuthAngles->Fill(proton_missing_particle.Phi()*radtodeg,weight);
-                h_ProtonEPhi->Fill(proton_missing_particle.Phi()*radtodeg,proton_missing_particle.E,weight);
-
-                h_ProtonPeak->Fill(proton_missing_particle.M(),weight);
-
-                //Filling the statistical histogram
-
-                if (isg1CB && isg2CB){count_first+=promptrandom.FillWeight();}
-                if ((isg1CB && isg2BaF2)||(isg2CB && isg1BaF2)){count_second+=promptrandom.FillWeight();}
-                if ((isg1CB && isg2PbWO)||(isg2CB && isg1PbWO)){count_third+=promptrandom.FillWeight();}
-                if (isg1BaF2 && isg2BaF2){count_fourth+=promptrandom.FillWeight();}
-                if ((isg1BaF2 && isg2PbWO)||(isg2BaF2 && isg1PbWO)){count_fifth+=promptrandom.FillWeight();}
-                if (isg1PbWO && isg2PbWO){count_sixth+=promptrandom.FillWeight();}
-                //if ((isg1PbWO && isg2undetected)||(isg2PbWO && isg1undetected)){count_seventh++;}
-                //if ((isg1BaF2 && isg2undetected)||(isg2BaF2 && isg1undetected)){count_eigth++;}
-                //if ((isg1CB && isg2undetected)||(isg2CB && isg1undetected)){count_nineth++;}
-                //if (isg1undetected && isg2undetected){count_tenth++;}
 
                 weight_res += weight;
             }
         }
-        */
 
         //Filling the tree for further analysis
 
@@ -421,7 +478,7 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
 
 void scratch_damaurer_MC_pw_ppi0g_p3g::ShowResult()
 {    
-
+/*
     ant::canvas(GetName()+": tagger stuff")
             << h_TaggerTime
             << h_nClusters
@@ -461,7 +518,20 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ShowResult()
             << h_3g_EvTheta_TAPS
             << endc; // actually draws the canvas
 
-    for (unsigned int i=0; i<nrCuts; i++){
+    for (unsigned int i=0; i<nrCuts_BackToBack; i++){
+
+            stringstream ss;
+            ss << i;
+            string myString = ss.str();
+
+            ant::canvas(GetName()+": w_pi0g angles in cm of rec. omega meson after "+myString+ " applied cuts")
+                << h_pi0g_BackToBack[i]
+                << endc; // actually draws the canvas
+
+    }
+*/
+
+    for (unsigned int i=0; i<nrCuts_IM; i++){
 
         stringstream ss;
         ss << i;
@@ -470,14 +540,34 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ShowResult()
         ant::canvas(GetName()+": Rec. particles invariant masses after "+myString+ " applied cuts")
                 << h_missing_proton_Im[i]
                 << h_wOnly3g_Im[i]
-                << h_Pi0Only2g_Im[i]
-                << endc; // actually draws the canvas
-
-        ant::canvas(GetName()+": w_pi0g angles in cm of rec. omega meson after "+myString+ " applied cuts")
-                << h_pi0g_BackToBack[i]
                 << endc; // actually draws the canvas
 
     }
+
+    for (unsigned int i=0; i<nrCuts_IM_pi0; i++){
+
+        stringstream ss;
+        ss << i;
+        string myString = ss.str();
+
+        ant::canvas(GetName()+": Rec. pi0 invariant mass after "+myString+ " applied cuts")
+                << h_Pi0Only2g_Im[i]
+                << endc; // actually draws the canvas
+
+    }
+
+   for (unsigned int i=0; i<nrCuts_VetoSel; i++){
+
+       stringstream ss;
+       ss << i;
+       string myString = ss.str();
+
+       ant::canvas(GetName()+": deposited Veto vs Calorimeter energy, after "+myString+ " applied cuts")
+               << drawoption("pcolz")
+               << h_VetoVSCaloEnergies[i]
+               << endc; // actually draws the canvas
+
+   }
 
     ant::canvas(GetName()+": Cross section checks")
             << drawoption("Surf")
@@ -485,11 +575,12 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ShowResult()
             << h_doubly_wp_DCS_reconstructed_cmFrame
             << endc; // actually draws the canvas
 
+
 }
 
 void scratch_damaurer_MC_pw_ppi0g_p3g::Finish()
 {
-
+/*
     int max_particles_detected = h_ALL_PolarAngles->GetEntries();
     int Photons_max_detected = h_3gPolarAngles->GetEntries();
     int MissingCHA_max_detected = h_missingChaPolarAngles->GetEntries();
@@ -509,7 +600,7 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::Finish()
     cout << "Integrated amount of found clusters in total: " << h_nClusters->Integral() << endl;
     cout << "Detection efficiency: " << max_particles_detected/max_particles << endl;
     cout << "Max number of detected photons: " << Photons_max_detected << endl;
-
+*/
     /*
     int max_particles_detected = h_PolarAngles->GetEntries();
     int Photons_max_detected = h_PhotonPolarAngles->GetEntries();

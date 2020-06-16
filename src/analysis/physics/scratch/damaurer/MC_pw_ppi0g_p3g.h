@@ -52,16 +52,20 @@ protected:
     static constexpr auto radtodeg = std_ext::radian_to_degree(1.0);
 
 //-- Histograms
-static const int nrCuts = 2;
+static const int nrCuts_IM = 2;
+static const int nrCuts_IM_pi0 = 3;
+static const int nrSel = 3;
+static const int nrCuts_VetoSel = 2;
+//static const int nrCuts_BackToBack = 3;
 
 private:
 
     tree_t t;
 
-    TH1D *h_missing_proton_Im[nrCuts];
-    TH1D *h_wOnly3g_Im[nrCuts];
-    TH1D *h_Pi0Only2g_Im[nrCuts];
-    TH1D *h_pi0g_BackToBack[nrCuts];
+    TH1D* h_missing_proton_Im[nrCuts_IM];
+    TH1D* h_wOnly3g_Im[nrCuts_IM];
+    TH1D* h_Pi0Only2g_Im[nrCuts_IM_pi0];
+    //TH1D* h_pi0g_BackToBack[nrCuts_BackToBack];
 
     TH1D* h_TaggerTime;
     TH1D* h_InitialBeamE;
@@ -78,6 +82,7 @@ private:
     TH1D* h_3gPolarAnglesTAPS;
     TH1D* h_3gAzimuthAngles;
 
+    TH2D* h_VetoVSCaloEnergies[nrCuts_VetoSel];
     TH2D* h_3g_EvTheta_CB;
     TH2D* h_3g_EvTheta_TAPS;
     TH2D* h_missingP_EvTheta;
@@ -93,8 +98,9 @@ private:
     utils::TriggerSimulation triggersimu;
 
     double max_particles = 1000000;
+    double maxVeto = 1;
 
-    long double m = 134.9766;
+    long double mpi0 = 134.9766;
     long double mp = 938.2720813;
     long double mw = 762.65;
     long double energyGamma_min = 1105;
@@ -109,6 +115,8 @@ private:
     double PhotonPolarAngles_CB_err;
     double ProtonPolarAngles_TAPS_err;
     double ProtonPolarAngles_CB_err;
+
+    double weight_res = 0;
 
     double_t s_square_min = sqrt(2*mp*energyGamma_min+mp*mp);
     double_t s_square_max = sqrt(2*mp*energyGamma_max+mp*mp);
