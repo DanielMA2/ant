@@ -54,15 +54,16 @@ protected:
 //-- Histograms
 static const int nrCuts_IM = 2;
 static const int nrCuts_IM_pi0 = 3;
-static const int nrSel = 3;
 static const int nrCuts_VetoSel = 2;
-//static const int nrCuts_BackToBack = 3;
+
+static const int neu_nrSel = 3;
+static const int cha_nrSel = 1;
 
 private:
 
     tree_t t;
 
-    TH1D* h_missing_proton_Im[nrCuts_IM];
+    TH1D* h_proton_Im[nrCuts_IM];
     TH1D* h_wOnly3g_Im[nrCuts_IM];
     TH1D* h_Pi0Only2g_Im[nrCuts_IM_pi0];
     //TH1D* h_pi0g_BackToBack[nrCuts_BackToBack];
@@ -73,22 +74,29 @@ private:
     TH1D* h_nClusters;
     TH1D* h_nClusters_pr;
 
-    TH1D* h_ALL_AzimuthAngles;
-    TH1D* h_ALL_PolarAngles;
-    TH1D* h_missingChaPolarAngles;
-    TH1D* h_missingChaAzimuthAngles;
+    TH1D* h_2gMassComb;
+    TH1D* h_NeuAzimuthAngles;
+    TH1D* h_NeuPolarAngles;
+    TH1D* h_ChaPolarAngles;
+    TH1D* h_ChaAzimuthAngles;
     TH1D* h_3gPolarAngles;
     TH1D* h_3gPolarAnglesCB;
     TH1D* h_3gPolarAnglesTAPS;
     TH1D* h_3gAzimuthAngles;
 
-    TH2D* h_VetoVSCaloEnergies[nrCuts_VetoSel];
+    TH2D* h_AllCaloVSVetoEnergies_CB;
+    TH2D* h_AllCaloVSVetoEnergies_TAPS;
+    TH2D* h_NeuCaloVSVetoEnergies_CB;
+    TH2D* h_NeuCaloVSVetoEnergies_TAPS;
+    TH2D* h_ChaCaloVSVetoEnergies_CB;
+    TH2D* h_ChaCaloVSVetoEnergies_TAPS;
     TH2D* h_3g_EvTheta_CB;
     TH2D* h_3g_EvTheta_TAPS;
-    TH2D* h_missingP_EvTheta;
+    TH2D* h_p_EvTheta;
     TH2D* h_w_EvTheta;
     TH2D* h_wg_EvTheta;
     TH2D* h_wpi0_EvTheta;
+    TH2D* h_wpi02g_EvTheta;
 
     TH2D* h_doubly_wp_DCS_reconstructed_lab;
     TH2D* h_doubly_wp_DCS_reconstructed_cmFrame;
@@ -98,8 +106,7 @@ private:
     utils::TriggerSimulation triggersimu;
 
     double max_particles = 1000000;
-    double maxVeto = 1;
-
+    double vetoEthreshold = 0.9;
     long double mpi0 = 134.9766;
     long double mp = 938.2720813;
     long double mw = 762.65;
