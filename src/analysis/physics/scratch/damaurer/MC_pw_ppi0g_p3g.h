@@ -52,7 +52,7 @@ protected:
     static constexpr auto radtodeg = std_ext::radian_to_degree(1.0);
 
 //-- Histograms
-static const int nrCuts_IM = 2;
+static const int nrCuts_IM = 3;
 static const int nrCuts_IM_pi0 = 3;
 static const int nrCuts_VetoSel = 2;
 
@@ -63,7 +63,7 @@ private:
 
     tree_t t;
 
-    TH1D* h_proton_Im[nrCuts_IM];
+    TH1D* h_missingP_Im[nrCuts_IM];
     TH1D* h_wOnly3g_Im[nrCuts_IM];
     TH1D* h_Pi0Only2g_Im[nrCuts_IM_pi0];
     //TH1D* h_pi0g_BackToBack[nrCuts_BackToBack];
