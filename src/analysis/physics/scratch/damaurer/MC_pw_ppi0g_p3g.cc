@@ -46,6 +46,7 @@ scratch_damaurer_MC_pw_ppi0g_p3g::scratch_damaurer_MC_pw_ppi0g_p3g(const string&
     const BinSettings Im_proton_bins(100, 0, 1800);
     const BinSettings Im_omega_bins(100, 0, 1800);
     const BinSettings Im_pi0_bins(100, 0, 1000);
+    const BinSettings wpi0_Q_bins(100, 0, 1500);
 
     const BinSettings E_photon_bins(100, 0, 1600);
     const BinSettings E_proton_bins(100, 900, 2000);
@@ -70,21 +71,27 @@ scratch_damaurer_MC_pw_ppi0g_p3g::scratch_damaurer_MC_pw_ppi0g_p3g(const string&
         string myString = ss.str();
 
         h_missingProton_Im[i] = hf_wpi0g_IM->makeTH1D("Missing proton invariant mass",     // title
-                                                             "IM(proton) [MeV]", "#",     // xlabel, ylabel
+                                                             "IM(initial-3*neutral) [MeV]", "#",     // xlabel, ylabel
                                                              Im_proton_bins,  // our binnings
                                                              "h_missingProton_Im"+myString, false     // ROOT object name, auto-generated if omitted
                                                              );
         h_missingOmega_Im[i] = hf_wpi0g_IM->makeTH1D("Missing Omega invariant mass",     // title
-                                                             "IM(proton) [MeV]", "#",     // xlabel, ylabel
+                                                             "IM(initial-1*charged) [MeV]", "#",     // xlabel, ylabel
                                                              Im_omega_bins,  // our binnings
                                                              "h_missingOmega_Im"+myString, false     // ROOT object name, auto-generated if omitted
                                                              );
 
         h_wOnly3g_Im[i] = hf_wpi0g_IM->makeTH1D("Rec. Omega invariant mass",     // title
-                                            "IM(w) [MeV]", "#",     // xlabel, ylabel
+                                            "IM(3g) [MeV]", "#",     // xlabel, ylabel
                                             Im_omega_bins,  // our binnings
                                             "h_wOnly3g_Im"+myString, false     // ROOT object name, auto-generated if omitted
                                             );
+
+        h_2gMassComb[i] = hf_wpi0g_IM->makeTH1D("3-Body Omega decay mass-combinations",     // title
+                                             "IM(2g comb) [MeV]", "#",     // xlabel, ylabel
+                                             Im_pi0_bins,  // our binnings
+                                             "h_2gMassComb"+myString, false     // ROOT object name, auto-generated if omitted
+                                             );
     }
 
     for (unsigned int i=0; i<nrCuts_IM_pi0; i++){
@@ -96,6 +103,12 @@ scratch_damaurer_MC_pw_ppi0g_p3g::scratch_damaurer_MC_pw_ppi0g_p3g(const string&
                                          "IM(pi0) [MeV]", "#",     // xlabel, ylabel
                                          Im_pi0_bins,  // our binnings
                                          "h_Pi0Only2g_Im"+myString, false     // ROOT object name, auto-generated if omitted
+                                         );
+
+        h_wpi0_momentumTransfer_Q[i] = hf_wpi0g_IM->makeTH1D("Momentum Transfer sqrt(Q^2)",       // title
+                                         "wpi0 #sqrt{Q^2} [MeV]", "#",     // xlabel, ylabel
+                                         wpi0_Q_bins,  // our binnings
+                                         "h_wpi0_momentumTransfer_Q"+myString, false     // ROOT object name, auto-generated if omitted
                                          );
 
     }
@@ -221,12 +234,6 @@ scratch_damaurer_MC_pw_ppi0g_p3g::scratch_damaurer_MC_pw_ppi0g_p3g(const string&
                                                "h_3gAzimuthAngles", false     // ROOT object name, auto-generated if omitted
                                                );
 
-    h_2gMassComb = hf_wpi0g_IM->makeTH1D("3-Body Omega decay mass-combinations",     // title
-                                         "IM(2g) [MeV]", "#",     // xlabel, ylabel
-                                         Im_pi0_bins,  // our binnings
-                                         "h_2gMassComb", false     // ROOT object name, auto-generated if omitted
-                                         );
-
     h_3g_EvTheta_CB = hf_wpi0g_EvsTheta->makeTH2D("Photon energy vs theta only in CB", //title
                                        "Theta [deg]","E [MeV]",  // xlabel, ylabel
                                        theta_bins_CB, E_photon_bins,    // our binnings
@@ -322,7 +329,7 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
             h_AllCaloVSVetoEnergies_TAPS->Fill(cand->CaloEnergy,cand->VetoEnergy);
         neuThe.push_back(cand->Theta*radtodeg);
         neuPhi.push_back(cand->Phi*radtodeg);
-        if(cand->VetoEnergy < vetoEthreshold) {
+        if(cand->VetoEnergy <= vetoEthreshold) {
             if(cand->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB)
                 h_NeuCaloVSVetoEnergies_CB->Fill(cand->CaloEnergy,cand->VetoEnergy);
             if(cand->FindCaloCluster()->DetectorType == Detector_t::Type_t::TAPS)
@@ -397,6 +404,8 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
 
         TLorentzVector L3g = (TLorentzVector)(g1+g2+g3);
         omega_tmp = TParticle(ParticleTypeDatabase::Omega,(TLorentzVector)(L3g));
+
+        if(proton.Theta()*radtodeg <= 80)
         proton_tmp = TParticle(ParticleTypeDatabase::Proton,(TLorentzVector)(proton));
 
         TLorentzVector Lw_tmp = (TLorentzVector)(omega_tmp);
@@ -417,6 +426,9 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
             h_wOnly3g_Im[0]->Fill(omega_tmp.M(),weight);
             h_missingProton_Im[0]->Fill(LmissingProton.M(),weight);
             h_missingOmega_Im[0]->Fill(LmissingOmega.M(),weight);
+            h_2gMassComb[0]->Fill((g1+g2).M(),weight);
+            h_2gMassComb[0]->Fill((g1+g3).M(),weight);
+            h_2gMassComb[0]->Fill((g2+g3).M(),weight);
 
             for (unsigned int i=0; i<neuThe.size(); i++){
                 h_NeuPolarAngles->Fill(neuThe[i],weight);
@@ -430,130 +442,132 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
 
             double cut_shift1 = mp*0.2;
             double cut_shift2 = mw*0.2;
+
             if(LmissingProton.M() > (mp-cut_shift1) && LmissingProton.M() < (mp+cut_shift1)){
 
                 h_wOnly3g_Im[1]->Fill(omega_tmp.M(),weight);
                 h_missingProton_Im[1]->Fill(LmissingProton.M(),weight);
                 h_missingOmega_Im[1]->Fill(LmissingOmega.M(),weight);
+                h_2gMassComb[1]->Fill((g1+g2).M(),weight);
+                h_2gMassComb[1]->Fill((g1+g3).M(),weight);
+                h_2gMassComb[1]->Fill((g2+g3).M(),weight);
 
-                if(LmissingOmega.M() > (mw-cut_shift2) && LmissingOmega.M() < (mw+cut_shift2)){
+                if(omega_tmp.M()>(mw-cut_shift2) && omega_tmp.M()<(mw+cut_shift2)){
 
                     h_wOnly3g_Im[2]->Fill(omega_tmp.M(),weight);
                     h_missingProton_Im[2]->Fill(LmissingProton.M(),weight);
                     h_missingOmega_Im[2]->Fill(LmissingOmega.M(),weight);
+                    h_2gMassComb[2]->Fill((g1+g2).M(),weight);
+                    h_2gMassComb[2]->Fill((g1+g3).M(),weight);
+                    h_2gMassComb[2]->Fill((g2+g3).M(),weight);
 
-                    if(omega_tmp.M()>(mw-cut_shift2) && omega_tmp.M()<(mw+cut_shift2)){
+                    TLorentzVector Lp = Lp_tmp;
+                    TLorentzVector Lw = Lw_tmp;
+                    TLorentzVector Lw_boosted = Lw;
+                    Lw_boosted.Boost(-Linitial.BoostVector());
 
-                        h_wOnly3g_Im[3]->Fill(omega_tmp.M(),weight);
-                        h_missingProton_Im[3]->Fill(LmissingProton.M(),weight);
-                        h_missingOmega_Im[3]->Fill(LmissingOmega.M(),weight);
+                    h_doubly_wp_DCS_reconstructed_lab->Fill(cos(Lw.Theta()),Linitial.M(),weight);
+                    h_doubly_wp_DCS_reconstructed_cmFrame->Fill(cos(Linitial.Angle(Lw_boosted.Vect())),Linitial.M(),weight);
 
-                        TLorentzVector Lp = Lp_tmp;
-                        TLorentzVector Lw = Lw_tmp;
-                        TLorentzVector Lw_boosted = Lw;
-                        Lw_boosted.Boost(-Linitial.BoostVector());
+                    //LorentzBoost-Stuff with opening angle selections:
 
-                        h_doubly_wp_DCS_reconstructed_lab->Fill(cos(Lw.Theta()),Linitial.M(),weight);
-                        h_doubly_wp_DCS_reconstructed_cmFrame->Fill(cos(Linitial.Angle(Lw_boosted.Vect())),Linitial.M(),weight);
+                    /*
+                    TParticle wpi0_tmp1 = TParticle(ParticleTypeDatabase::Photon,(TLorentzVector)(g1+g2));
+                    TParticle wpi0_tmp2 = TParticle(ParticleTypeDatabase::Photon,(TLorentzVector)(g1+g3));
+                    TParticle wpi0_tmp3 = TParticle(ParticleTypeDatabase::Photon,(TLorentzVector)(g2+g3));
 
-                        //LorentzBoost-Stuff with opening angle selections:
+                    TParticle wg_tmp1 = TParticle(ParticleTypeDatabase::Photon,(TLorentzVector)(g3));
+                    TParticle wg_tmp2 = TParticle(ParticleTypeDatabase::Photon,(TLorentzVector)(g2));
+                    TParticle wg_tmp3 = TParticle(ParticleTypeDatabase::Photon,(TLorentzVector)(g1));
 
-                        /*
-                        TParticle wpi0_tmp1 = TParticle(ParticleTypeDatabase::Photon,(TLorentzVector)(g1+g2));
-                        TParticle wpi0_tmp2 = TParticle(ParticleTypeDatabase::Photon,(TLorentzVector)(g1+g3));
-                        TParticle wpi0_tmp3 = TParticle(ParticleTypeDatabase::Photon,(TLorentzVector)(g2+g3));
+                    TLorentzVector wpi0_tmp1_boosted = (TLorentzVector)wpi0_tmp1;
+                    TLorentzVector wpi0_tmp2_boosted = (TLorentzVector)wpi0_tmp2;
+                    TLorentzVector wpi0_tmp3_boosted = (TLorentzVector)wpi0_tmp3;
 
-                        TParticle wg_tmp1 = TParticle(ParticleTypeDatabase::Photon,(TLorentzVector)(g3));
-                        TParticle wg_tmp2 = TParticle(ParticleTypeDatabase::Photon,(TLorentzVector)(g2));
-                        TParticle wg_tmp3 = TParticle(ParticleTypeDatabase::Photon,(TLorentzVector)(g1));
+                    TLorentzVector wg_tmp1_boosted = (TLorentzVector)wg_tmp1;
+                    TLorentzVector wg_tmp2_boosted = (TLorentzVector)wg_tmp2;
+                    TLorentzVector wg_tmp3_boosted = (TLorentzVector)wg_tmp3;
 
-                        TLorentzVector wpi0_tmp1_boosted = (TLorentzVector)wpi0_tmp1;
-                        TLorentzVector wpi0_tmp2_boosted = (TLorentzVector)wpi0_tmp2;
-                        TLorentzVector wpi0_tmp3_boosted = (TLorentzVector)wpi0_tmp3;
+                    wpi0_tmp1_boosted.Boost(-Lw.BoostVector());
+                    wpi0_tmp2_boosted.Boost(-Lw.BoostVector());
+                    wpi0_tmp3_boosted.Boost(-Lw.BoostVector());
 
-                        TLorentzVector wg_tmp1_boosted = (TLorentzVector)wg_tmp1;
-                        TLorentzVector wg_tmp2_boosted = (TLorentzVector)wg_tmp2;
-                        TLorentzVector wg_tmp3_boosted = (TLorentzVector)wg_tmp3;
+                    wg_tmp1_boosted.Boost(-Lw.BoostVector());
+                    wg_tmp2_boosted.Boost(-Lw.BoostVector());
+                    wg_tmp3_boosted.Boost(-Lw.BoostVector());
 
-                        wpi0_tmp1_boosted.Boost(-Lw.BoostVector());
-                        wpi0_tmp2_boosted.Boost(-Lw.BoostVector());
-                        wpi0_tmp3_boosted.Boost(-Lw.BoostVector());
+                    double cmAngleComb1 = cos(wpi0_tmp1_boosted.Angle(wg_tmp1_boosted.Vect()));
+                    double cmAngleComb2 = cos(wpi0_tmp2_boosted.Angle(wg_tmp2_boosted.Vect()));
+                    double cmAngleComb3 = cos(wpi0_tmp3_boosted.Angle(wg_tmp3_boosted.Vect()));
 
-                        wg_tmp1_boosted.Boost(-Lw.BoostVector());
-                        wg_tmp2_boosted.Boost(-Lw.BoostVector());
-                        wg_tmp3_boosted.Boost(-Lw.BoostVector());
+                    double array[] = {1.2,1.1,1.4,1.5,0.9};
+                    double min_i;
+                    double min = 10;
+                    int arraySize = sizeof(array)/sizeof(array[0]);
 
-                        double cmAngleComb1 = cos(wpi0_tmp1_boosted.Angle(wg_tmp1_boosted.Vect()));
-                        double cmAngleComb2 = cos(wpi0_tmp2_boosted.Angle(wg_tmp2_boosted.Vect()));
-                        double cmAngleComb3 = cos(wpi0_tmp3_boosted.Angle(wg_tmp3_boosted.Vect()));
-
-                        double array[] = {1.2,1.1,1.4,1.5,0.9};
-                        double min_i;
-                        double min = 10;
-                        int arraySize = sizeof(array)/sizeof(array[0]);
-
-                        for (int i=0; i<arraySize; i++){
-                            //array[i] = i;
-                            if(array[i] <= min){min = array[i]; min_i = i;}
-                            cout << "Arrayelement = " << array[i] << endl;
-                        }
-
-                        */
-
-                        TLorentzVector w_decayComb1 = (TLorentzVector)(g1 + g2);
-                        TLorentzVector w_decayComb2 = (TLorentzVector)(g1 + g3);
-                        TLorentzVector w_decayComb3 = (TLorentzVector)(g2 + g3);
-
-                        TParticle wpi0_tmp1 = TParticle(ParticleTypeDatabase::Pi0,(TLorentzVector)(g1+g2));
-                        TParticle wpi0_tmp2 = TParticle(ParticleTypeDatabase::Pi0,(TLorentzVector)(g1+g3));
-                        TParticle wpi0_tmp3 = TParticle(ParticleTypeDatabase::Pi0,(TLorentzVector)(g2+g3));
-
-                        h_Pi0Only2g_Im[0]->Fill((wpi0_tmp1).M(),weight);
-                        h_Pi0Only2g_Im[0]->Fill((wpi0_tmp2).M(),weight);
-                        h_Pi0Only2g_Im[0]->Fill((wpi0_tmp3).M(),weight);
-
-                        TParticle wg_tmp1 = TParticle(ParticleTypeDatabase::Photon,(TLorentzVector)(g3));
-                        TParticle wg_tmp2 = TParticle(ParticleTypeDatabase::Photon,(TLorentzVector)(g2));
-                        TParticle wg_tmp3 = TParticle(ParticleTypeDatabase::Photon,(TLorentzVector)(g1));
-
-                        TLorentzVector wpi0;
-                        TLorentzVector wpi0g1;
-                        TLorentzVector wpi0g2;
-
-                        TLorentzVector wg;
-
-                        double inv_mass_comb1 = sqrt(Lw.M2()-w_decayComb2.M2()-w_decayComb3.M2());
-                        double inv_mass_comb2 = sqrt(Lw.M2()-w_decayComb1.M2()-w_decayComb3.M2());
-                        double inv_mass_comb3 = sqrt(Lw.M2()-w_decayComb1.M2()-w_decayComb2.M2());
-
-                        h_2gMassComb->Fill(inv_mass_comb1,weight);
-                        h_2gMassComb->Fill(inv_mass_comb2,weight);
-                        h_2gMassComb->Fill(inv_mass_comb3,weight);
-
-                        double pi0_absMassDiff1 = abs(inv_mass_comb1-mpi0);
-                        double pi0_absMassDiff2 = abs(inv_mass_comb2-mpi0);
-                        double pi0_absMassDiff3 = abs(inv_mass_comb3-mpi0);
-
-                        if(pi0_absMassDiff1 <= pi0_absMassDiff2 && pi0_absMassDiff1 <= pi0_absMassDiff3){wpi0 = wpi0_tmp1; wg = wg_tmp1; wpi0g1 = g1; wpi0g2 = g2;}
-                        else if(pi0_absMassDiff2 <= pi0_absMassDiff1 && pi0_absMassDiff2 <= pi0_absMassDiff3){wpi0 = wpi0_tmp2; wg = wg_tmp2; wpi0g1 = g1; wpi0g2 = g3;}
-                        else{wpi0 = wpi0_tmp3; wg = wg_tmp3; wpi0g1 = g2; wpi0g2 = g3;}
-
-                        double cut_shift3 = mpi0*0.2;
-
-                        h_Pi0Only2g_Im[1]->Fill(wpi0.M(),weight);
-
-                        if(wpi0.M()>(mpi0-cut_shift3) && wpi0.M()<(mpi0+cut_shift3)){
-                            h_Pi0Only2g_Im[2]->Fill(wpi0.M(),weight);
-
-                            h_p_EvTheta->Fill(Lp.Theta()*radtodeg,Lp.E(),weight);
-                            h_w_EvTheta->Fill(Lw.Theta()*radtodeg,Lw.E(),weight);
-                            h_wg_EvTheta->Fill(wg.Theta()*radtodeg,wg.E(),weight);
-                            h_wpi0_EvTheta->Fill(wpi0.Theta()*radtodeg,wpi0.E(),weight);
-                            h_wpi02g_EvTheta->Fill(wpi0g1.Theta()*radtodeg,wpi0g1.E(),weight);
-                            h_wpi02g_EvTheta->Fill(wpi0g2.Theta()*radtodeg,wpi0g2.E(),weight);
-                        }
+                    for (int i=0; i<arraySize; i++){
+                        //array[i] = i;
+                        if(array[i] <= min){min = array[i]; min_i = i;}
+                        cout << "Arrayelement = " << array[i] << endl;
                     }
-                 }
+
+                    */
+
+                    TLorentzVector w_decayComb1 = (TLorentzVector)(g1 + g2);
+                    TLorentzVector w_decayComb2 = (TLorentzVector)(g1 + g3);
+                    TLorentzVector w_decayComb3 = (TLorentzVector)(g2 + g3);
+
+                    TParticle wpi0_tmp1 = TParticle(ParticleTypeDatabase::Pi0,(TLorentzVector)(w_decayComb1));
+                    TParticle wpi0_tmp2 = TParticle(ParticleTypeDatabase::Pi0,(TLorentzVector)(w_decayComb2));
+                    TParticle wpi0_tmp3 = TParticle(ParticleTypeDatabase::Pi0,(TLorentzVector)(w_decayComb3));
+
+                    h_Pi0Only2g_Im[0]->Fill((wpi0_tmp1).M(),weight);
+                    h_Pi0Only2g_Im[0]->Fill((wpi0_tmp2).M(),weight);
+                    h_Pi0Only2g_Im[0]->Fill((wpi0_tmp3).M(),weight);
+
+                    h_wpi0_momentumTransfer_Q[0]->Fill((Lw-wpi0_tmp1).M(),weight);
+                    h_wpi0_momentumTransfer_Q[0]->Fill((Lw-wpi0_tmp2).M(),weight);
+                    h_wpi0_momentumTransfer_Q[0]->Fill((Lw-wpi0_tmp3).M(),weight);
+
+                    TParticle wg_tmp1 = TParticle(ParticleTypeDatabase::Photon,(TLorentzVector)(g3));
+                    TParticle wg_tmp2 = TParticle(ParticleTypeDatabase::Photon,(TLorentzVector)(g2));
+                    TParticle wg_tmp3 = TParticle(ParticleTypeDatabase::Photon,(TLorentzVector)(g1));
+
+                    TLorentzVector wpi0;
+                    TLorentzVector wpi0g1;
+                    TLorentzVector wpi0g2;
+
+                    TLorentzVector wg;
+
+                    double inv_mass_comb1 = sqrt(Lw.M2()-w_decayComb2.M2()-w_decayComb3.M2());
+                    double inv_mass_comb2 = sqrt(Lw.M2()-w_decayComb1.M2()-w_decayComb3.M2());
+                    double inv_mass_comb3 = sqrt(Lw.M2()-w_decayComb1.M2()-w_decayComb2.M2());
+
+                    double pi0_absMassDiff1 = abs(inv_mass_comb1-mpi0);
+                    double pi0_absMassDiff2 = abs(inv_mass_comb2-mpi0);
+                    double pi0_absMassDiff3 = abs(inv_mass_comb3-mpi0);
+
+                    if(pi0_absMassDiff1 <= pi0_absMassDiff2 && pi0_absMassDiff1 <= pi0_absMassDiff3){wpi0 = wpi0_tmp1; wg = wg_tmp1; wpi0g1 = g1; wpi0g2 = g2;}
+                    else if(pi0_absMassDiff2 <= pi0_absMassDiff1 && pi0_absMassDiff2 <= pi0_absMassDiff3){wpi0 = wpi0_tmp2; wg = wg_tmp2; wpi0g1 = g1; wpi0g2 = g3;}
+                    else{wpi0 = wpi0_tmp3; wg = wg_tmp3; wpi0g1 = g2; wpi0g2 = g3;}
+
+                    double cut_shift3 = mpi0*0.2;
+
+                    h_Pi0Only2g_Im[1]->Fill(wpi0.M(),weight);
+                    h_wpi0_momentumTransfer_Q[1]->Fill((Lw-wpi0).M(),weight);
+
+                    if(wpi0.M()>(mpi0-cut_shift3) && wpi0.M()<(mpi0+cut_shift3)){
+                        h_Pi0Only2g_Im[2]->Fill(wpi0.M(),weight);
+                        h_wpi0_momentumTransfer_Q[2]->Fill((Lw-wpi0).M(),weight);
+
+                        h_p_EvTheta->Fill(Lp.Theta()*radtodeg,Lp.E(),weight);
+                        h_w_EvTheta->Fill(Lw.Theta()*radtodeg,Lw.E(),weight);
+                        h_wg_EvTheta->Fill(wg.Theta()*radtodeg,wg.E(),weight);
+                        h_wpi0_EvTheta->Fill(wpi0.Theta()*radtodeg,wpi0.E(),weight);
+                        h_wpi02g_EvTheta->Fill(wpi0g1.Theta()*radtodeg,wpi0g1.E(),weight);
+                        h_wpi02g_EvTheta->Fill(wpi0g2.Theta()*radtodeg,wpi0g2.E(),weight);
+                    }
+                }
                 //weight_res += weight;
             }
 
@@ -660,6 +674,7 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ShowResult()
                 << h_missingProton_Im[i]
                 << h_missingOmega_Im[i]
                 << h_wOnly3g_Im[i]
+                << h_2gMassComb[i]
                 << endc; // actually draws the canvas
 
     }
@@ -672,6 +687,7 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ShowResult()
 
         ant::canvas(GetName()+": Rec. pi0: Invariant mass after "+myString+ " applied cuts")
                 << h_Pi0Only2g_Im[i]
+                << h_wpi0_momentumTransfer_Q[i]
                 << endc; // actually draws the canvas
 
     }

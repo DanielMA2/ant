@@ -52,7 +52,7 @@ protected:
     static constexpr auto radtodeg = std_ext::radian_to_degree(1.0);
 
 //-- Histograms
-static const int nrCuts_IM = 4;
+static const int nrCuts_IM = 3;
 static const int nrCuts_IM_pi0 = 3;
 static const int nrCuts_VetoSel = 2;
 
@@ -66,7 +66,9 @@ private:
     TH1D* h_missingProton_Im[nrCuts_IM];
     TH1D* h_missingOmega_Im[nrCuts_IM];
     TH1D* h_wOnly3g_Im[nrCuts_IM];
+    TH1D* h_2gMassComb[nrCuts_IM];
     TH1D* h_Pi0Only2g_Im[nrCuts_IM_pi0];
+    TH1D* h_wpi0_momentumTransfer_Q[nrCuts_IM_pi0];
     //TH1D* h_pi0g_BackToBack[nrCuts_BackToBack];
 
     TH1D* h_TaggerTime;
@@ -75,7 +77,6 @@ private:
     TH1D* h_nClusters;
     TH1D* h_nClusters_pr;
 
-    TH1D* h_2gMassComb;
     TH1D* h_NeuAzimuthAngles;
     TH1D* h_NeuPolarAngles;
     TH1D* h_ChaPolarAngles;
@@ -107,7 +108,7 @@ private:
     utils::TriggerSimulation triggersimu;
 
     double max_particles = 1000000;
-    double vetoEthreshold = 0.9;
+    double vetoEthreshold = 0;
     long double mpi0 = 134.9766;
     long double mp = 938.2720813;
     long double mw = 762.65;
