@@ -147,6 +147,7 @@ int main( int argc, char** argv )
         histptr->SetLabelSize(0.08,"Y");
         histptr->SetMarkerStyle(7);
         histptr->SetLineColor(*cit);
+        cout << histptr->GetTitle() << " has integral:" << histptr->Integral(1,histptr->GetNbinsX()) << endl;
         sumplot << histptr;
         cit.next();
     }

@@ -46,29 +46,31 @@ public:
         ADD_BRANCH_T(std::vector<double>, PhotonPolarAngles)
         ADD_BRANCH_T(std::vector<double>, PhotonPolarAnglesCB)
         ADD_BRANCH_T(std::vector<double>, PhotonPolarAnglesTAPS)
+
     };
 
 protected:
     static constexpr auto radtodeg = std_ext::radian_to_degree(1.0);
 
 //-- Histograms
-static const int nrCuts_IM = 3;
-static const int nrCuts_IM_pi0 = 3;
+static const int nrCuts = 4;
+static const int nrCuts_IM = 4;
+static const int nrCuts_IM_pi0 = 2;
 static const int nrCuts_VetoSel = 2;
 
 static const int neu_nrSel = 3;
 static const int cha_nrSel = 1;
+
+const int nr_pi0g = 2;
 
 private:
 
     tree_t t;
 
     TH1D* h_missingProton_Im[nrCuts_IM];
-    TH1D* h_missingOmega_Im[nrCuts_IM];
     TH1D* h_wOnly3g_Im[nrCuts_IM];
     TH1D* h_2gMassComb[nrCuts_IM];
     TH1D* h_Pi0Only2g_Im[nrCuts_IM_pi0];
-    TH1D* h_wpi0_momentumTransfer_Q[nrCuts_IM_pi0];
     //TH1D* h_pi0g_BackToBack[nrCuts_BackToBack];
 
     TH1D* h_TaggerTime;
@@ -90,8 +92,8 @@ private:
     TH2D* h_AllCaloVSVetoEnergies_TAPS;
     TH2D* h_NeuCaloVSVetoEnergies_CB;
     TH2D* h_NeuCaloVSVetoEnergies_TAPS;
-    TH2D* h_ChaCaloVSVetoEnergies_CB;
-    TH2D* h_ChaCaloVSVetoEnergies_TAPS;
+    TH2D* h_ChaCaloVSVetoEnergies_CB[nrCuts_IM];
+    TH2D* h_ChaCaloVSVetoEnergies_TAPS[nrCuts_IM];
     TH2D* h_3g_EvTheta_CB;
     TH2D* h_3g_EvTheta_TAPS;
     TH2D* h_p_EvTheta;
@@ -111,9 +113,15 @@ private:
     double vetoEthreshold = 0;
     long double mpi0 = 134.9766;
     long double mp = 938.2720813;
-    long double mw = 762.65;
-    long double energyGamma_min = 1105;
-    long double energyGamma_max = 1500;
+    long double mw = 782.65;
+
+    double_t energyGamma_min = 1105;
+    double_t energyGamma_max = 1500;
+
+    double_t s_square_min = sqrt(2*mp*energyGamma_min+mp*mp);
+    double_t s_square_max = sqrt(2*mp*energyGamma_max+mp*mp);
+
+    long double Omega_Ethreshold = (mw*mw+2*mw*mp)/(2*mp);
 
     double PhotonPolarAngles_TAPS_frac;
     double ProtonPolarAngles_TAPS_frac;
@@ -126,9 +134,6 @@ private:
     double ProtonPolarAngles_CB_err;
 
     double weight_res = 0;
-
-    double_t s_square_min = sqrt(2*mp*energyGamma_min+mp*mp);
-    double_t s_square_max = sqrt(2*mp*energyGamma_max+mp*mp);
 
     std::shared_ptr<expconfig::detector::TAPS> taps;
 
