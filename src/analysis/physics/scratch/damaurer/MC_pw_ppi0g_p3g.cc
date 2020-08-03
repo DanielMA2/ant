@@ -676,6 +676,7 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ShowResult()
 
 void scratch_damaurer_MC_pw_ppi0g_p3g::Finish()
 {
+    cout << "please work!" << endl;
 /*
     int max_particles_detected = h_ALL_PolarAngles->GetEntries();
     int Photons_max_detected = h_3gPolarAngles->GetEntries();
