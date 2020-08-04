@@ -32,14 +32,15 @@ scratch_damaurer_MC_pw_ppi0g_p3g::scratch_damaurer_MC_pw_ppi0g_p3g(const string&
     const BinSettings tagger_time_bins(1000, -200, 200);
     const BinSettings Veto_Energy_bins(1000, 0, 10);
     const BinSettings Calo_Energy_bins(1000, 0, 1200);
-    const BinSettings initialBeamE_bins(1000,1,1.6);
+    const BinSettings initialBeamE_bins(1000,0, 1600);
     const BinSettings cos_bins(100,-1,1);
     //const BinSettings cos_bins_BackToBack(1000,-1,1);
     //const BinSettings wpi0_Q_bins(100, 0, 1500);
     const BinSettings sqrt_S_bins(100,s_square_min,s_square_max);
-    const BinSettings phi_bins(100, -180, 180);
 
-    const BinSettings theta_bins(180, 0, 180);
+    const BinSettings phi_bins(720, -180, 180);
+    const BinSettings theta_bins(360, 0, 180);
+
     const BinSettings proton_theta_bins(180, 0, 90);
     const BinSettings theta_bins_CB(140, 19, 160);
     const BinSettings theta_bins_TAPS(25, 0, 25);
@@ -48,109 +49,132 @@ scratch_damaurer_MC_pw_ppi0g_p3g::scratch_damaurer_MC_pw_ppi0g_p3g(const string&
     const BinSettings Im_omega_bins(100, 0, 1800);
     const BinSettings Im_pi0_bins(100, 0, 1000);
 
+    const BinSettings Ekin_neu_bins(100, 0, 1600);
+    const BinSettings Ekin_cha_bins(100, 0, 1000);
+
     const BinSettings E_photon_bins(100, 0, 1600);
     const BinSettings E_proton_bins(100, 900, 2000);
     const BinSettings E_omega_bins(100, 400, 1800);
     const BinSettings E_pi0_bins(100, 0, 1600);
 
-    string cuts[nrCuts] = {"CUT#1_Sel3Neu1Cha", "CUT#2_OmegaEthreshold", "CUT#3_ImMissingParticle_+-20%mp", "CUT#4_SelMinM(2neu-mpi0)_+-20%mpi0"};
+    const string cuts[nrCuts_total] = {"CUT#0_NoCuts", "CUT#1_Sel3Neu1Cha", "CUT#2_OmegaEthreshold", "CUT#3_ImMissingParticle_+-20%mp", "CUT#4_SelMinM(2neu-mpi0)_+-20%mpi0"};
 
     // HistFac is a protected member of the base class "Physics"
     // use it to conveniently create histograms (and other ROOT objects) at the right location
     // using the make methods
 
-    auto hf_missingP_IM = new HistogramFactory("hf_missingP_Im", HistFac, "");
+    auto hf_missingP_IM = new HistogramFactory("hf_missingP_IM", HistFac, "");
+    auto hf_3g_IM = new HistogramFactory("hf_3g_IM", HistFac, "");
+    auto hf_2gComb_IM = new HistogramFactory("hf_2gComb_IM", HistFac, "");
+    auto hf_2gPi0_IM = new HistogramFactory("hf_2gComb_IM", HistFac, "");
+    auto hf_EvsTheta = new HistogramFactory("hf_EvsTheta", HistFac, "");
+    auto hf_EvsPhi = new HistogramFactory("hf_EvsPhi", HistFac, "");
+    auto hf_CrossSection = new HistogramFactory("hf_CrossSection", HistFac, "");
+    auto hf_CaloEvsVetoE = new HistogramFactory("hf_CaloEvsVetoE", HistFac, "");
+    auto hf_ExtraHists = new HistogramFactory("hf_ExtraHists", HistFac, "");
 
     auto hfTagger = new HistogramFactory("Tagger", HistFac, "");
     auto hfOnlyEnergy = new HistogramFactory("All_the_candidate_energies", HistFac, "");
     auto hfOnlyAngles = new HistogramFactory("All_the_candidate_angles", HistFac, "");
-    auto hfCrossCheck = new HistogramFactory("Cross_section_check", HistFac, "");
     auto hf_wpi0g_EvsTheta = new HistogramFactory("Energy_vs_theta_dists", HistFac, "");
-    auto hf_wpi0g_IM = new HistogramFactory("Invariant_mass_dists", HistFac, "");
     //auto hf_extras = new HistogramFactory("Some_additional_extra_hists", HistFac, "");
 
-    for (unsigned int i=0; i<nrCuts; i++){
+    for (unsigned int i=0; i<nrCuts_total; i++){
+        /*
         stringstream ss;
         ss << i;
         string myString = ss.str();
+        */
 
-        //string myString2[nrCuts] = {"CUT#1_Sel3Neu1Cha", "CUT#2_OmegaEthreshold", "CUT#3_ImMissingParticle_+-20%mp", "CUT#4_SelMinM(2neu-mpi0)_+-20%mpi0"};
+        h_AllCaloEvsVetoE_CB[i] = hf_CaloEvsVetoE->makeTH2D("Deposited Calo- VS Veto-energies in CB "+cuts[i],     // title
+                                         "Calo E [MeV]","Veto E [MeV]",  // xlabel, ylabel
+                                         Calo_Energy_bins, Veto_Energy_bins,    // our binnings
+                                         "h_AllCaloEvsVetoE_CB_"+cuts[i], true    // ROOT object name, auto-generated if omitted
+                                         );
 
-        h_missingP_IM[i] = hf_missingP_IM->makeTH1D("Im(missingP) after "+cuts[i],     // title
-                                                             "IM(missingP) [MeV]", "#",     // xlabel, ylabel
-                                                             Im_proton_bins,  // our binnings
-                                                             "h_missingP_IM_"+cuts[i], true     // ROOT object name, auto-generated if omitted
-                                                             );
+        h_AllCaloEvsVetoE_TAPS[i] = hf_CaloEvsVetoE->makeTH2D("Deposited Calo- VS Veto-energies in TAPS "+cuts[i],     // title
+                                         "Calo E [MeV]","Veto E [MeV]",  // xlabel, ylabel
+                                         Calo_Energy_bins, Veto_Energy_bins,    // our binnings
+                                         "h_AllCaloEvsVetoE_TAPS_"+cuts[i], true    // ROOT object name, auto-generated if omitted
+                                         );
 
-        h_missingProton_Im[i] = hf_wpi0g_IM->makeTH1D("Im(missingP)",     // title
-                                                             "IM(missing_particle) [MeV]", "#",     // xlabel, ylabel
-                                                             Im_proton_bins,  // our binnings
-                                                             "h_missingProton_Im"+myString, true     // ROOT object name, auto-generated if omitted
-                                                             );                                                         
+        h_neuEkinVSTheta[i] = hf_EvsTheta->makeTH2D("Photons Ekin vs Theta "+cuts[i], //title
+                                                "#Theta [deg]","E_kin [MeV]",  // xlabel, ylabel
+                                                theta_bins, Ekin_neu_bins,    // our binnings
+                                                "h_neuEkinVSTheta_"+cuts[i], true    // ROOT object name, auto-generated if omitted
+                                                );
 
-        h_wOnly3g_Im[i] = hf_wpi0g_IM->makeTH1D("Rec. Omega invariant mass",     // title
-                                            "IM(3g) [MeV]", "#",     // xlabel, ylabel
-                                            Im_omega_bins,  // our binnings
-                                            "h_wOnly3g_Im"+myString, true     // ROOT object name, auto-generated if omitted
+        h_neuEkinVSPhi[i] = hf_EvsPhi->makeTH2D("Photons Ekin vs Phi "+cuts[i], //title
+                                            "#Phi [deg]","E_kin [MeV]",  // xlabel, ylabel
+                                            phi_bins, Ekin_neu_bins,    // our binnings
+                                            "h_neuEkinVSPhi_"+cuts[i], true    // ROOT object name, auto-generated if omitted
                                             );
 
-        h_2gMassComb[i] = hf_wpi0g_IM->makeTH1D("3-Body Omega decay mass-combinations",     // title
-                                             "IM(2g comb) [MeV]", "#",     // xlabel, ylabel
-                                             Im_pi0_bins,  // our binnings
-                                             "h_2gMassComb"+myString, true     // ROOT object name, auto-generated if omitted
-                                             );
+        h_chaEkinVSTheta[i] = hf_EvsTheta->makeTH2D("Charged Ekin vs Theta "+cuts[i], //title
+                                                  "#Theta [deg]","E_kin [MeV]",  // xlabel, ylabel
+                                                  theta_bins, Ekin_cha_bins,    // our binnings
+                                                  "h_chaEkinVSTheta_"+cuts[i], true    // ROOT object name, auto-generated if omitted
+                                                  );
 
-        h_ChaCaloVSVetoEnergies_TAPS[i] = hfTagger->makeTH2D("Charged candidates (EVeto > 0): Deposited Calo VS Veto energy in TAPS",     // title
-                                         "Calo E [MeV]","Veto E [MeV]",  // xlabel, ylabel
-                                         Calo_Energy_bins, Veto_Energy_bins,    // our binnings
-                                         "h_ChaCaloVSVetoEnergies_TAPS"+myString, true    // ROOT object name, auto-generated if omitted
-                                         );
+        h_chaEkinVSPhi[i] = hf_EvsPhi->makeTH2D("Charged Ekin vs Phi "+cuts[i], //title
+                                              "#Phi [deg]","E_kin [MeV]",  // xlabel, ylabel
+                                              phi_bins, Ekin_cha_bins,    // our binnings
+                                              "h_chaEkinVSPhi_"+cuts[i], true    // ROOT object name, auto-generated if omitted
+                                              );
 
-        h_ChaCaloVSVetoEnergies_CB[i] = hfTagger->makeTH2D("Charged candidates (EVeto > 0): Calo VS Veto energy in CB",     // title
-                                         "Calo E [MeV]","Veto E [MeV]",  // xlabel, ylabel
-                                         Calo_Energy_bins, Veto_Energy_bins,    // our binnings
-                                         "h_ChaCaloVSVetoEnergies_CB"+myString, true    // ROOT object name, auto-generated if omitted
-                                         );
+        h_beamE[i] = hf_ExtraHists->makeTH1D("Initial photon beam energy "+cuts[i],     // title
+                                                             "E_{photonbeam} [MeV]", "#",     // xlabel, ylabel
+                                                             initialBeamE_bins,  // our binnings
+                                                             "h_beamE_"+cuts[i], true     // ROOT object name, auto-generated if omitted
+                                                             );
+
     }
 
-    for (unsigned int i=0; i<nrCuts_IM_pi0; i++){
+    for (unsigned int i=0; i<(nrCuts_total-1); i++){
+        /*
+        stringstream ss;
+        ss << i;
+        string myString = ss.str();
+        */
+
+        h_missingP_IM[i] = hf_missingP_IM->makeTH1D("Im(missingP) "+cuts[i+1],     // title
+                                                             "IM(missingP) [MeV]", "#",     // xlabel, ylabel
+                                                             Im_proton_bins,  // our binnings
+                                                             "h_missingP_IM_"+cuts[i+1], true     // ROOT object name, auto-generated if omitted
+                                                             );
+
+        h_3g_IM[i] = hf_3g_IM->makeTH1D("IM(3g) "+cuts[i+1],     // title
+                                            "IM(3g) [MeV]", "#",     // xlabel, ylabel
+                                            Im_omega_bins,  // our binnings
+                                            "h_3g_IM_"+cuts[i+1], true     // ROOT object name, auto-generated if omitted
+                                            );
+
+        h_2gComb_IM[i] = hf_2gComb_IM->makeTH1D("IM(2g) combinations "+cuts[i+1],     // title
+                                             "IM(2g) [MeV]", "#",     // xlabel, ylabel
+                                             Im_pi0_bins,  // our binnings
+                                             "h_2gComb_IM_"+cuts[i+1], true     // ROOT object name, auto-generated if omitted
+                                             );
+
+        h_doublyDCScm_gp_wp[i] = hf_CrossSection->makeTH2D("gp_wp cross section in cm-frame "+cuts[i+1], //title
+                                                                            "cos_Theta*","sqrt_S [MeV]", // xlabel, ylabel
+                                                                            cos_bins, sqrt_S_bins,    // our binnings
+                                                                            "h_doublyDCScm_gp_wp_"+cuts[i+1], true    // ROOT object name, auto-generated if omitted
+                                                                            );
+
+    }
+
+    for (unsigned int i=0; i<nrCuts_pi0; i++){
         stringstream ss;
         ss << i;
         string myString = ss.str();
 
-        h_Pi0Only2g_Im[i] = hf_wpi0g_IM->makeTH1D("Rec. Pi0 invariant mass",     // title
-                                         "IM(pi0) [MeV]", "#",     // xlabel, ylabel
+        h_2gPi0_IM[i] = hf_2gPi0_IM->makeTH1D("IM(2gPi0)",     // title
+                                         "IM(2gPi0) [MeV]", "#",     // xlabel, ylabel
                                          Im_pi0_bins,  // our binnings
-                                         "h_Pi0Only2g_Im"+myString, true     // ROOT object name, auto-generated if omitted
+                                         "h_2gPi0_IM_"+myString, true     // ROOT object name, auto-generated if omitted
                                          );
 
     }
-
-
-    h_AllCaloVSVetoEnergies_TAPS = hfTagger->makeTH2D("All candidates: Deposited Calo VS Veto energy in TAPS",     // title
-                                     "Calo E [MeV]","Veto E [MeV]",  // xlabel, ylabel
-                                     Calo_Energy_bins, Veto_Energy_bins,    // our binnings
-                                     "h_AllCaloVSVetoEnergies_TAPS", true    // ROOT object name, auto-generated if omitted
-                                     );
-
-    h_AllCaloVSVetoEnergies_CB = hfTagger->makeTH2D("All candidates: Deposited Calo VS Veto energy in CB",     // title
-                                     "Calo E [MeV]","Veto E [MeV]",  // xlabel, ylabel
-                                     Calo_Energy_bins, Veto_Energy_bins,    // our binnings
-                                     "h_AllCaloVSVetoEnergies_CB", true    // ROOT object name, auto-generated if omitted
-                                     );
-
-
-    h_NeuCaloVSVetoEnergies_TAPS = hfTagger->makeTH2D("Uncharged candidates: Deposited Calo VS Veto energy in TAPS",     // title
-                                     "Calo E [MeV]","Veto E [MeV]",  // xlabel, ylabel
-                                     Calo_Energy_bins, Veto_Energy_bins,    // our binnings
-                                     "h_NeuCaloVSVetoEnergies_TAPS", true    // ROOT object name, auto-generated if omitted
-                                     );
-
-    h_NeuCaloVSVetoEnergies_CB = hfTagger->makeTH2D("Uncharged candidates: Deposited Calo VS Veto energy in CB",     // title
-                                     "Calo E [MeV]","Veto E [MeV]",  // xlabel, ylabel
-                                     Calo_Energy_bins, Veto_Energy_bins,    // our binnings
-                                     "h_NeuCaloVSVetoEnergies_CB", true    // ROOT object name, auto-generated if omitted
-                                     );
 
     h_TaggerTime = hfTagger->makeTH1D("Tagger Time",     // title
                                     "t [ns]", "#",     // xlabel, ylabel
@@ -259,18 +283,6 @@ scratch_damaurer_MC_pw_ppi0g_p3g::scratch_damaurer_MC_pw_ppi0g_p3g(const string&
                                         "h_wpi02g_EvTheta", true    // ROOT object name, auto-generated if omitted
                                         );
 
-    h_doubly_wp_DCS_reconstructed_lab = hfCrossCheck->makeTH2D("Cross section check in lab-frame", //title
-                                                                        "cos_Theta","sqrt_S [MeV]", // xlabel, ylabel
-                                                                        cos_bins, sqrt_S_bins,    // our binnings
-                                                                        "h_doubly_wp_DCS_reconstructed_lab", true    // ROOT object name, auto-generated if omitted
-                                                                        );
-    
-    h_doubly_wp_DCS_reconstructed_cmFrame = hfCrossCheck->makeTH2D("Cross section check in cm-frame", //title
-                                                                        "cos_Theta*","sqrt_S [MeV]", // xlabel, ylabel
-                                                                        cos_bins, sqrt_S_bins,    // our binnings
-                                                                        "h_doubly_wp_DCS_reconstructed_cmFrame", true    // ROOT object name, auto-generated if omitted
-                                                                        );
-
     // define some prompt and random windows (in nanoseconds)
     promptrandom.AddPromptRange({ -7,   7}); // in nanoseconds
     promptrandom.AddRandomRange({-50, -10});
@@ -290,11 +302,12 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
     TCandidatePtrList all;
     TCandidatePtrList neutral;
     TCandidatePtrList charged;
-    vector<double> allCanCluSize;
-    vector<double> allCanCaloE;
-    vector<double> allCanVetoE;
-    vector<double> allThe;
-    vector<double> allPhi;
+
+    vector<bool> chaCanInCB;
+    vector<bool> chaCanInTAPS;
+    vector<bool> neuCanInCB;
+    vector<bool> neuCanInTAPS;
+
     vector<double> neuCanCluSize;
     vector<double> neuCanCaloE;
     vector<double> neuCanVetoE;
@@ -309,38 +322,49 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
     for(const auto& cand : candidates.get_iter()) {
         //h_VetoEnergies->Fill(cand->VetoEnergy);
         all.emplace_back(cand);
-        allThe.push_back(cand->Theta*radtodeg);
-        allPhi.push_back(cand->Phi*radtodeg);
-        allCanCluSize.push_back(cand->ClusterSize);
-        allCanCaloE.push_back(cand->CaloEnergy);
-        allCanVetoE.push_back(cand->VetoEnergy);
-        if(cand->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB)
-            h_AllCaloVSVetoEnergies_CB->Fill(cand->CaloEnergy,cand->VetoEnergy);
-        if(cand->FindCaloCluster()->DetectorType == Detector_t::Type_t::TAPS)
-            h_AllCaloVSVetoEnergies_TAPS->Fill(cand->CaloEnergy,cand->VetoEnergy);
+
         if(cand->VetoEnergy <= vetoEthreshold) {
-            if(cand->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB)
-                h_NeuCaloVSVetoEnergies_CB->Fill(cand->CaloEnergy,cand->VetoEnergy);
-            if(cand->FindCaloCluster()->DetectorType == Detector_t::Type_t::TAPS)
-                h_NeuCaloVSVetoEnergies_TAPS->Fill(cand->CaloEnergy,cand->VetoEnergy);
             neutral.emplace_back(cand);
             neuThe.push_back(cand->Theta*radtodeg);
             neuPhi.push_back(cand->Phi*radtodeg);
             neuCanCluSize.push_back(cand->ClusterSize);
             neuCanCaloE.push_back(cand->CaloEnergy);
             neuCanVetoE.push_back(cand->VetoEnergy);
+
+            if(cand->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+                neuCanInCB.push_back(true);
+            }
+            else{
+                neuCanInCB.push_back(false);
+            }
+            if(cand->FindCaloCluster()->DetectorType == Detector_t::Type_t::TAPS){
+                neuCanInTAPS.push_back(true);
+            }
+            else{
+                neuCanInTAPS.push_back(false);
+            }
         }       
         else{
-            if(cand->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB)
-                h_ChaCaloVSVetoEnergies_CB[0]->Fill(cand->CaloEnergy,cand->VetoEnergy);
-            if(cand->FindCaloCluster()->DetectorType == Detector_t::Type_t::TAPS)
-                h_ChaCaloVSVetoEnergies_TAPS[0]->Fill(cand->CaloEnergy,cand->VetoEnergy);
+
             charged.emplace_back(cand);
             chaThe.push_back(cand->Theta*radtodeg);
             chaPhi.push_back(cand->Phi*radtodeg);
             chaCanCluSize.push_back(cand->ClusterSize);
             chaCanCaloE.push_back(cand->CaloEnergy);
             chaCanVetoE.push_back(cand->VetoEnergy);
+
+            if(cand->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+                chaCanInCB.push_back(true);
+            }
+            else{
+                chaCanInCB.push_back(false);
+            }
+            if(cand->FindCaloCluster()->DetectorType == Detector_t::Type_t::TAPS){
+                chaCanInTAPS.push_back(true);
+            }
+            else{
+                chaCanInTAPS.push_back(false);
+            }
         }
 
     }
@@ -380,7 +404,7 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
             PhotonE.push_back(photon->CaloEnergy);
         }
         wpi0gOnly3g_IM = wpi0gOnly3g.M();
-        wpi0gOnly3g_time = wpi0gOnly3g_time/2.;
+        wpi0gOnly3g_time = wpi0gOnly3g_time/3.;
         wpi0g_times.push_back(wpi0gOnly3g_time);
 
     }
@@ -406,12 +430,26 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
         const double weight = promptrandom.FillWeight();
 
         h_TaggerTime->Fill(taggerhit.Time, weight);
-        h_InitialBeamE->Fill(InitialPhotonVec.E()/1000,weight);
+        h_beamE[0]->Fill(InitialPhotonVec.E(),weight);
+
+        for (unsigned int i=0; i<neutral.size(); i++){
+            h_neuEkinVSPhi[0]->Fill(neuPhi[i],neuCanCaloE[i],weight);
+            h_neuEkinVSTheta[0]->Fill(neuThe[i],neuCanCaloE[i],weight);
+            if(neuCanInCB[i]){h_AllCaloEvsVetoE_CB[0]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);}
+            if(neuCanInTAPS[i]){h_AllCaloEvsVetoE_TAPS[0]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);}
+        }
+        for (unsigned int i=0; i<charged.size(); i++){
+            h_chaEkinVSPhi[0]->Fill(chaPhi[i],chaCanCaloE[i],weight);
+            h_chaEkinVSTheta[0]->Fill(chaThe[i],chaCanCaloE[i],weight);
+            if(chaCanInCB[i]){h_AllCaloEvsVetoE_CB[0]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);}
+            if(chaCanInTAPS[i]){h_AllCaloEvsVetoE_TAPS[0]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);}
+        }
 
         if(!(neuCanCaloE.size() == neu_nrSel && chaCanCaloE.size() == cha_nrSel))
             continue;
 
         TLorentzVector L3g;
+
         for(int i = 0; i<neu_nrSel; i++){
             L3g += (TLorentzVector)(g[i]);
         }
@@ -421,39 +459,70 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
         TLorentzVector Lw_tmp = (TLorentzVector)(omega_tmp);
         TLorentzVector Lp_tmp = (TLorentzVector)(proton_tmp);
 
-        TLorentzVector LmissingProton = Linitial-Lw_tmp;     
+        TLorentzVector LmissingProton = Linitial-Lw_tmp;
+
+        TLorentzVector Lp = Lp_tmp;
+        TLorentzVector Lw = Lw_tmp;
+        TLorentzVector Lw_boosted = Lw;
+        Lw_boosted.Boost(-Linitial.BoostVector());
 
         h_missingP_IM[0]->Fill(LmissingProton.M(),weight);
+        h_3g_IM[0]->Fill(omega_tmp.M(),weight);
 
-        h_wOnly3g_Im[0]->Fill(omega_tmp.M(),weight);
-        h_missingProton_Im[0]->Fill(LmissingProton.M(),weight);
-        h_2gMassComb[0]->Fill((g[0]+g[1]).M(),weight);
-        h_2gMassComb[0]->Fill((g[0]+g[2]).M(),weight);
-        h_2gMassComb[0]->Fill((g[1]+g[2]).M(),weight);
+        h_2gComb_IM[0]->Fill((g[0]+g[1]).M(),weight);
+        h_2gComb_IM[0]->Fill((g[0]+g[2]).M(),weight);
+        h_2gComb_IM[0]->Fill((g[1]+g[2]).M(),weight);
+
+        h_doublyDCScm_gp_wp[0]->Fill(cos(Linitial.Angle(Lw_boosted.Vect())),Linitial.M(),weight);
+        h_beamE[1]->Fill(InitialPhotonVec.E(),weight);
+
+        for (unsigned int i=0; i<neutral.size(); i++){
+            h_neuEkinVSPhi[1]->Fill(neuPhi[i],neuCanCaloE[i],weight);
+            h_neuEkinVSTheta[1]->Fill(neuThe[i],neuCanCaloE[i],weight);
+            if(neuCanInCB[i]){h_AllCaloEvsVetoE_CB[1]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);}
+            if(neuCanInTAPS[i]){h_AllCaloEvsVetoE_TAPS[1]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);}
+        }
+        for (unsigned int i=0; i<charged.size(); i++){
+            h_chaEkinVSPhi[1]->Fill(chaPhi[i],chaCanCaloE[i],weight);
+            h_chaEkinVSTheta[1]->Fill(chaThe[i],chaCanCaloE[i],weight);
+            if(chaCanInCB[i]){h_AllCaloEvsVetoE_CB[1]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);}
+            if(chaCanInTAPS[i]){h_AllCaloEvsVetoE_TAPS[1]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);}
+        }
 
         if(!(InitialPhotonVec.E()>=Omega_Ethreshold))
             continue;
 
-        for (unsigned int i=0; i<chaThe.size(); i++){
-            if(chaThe[i]>=20 && chaThe[i]<=160)
-                h_ChaCaloVSVetoEnergies_CB[1]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
-            if(chaThe[i]<20 && chaThe[i]>=2)
-                h_ChaCaloVSVetoEnergies_TAPS[1]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
+        /*
+        for(int i=0; i<neu_nrSel;i++){
+            h_3gEvsTheta[1]->Fill(g[i].Theta()*radtodeg,g[i].E(),weight);
+            h_3gEvsPhi[1]->Fill(g[i].Phi()*radtodeg,g[i].E(),weight);
         }
+
+        h_1chaEvsTheta[1]->Fill(Lp.Theta()*radtodeg,Lp.E(),weight);
+        h_1chaEvsPhi[1]->Fill(Lp.Phi()*radtodeg,Lp.E(),weight);
+        */
 
         h_missingP_IM[1]->Fill(LmissingProton.M(),weight);
-        h_wOnly3g_Im[1]->Fill(omega_tmp.M(),weight);
-        h_missingProton_Im[1]->Fill(LmissingProton.M(),weight);
-        h_2gMassComb[1]->Fill((g[0]+g[1]).M(),weight);
-        h_2gMassComb[1]->Fill((g[0]+g[2]).M(),weight);
-        h_2gMassComb[1]->Fill((g[1]+g[2]).M(),weight);
+        h_3g_IM[1]->Fill(omega_tmp.M(),weight);
 
-        for (unsigned int i=0; i<neuThe.size(); i++){
-            h_NeuPolarAngles->Fill(neuThe[i],weight);
+        h_2gComb_IM[1]->Fill((g[0]+g[1]).M(),weight);
+        h_2gComb_IM[1]->Fill((g[0]+g[2]).M(),weight);
+        h_2gComb_IM[1]->Fill((g[1]+g[2]).M(),weight);
+
+        h_doublyDCScm_gp_wp[1]->Fill(cos(Linitial.Angle(Lw_boosted.Vect())),Linitial.M(),weight);
+        h_beamE[2]->Fill(InitialPhotonVec.E(),weight);
+
+        for (unsigned int i=0; i<neutral.size(); i++){
+            h_neuEkinVSPhi[2]->Fill(neuPhi[i],neuCanCaloE[i],weight);
+            h_neuEkinVSTheta[2]->Fill(neuThe[i],neuCanCaloE[i],weight);
+            if(neuCanInCB[i]){h_AllCaloEvsVetoE_CB[2]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);}
+            if(neuCanInTAPS[i]){h_AllCaloEvsVetoE_TAPS[2]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);}
         }
-
-        for (unsigned int i=0; i<neuPhi.size(); i++){
-            h_NeuAzimuthAngles->Fill(neuPhi[i],weight);
+        for (unsigned int i=0; i<charged.size(); i++){
+            h_chaEkinVSPhi[2]->Fill(chaPhi[i],chaCanCaloE[i],weight);
+            h_chaEkinVSTheta[2]->Fill(chaThe[i],chaCanCaloE[i],weight);
+            if(chaCanInCB[i]){h_AllCaloEvsVetoE_CB[2]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);}
+            if(chaCanInTAPS[i]){h_AllCaloEvsVetoE_TAPS[2]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);}
         }
 
         double cut_shift1 = mp*0.2;
@@ -464,19 +533,27 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
             continue;
 
         h_missingP_IM[2]->Fill(LmissingProton.M(),weight);
-        h_wOnly3g_Im[2]->Fill(omega_tmp.M(),weight);
-        h_missingProton_Im[2]->Fill(LmissingProton.M(),weight);
-        h_2gMassComb[2]->Fill((g[0]+g[1]).M(),weight);
-        h_2gMassComb[2]->Fill((g[0]+g[2]).M(),weight);
-        h_2gMassComb[2]->Fill((g[1]+g[2]).M(),weight);
+        h_3g_IM[2]->Fill(omega_tmp.M(),weight);
 
-        TLorentzVector Lp = Lp_tmp;
-        TLorentzVector Lw = Lw_tmp;
-        TLorentzVector Lw_boosted = Lw;
-        Lw_boosted.Boost(-Linitial.BoostVector());
+        h_2gComb_IM[2]->Fill((g[0]+g[1]).M(),weight);
+        h_2gComb_IM[2]->Fill((g[0]+g[2]).M(),weight);
+        h_2gComb_IM[2]->Fill((g[1]+g[2]).M(),weight);
 
-        h_doubly_wp_DCS_reconstructed_lab->Fill(cos(Lw.Theta()),Linitial.M(),weight);
-        h_doubly_wp_DCS_reconstructed_cmFrame->Fill(cos(Linitial.Angle(Lw_boosted.Vect())),Linitial.M(),weight);
+        h_doublyDCScm_gp_wp[2]->Fill(cos(Linitial.Angle(Lw_boosted.Vect())),Linitial.M(),weight);
+        h_beamE[3]->Fill(InitialPhotonVec.E(),weight);
+
+        for (unsigned int i=0; i<neutral.size(); i++){
+            h_neuEkinVSPhi[3]->Fill(neuPhi[i],neuCanCaloE[i],weight);
+            h_neuEkinVSTheta[3]->Fill(neuThe[i],neuCanCaloE[i],weight);
+            if(neuCanInCB[i]){h_AllCaloEvsVetoE_CB[3]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);}
+            if(neuCanInTAPS[i]){h_AllCaloEvsVetoE_TAPS[3]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);}
+        }
+        for (unsigned int i=0; i<charged.size(); i++){
+            h_chaEkinVSPhi[3]->Fill(chaPhi[i],chaCanCaloE[i],weight);
+            h_chaEkinVSTheta[3]->Fill(chaThe[i],chaCanCaloE[i],weight);
+            if(chaCanInCB[i]){h_AllCaloEvsVetoE_CB[3]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);}
+            if(chaCanInTAPS[i]){h_AllCaloEvsVetoE_TAPS[3]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);}
+        }
 
         //LorentzBoost-Stuff with opening angle selections:
 
@@ -543,26 +620,34 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
         else if(pi0_absMassDiff[1] <= pi0_absMassDiff[0] && pi0_absMassDiff[1] <= pi0_absMassDiff[2]){wpi0 = wpi0_tmp[1]; wg = wg_tmp[1]; wpi0g[0] = g[0]; wpi0g[1] = g[2];}
         else{wpi0 = wpi0_tmp[2]; wg = wg_tmp[2]; wpi0g[0] = g[1]; wpi0g[1] = g[2];}
 
-        h_Pi0Only2g_Im[0]->Fill(wpi0.M(),weight);
+        h_2gPi0_IM[0]->Fill(wpi0.M(),weight);
 
         double cut_shift3 = mpi0*0.2;
         if(!(wpi0.M()>(mpi0-cut_shift3) && wpi0.M()<(mpi0+cut_shift3)))
             continue;
 
-        h_Pi0Only2g_Im[1]->Fill(wpi0.M(),weight);
+        h_2gPi0_IM[1]->Fill(wpi0.M(),weight);
 
         h_missingP_IM[3]->Fill(LmissingProton.M(),weight);
-        h_wOnly3g_Im[3]->Fill(omega_tmp.M(),weight);
-        h_missingProton_Im[3]->Fill(LmissingProton.M(),weight);
-        h_2gMassComb[3]->Fill((g[0]+g[1]).M(),weight);
-        h_2gMassComb[3]->Fill((g[0]+g[2]).M(),weight);
-        h_2gMassComb[3]->Fill((g[1]+g[2]).M(),weight);
+        h_3g_IM[3]->Fill(omega_tmp.M(),weight);
+        h_2gComb_IM[3]->Fill((g[0]+g[1]).M(),weight);
+        h_2gComb_IM[3]->Fill((g[0]+g[2]).M(),weight);
+        h_2gComb_IM[3]->Fill((g[1]+g[2]).M(),weight);
 
-        for (unsigned int i=0; i<chaThe.size(); i++){
-            if(chaThe[i]>=20 && chaThe[i]<=160)
-                h_ChaCaloVSVetoEnergies_CB[2]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
-            if(chaThe[i]<20 && chaThe[i]>=2)
-                h_ChaCaloVSVetoEnergies_TAPS[2]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
+        h_doublyDCScm_gp_wp[3]->Fill(cos(Linitial.Angle(Lw_boosted.Vect())),Linitial.M(),weight);
+        h_beamE[4]->Fill(InitialPhotonVec.E(),weight);
+
+        for (unsigned int i=0; i<neutral.size(); i++){
+            h_neuEkinVSPhi[4]->Fill(neuPhi[i],neuCanCaloE[i],weight);
+            h_neuEkinVSTheta[4]->Fill(neuThe[i],neuCanCaloE[i],weight);
+            if(neuCanInCB[i]){h_AllCaloEvsVetoE_CB[4]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);}
+            if(neuCanInTAPS[i]){h_AllCaloEvsVetoE_TAPS[4]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);}
+        }
+        for (unsigned int i=0; i<charged.size(); i++){
+            h_chaEkinVSPhi[4]->Fill(chaPhi[i],chaCanCaloE[i],weight);
+            h_chaEkinVSTheta[4]->Fill(chaThe[i],chaCanCaloE[i],weight);
+            if(chaCanInCB[i]){h_AllCaloEvsVetoE_CB[4]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);}
+            if(chaCanInTAPS[i]){h_AllCaloEvsVetoE_TAPS[4]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);}
         }
 
         /*
@@ -616,7 +701,7 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
 
 void scratch_damaurer_MC_pw_ppi0g_p3g::ShowResult()
 {    
-   /*
+/*
    ant::canvas(GetName()+": All candidates deposited Calo vs Veto energy")
            << drawoption("pcolz")
            << h_AllCaloVSVetoEnergies_CB
@@ -641,22 +726,7 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ShowResult()
                << endc; // actually draws the canvas
    }
 
-
-    for (unsigned int i=0; i<nrCuts_IM; i++){
-
-        stringstream ss;
-        ss << i;
-        string myString = ss.str();
-
-        ant::canvas(GetName()+": Rec. Omega & missing particle: Invariant masses after "+myString+ " applied cuts")
-                << h_missingProton_Im[i]
-                << h_wOnly3g_Im[i]
-                << h_2gMassComb[i]
-                << endc; // actually draws the canvas
-
-    }
-
-    for (unsigned int i=0; i<nrCuts_IM_pi0; i++){
+    for (unsigned int i=0; i<nrCuts_pi0; i++){
 
         stringstream ss;
         ss << i;
@@ -686,12 +756,89 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ShowResult()
             << h_doubly_wp_DCS_reconstructed_lab
             << h_doubly_wp_DCS_reconstructed_cmFrame
             << endc; // actually draws the canvas
-            */
+*/
+
     ant::canvas c1(GetName()+": IM(missingP)");
-    for (unsigned int i=0; i<nrCuts; i++){
+    for (unsigned int i=0; i<(nrCuts_total-1); i++){
             c1 << h_missingP_IM[i];
     }
             c1 << endc; // actually draws the canvas
+
+    ant::canvas c2(GetName()+": IM(3neu)");
+    for (unsigned int i=0; i<(nrCuts_total-1); i++){
+            c2 << h_3g_IM[i];
+    }
+            c2 << endc; // actually draws the canvas
+
+
+    ant::canvas c3(GetName()+": IM(2neu) combinations");
+    for (unsigned int i=0; i<(nrCuts_total-1); i++){
+            c3 << h_2gComb_IM[i];
+    }
+            c3 << endc; // actually draws the canvas
+
+    ant::canvas c4(GetName()+": gp_wp cross section in cm-frame");
+            c4 << drawoption("Surf");
+    for (unsigned int i=0; i<(nrCuts_total-1); i++){
+            c4 << h_doublyDCScm_gp_wp[i];
+    }
+            c4 << endc; // actually draws the canvas
+
+    ant::canvas c5(GetName()+": IM(2neuPi0)");
+    for (unsigned int i=0; i<nrCuts_pi0; i++){
+            c5 << h_2gPi0_IM[i];
+    }
+            c5 << endc; // actually draws the canvas
+
+    ant::canvas c6(GetName()+": Deposited Calo- VS Veto-energies in CB");
+            c6 << drawoption("pcolz");
+    for (unsigned int i=0; i<nrCuts_total; i++){
+            c6 << h_AllCaloEvsVetoE_CB[i];
+    }
+            c6 << endc; // actually draws the canvas
+
+    ant::canvas c7(GetName()+": Deposited Calo- VS Veto-energies in TAPS");
+            c7 << drawoption("pcolz");
+    for (unsigned int i=0; i<nrCuts_total; i++){
+            c7 << h_AllCaloEvsVetoE_TAPS[i];
+    }
+            c7 << endc; // actually draws the canvas
+
+    ant::canvas c8(GetName()+": Initial photonbeam energy");
+    for (unsigned int i=0; i<nrCuts_total; i++){
+            c8 << h_beamE[i];
+    }
+            c8 << endc; // actually draws the canvas
+
+
+    ant::canvas c9(GetName()+": Photons Ekin vs Theta");
+            c9 << drawoption("pcolz");
+    for (unsigned int i=0; i<nrCuts_total; i++){
+            c9 << h_neuEkinVSTheta[i];
+    }
+            c9 << endc; // actually draws the canvas
+
+    ant::canvas c10(GetName()+": charged Ekin vs Theta");
+            c10 << drawoption("pcolz");
+    for (unsigned int i=0; i<nrCuts_total; i++){
+            c10 << h_chaEkinVSTheta[i];
+    }
+            c10 << endc; // actually draws the canvas
+
+    ant::canvas c11(GetName()+": Photons Ekin vs Phi");
+            c11 << drawoption("pcolz");
+    for (unsigned int i=0; i<nrCuts_total; i++){
+            c11 << h_neuEkinVSPhi[i];
+    }
+            c11 << endc; // actually draws the canvas
+
+    ant::canvas c12(GetName()+": charged candidates Ekin vs Phi");
+            c12 << drawoption("pcolz");
+    for (unsigned int i=0; i<nrCuts_total; i++){
+            c12 << h_chaEkinVSPhi[i];
+    }
+            c12 << endc; // actually draws the canvas
+
 
 }
 

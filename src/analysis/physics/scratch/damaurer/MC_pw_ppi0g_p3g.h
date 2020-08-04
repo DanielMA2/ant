@@ -14,6 +14,9 @@
 // handle ROOT's TTree
 #include "base/WrapTTree.h"
 
+//include more stuff, if necessary:
+#include <iostream>
+
 // the physics classes reside in this nested namespace
 namespace ant {
 
@@ -53,9 +56,8 @@ protected:
     static constexpr auto radtodeg = std_ext::radian_to_degree(1.0);
 
 //-- Histograms
-static const int nrCuts = 4;
-static const int nrCuts_IM = 4;
-static const int nrCuts_IM_pi0 = 2;
+static const int nrCuts_total = 5;
+static const int nrCuts_pi0 = 2;
 static const int nrCuts_VetoSel = 2;
 
 static const int neu_nrSel = 3;
@@ -67,11 +69,23 @@ private:
 
     tree_t t;
 
-    TH1D* h_missingP_IM[nrCuts];
-    TH1D* h_missingProton_Im[nrCuts_IM];
-    TH1D* h_wOnly3g_Im[nrCuts_IM];
-    TH1D* h_2gMassComb[nrCuts_IM];
-    TH1D* h_Pi0Only2g_Im[nrCuts_IM_pi0];
+    TH1D* h_beamE[nrCuts_total];
+    TH1D* h_missingP_IM[nrCuts_total-1];
+    TH1D* h_3g_IM[nrCuts_total-1];
+    TH1D* h_2gComb_IM[nrCuts_total-1];
+    TH2D* h_doublyDCScm_gp_wp[nrCuts_total-1];
+    TH2D* h_doublyDCSlab_gp_wp[nrCuts_total-1];
+
+    TH2D* h_AllCaloEvsVetoE_CB[nrCuts_total];
+    TH2D* h_AllCaloEvsVetoE_TAPS[nrCuts_total];
+
+    TH2D* h_neuEkinVSTheta[nrCuts_total];
+    TH2D* h_chaEkinVSTheta[nrCuts_total];
+    TH2D* h_neuEkinVSPhi[nrCuts_total];
+    TH2D* h_chaEkinVSPhi[nrCuts_total];
+
+    TH1D* h_2gPi0_IM[nrCuts_pi0];
+
     //TH1D* h_pi0g_BackToBack[nrCuts_BackToBack];
 
     TH1D* h_TaggerTime;
@@ -89,12 +103,6 @@ private:
     TH1D* h_3gPolarAnglesTAPS;
     TH1D* h_3gAzimuthAngles;
 
-    TH2D* h_AllCaloVSVetoEnergies_CB;
-    TH2D* h_AllCaloVSVetoEnergies_TAPS;
-    TH2D* h_NeuCaloVSVetoEnergies_CB;
-    TH2D* h_NeuCaloVSVetoEnergies_TAPS;
-    TH2D* h_ChaCaloVSVetoEnergies_CB[nrCuts_IM];
-    TH2D* h_ChaCaloVSVetoEnergies_TAPS[nrCuts_IM];
     TH2D* h_3g_EvTheta_CB;
     TH2D* h_3g_EvTheta_TAPS;
     TH2D* h_p_EvTheta;
@@ -102,9 +110,6 @@ private:
     TH2D* h_wg_EvTheta;
     TH2D* h_wpi0_EvTheta;
     TH2D* h_wpi02g_EvTheta;
-
-    TH2D* h_doubly_wp_DCS_reconstructed_lab;
-    TH2D* h_doubly_wp_DCS_reconstructed_cmFrame;
     //TH1D* h_Reconstructed_Data_Statistics;
 
     PromptRandom::Switch promptrandom;
