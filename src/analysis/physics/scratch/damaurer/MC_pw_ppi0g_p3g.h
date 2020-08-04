@@ -67,6 +67,7 @@ private:
 
     tree_t t;
 
+    TH1D* h_missingP_IM[nrCuts];
     TH1D* h_missingProton_Im[nrCuts_IM];
     TH1D* h_wOnly3g_Im[nrCuts_IM];
     TH1D* h_2gMassComb[nrCuts_IM];

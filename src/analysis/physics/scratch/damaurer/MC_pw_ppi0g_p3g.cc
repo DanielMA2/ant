@@ -35,6 +35,7 @@ scratch_damaurer_MC_pw_ppi0g_p3g::scratch_damaurer_MC_pw_ppi0g_p3g(const string&
     const BinSettings initialBeamE_bins(1000,1,1.6);
     const BinSettings cos_bins(100,-1,1);
     //const BinSettings cos_bins_BackToBack(1000,-1,1);
+    //const BinSettings wpi0_Q_bins(100, 0, 1500);
     const BinSettings sqrt_S_bins(100,s_square_min,s_square_max);
     const BinSettings phi_bins(100, -180, 180);
 
@@ -46,16 +47,19 @@ scratch_damaurer_MC_pw_ppi0g_p3g::scratch_damaurer_MC_pw_ppi0g_p3g(const string&
     const BinSettings Im_proton_bins(100, 0, 1800);
     const BinSettings Im_omega_bins(100, 0, 1800);
     const BinSettings Im_pi0_bins(100, 0, 1000);
-    const BinSettings wpi0_Q_bins(100, 0, 1500);
 
     const BinSettings E_photon_bins(100, 0, 1600);
     const BinSettings E_proton_bins(100, 900, 2000);
     const BinSettings E_omega_bins(100, 400, 1800);
     const BinSettings E_pi0_bins(100, 0, 1600);
 
+    string cuts[nrCuts] = {"CUT#1_Sel3Neu1Cha", "CUT#2_OmegaEthreshold", "CUT#3_ImMissingParticle_+-20%mp", "CUT#4_SelMinM(2neu-mpi0)_+-20%mpi0"};
+
     // HistFac is a protected member of the base class "Physics"
     // use it to conveniently create histograms (and other ROOT objects) at the right location
     // using the make methods
+
+    auto hf_missingP_IM = new HistogramFactory("hf_missingP_Im", HistFac, "");
 
     auto hfTagger = new HistogramFactory("Tagger", HistFac, "");
     auto hfOnlyEnergy = new HistogramFactory("All_the_candidate_energies", HistFac, "");
@@ -70,24 +74,30 @@ scratch_damaurer_MC_pw_ppi0g_p3g::scratch_damaurer_MC_pw_ppi0g_p3g(const string&
         ss << i;
         string myString = ss.str();
 
-        string myString2[nrCuts] = {"CUT#1_Sel3Neu1Cha", "CUT#2_OmegaEthreshold", "CUT#3_ImMissingParticle_+-20%mp", "CUT#4_SelMinM(2neu-mpi0)_+-20%mpi0"};
+        //string myString2[nrCuts] = {"CUT#1_Sel3Neu1Cha", "CUT#2_OmegaEthreshold", "CUT#3_ImMissingParticle_+-20%mp", "CUT#4_SelMinM(2neu-mpi0)_+-20%mpi0"};
 
-        h_missingProton_Im[i] = hf_wpi0g_IM->makeTH1D("Im(missingP) after"+myString2[i],     // title
+        h_missingP_IM[i] = hf_missingP_IM->makeTH1D("Im(missingP) after "+cuts[i],     // title
+                                                             "IM(missingP) [MeV]", "#",     // xlabel, ylabel
+                                                             Im_proton_bins,  // our binnings
+                                                             "h_missingP_IM_"+cuts[i], true     // ROOT object name, auto-generated if omitted
+                                                             );
+
+        h_missingProton_Im[i] = hf_wpi0g_IM->makeTH1D("Im(missingP)",     // title
                                                              "IM(missing_particle) [MeV]", "#",     // xlabel, ylabel
                                                              Im_proton_bins,  // our binnings
-                                                             "h_missingProton_Im"+myString2[i], false     // ROOT object name, auto-generated if omitted
-                                                             );
+                                                             "h_missingProton_Im"+myString, true     // ROOT object name, auto-generated if omitted
+                                                             );                                                         
 
         h_wOnly3g_Im[i] = hf_wpi0g_IM->makeTH1D("Rec. Omega invariant mass",     // title
                                             "IM(3g) [MeV]", "#",     // xlabel, ylabel
                                             Im_omega_bins,  // our binnings
-                                            "h_wOnly3g_Im"+myString, false     // ROOT object name, auto-generated if omitted
+                                            "h_wOnly3g_Im"+myString, true     // ROOT object name, auto-generated if omitted
                                             );
 
         h_2gMassComb[i] = hf_wpi0g_IM->makeTH1D("3-Body Omega decay mass-combinations",     // title
                                              "IM(2g comb) [MeV]", "#",     // xlabel, ylabel
                                              Im_pi0_bins,  // our binnings
-                                             "h_2gMassComb"+myString, false     // ROOT object name, auto-generated if omitted
+                                             "h_2gMassComb"+myString, true     // ROOT object name, auto-generated if omitted
                                              );
 
         h_ChaCaloVSVetoEnergies_TAPS[i] = hfTagger->makeTH2D("Charged candidates (EVeto > 0): Deposited Calo VS Veto energy in TAPS",     // title
@@ -111,7 +121,7 @@ scratch_damaurer_MC_pw_ppi0g_p3g::scratch_damaurer_MC_pw_ppi0g_p3g(const string&
         h_Pi0Only2g_Im[i] = hf_wpi0g_IM->makeTH1D("Rec. Pi0 invariant mass",     // title
                                          "IM(pi0) [MeV]", "#",     // xlabel, ylabel
                                          Im_pi0_bins,  // our binnings
-                                         "h_Pi0Only2g_Im"+myString, false     // ROOT object name, auto-generated if omitted
+                                         "h_Pi0Only2g_Im"+myString, true     // ROOT object name, auto-generated if omitted
                                          );
 
     }
@@ -162,49 +172,49 @@ scratch_damaurer_MC_pw_ppi0g_p3g::scratch_damaurer_MC_pw_ppi0g_p3g(const string&
     h_NeuPolarAngles = hfOnlyAngles->makeTH1D("Neutral candidate polarangles",     // title
                                        "#Theta [deg]", "#",     // xlabel, ylabel
                                        theta_bins,  // our binnings
-                                       "h_NeuPolarAngles", false     // ROOT object name, auto-generated if omitted
+                                       "h_NeuPolarAngles", true     // ROOT object name, auto-generated if omitted
                                        );
 
     h_NeuAzimuthAngles = hfOnlyAngles->makeTH1D("Neutral candidate azimuthangles",     // title
                                        "#Phi [deg]", "#",     // xlabel, ylabel
                                        phi_bins,  // our binnings
-                                       "h_NeuAzimuthAngles", false     // ROOT object name, auto-generated if omitted
+                                       "h_NeuAzimuthAngles", true     // ROOT object name, auto-generated if omitted
                                        );
 
     h_ChaPolarAngles = hfOnlyAngles->makeTH1D("Charged particles polarangles",     // title
                                                     "#Theta [deg]", "#",     // xlabel, ylabel
                                                     theta_bins,  // our binnings
-                                                    "h_ChaPolarAngles", false     // ROOT object name, auto-generated if omitted
+                                                    "h_ChaPolarAngles", true     // ROOT object name, auto-generated if omitted
                                                     );
 
     h_ChaAzimuthAngles = hfOnlyAngles->makeTH1D("Charged particles azimuthangles",     // title
                                                     "#Phi [deg]", "#",     // xlabel, ylabel
                                                     phi_bins,  // our binnings
-                                                    "h_ChaAzimuthAngles", false     // ROOT object name, auto-generated if omitted
+                                                    "h_ChaAzimuthAngles", true     // ROOT object name, auto-generated if omitted
                                                     );
 
     h_3gPolarAngles = hfOnlyAngles->makeTH1D("Rec. Photons polarangles",     // title
                                              "#Theta [deg]", "#",     // xlabel, ylabel
                                              theta_bins,  // our binnings
-                                             "h_3gPolarAngles", false     // ROOT object name, auto-generated if omitted
+                                             "h_3gPolarAngles", true     // ROOT object name, auto-generated if omitted
                                              );
 
     h_3gPolarAnglesCB = hfOnlyAngles->makeTH1D("Rec. Photons polarangles only in CB",     // title
                                              "#Theta [deg]", "#",     // xlabel, ylabel
                                              theta_bins_CB,  // our binnings
-                                             "h_3gPolarAnglesCB", false     // ROOT object name, auto-generated if omitted
+                                             "h_3gPolarAnglesCB", true     // ROOT object name, auto-generated if omitted
                                              );
 
     h_3gPolarAnglesTAPS = hfOnlyAngles->makeTH1D("Rec. Photons polarangles only in TAPS",     // title
                                              "#Theta [deg]", "#",     // xlabel, ylabel
                                              theta_bins_TAPS,  // our binnings
-                                             "h_3gPolarAnglesTAPS", false     // ROOT object name, auto-generated if omitted
+                                             "h_3gPolarAnglesTAPS", true     // ROOT object name, auto-generated if omitted
                                              );
 
     h_3gAzimuthAngles = hfOnlyAngles->makeTH1D("Rec. Photons azimuthangles",     // title
                                                "#Phi [deg]", "#",     // xlabel, ylabel
                                                phi_bins,  // our binnings
-                                               "h_3gAzimuthAngles", false     // ROOT object name, auto-generated if omitted
+                                               "h_3gAzimuthAngles", true     // ROOT object name, auto-generated if omitted
                                                );
 
     h_3g_EvTheta_CB = hf_wpi0g_EvsTheta->makeTH2D("Photon energy vs theta only in CB", //title
@@ -413,6 +423,8 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
 
         TLorentzVector LmissingProton = Linitial-Lw_tmp;     
 
+        h_missingP_IM[0]->Fill(LmissingProton.M(),weight);
+
         h_wOnly3g_Im[0]->Fill(omega_tmp.M(),weight);
         h_missingProton_Im[0]->Fill(LmissingProton.M(),weight);
         h_2gMassComb[0]->Fill((g[0]+g[1]).M(),weight);
@@ -429,6 +441,7 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
                 h_ChaCaloVSVetoEnergies_TAPS[1]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
         }
 
+        h_missingP_IM[1]->Fill(LmissingProton.M(),weight);
         h_wOnly3g_Im[1]->Fill(omega_tmp.M(),weight);
         h_missingProton_Im[1]->Fill(LmissingProton.M(),weight);
         h_2gMassComb[1]->Fill((g[0]+g[1]).M(),weight);
@@ -450,6 +463,7 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
         if(!(LmissingProton.M() > (mp-cut_shift1) && LmissingProton.M() < (mp+cut_shift1)))
             continue;
 
+        h_missingP_IM[2]->Fill(LmissingProton.M(),weight);
         h_wOnly3g_Im[2]->Fill(omega_tmp.M(),weight);
         h_missingProton_Im[2]->Fill(LmissingProton.M(),weight);
         h_2gMassComb[2]->Fill((g[0]+g[1]).M(),weight);
@@ -537,6 +551,7 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
 
         h_Pi0Only2g_Im[1]->Fill(wpi0.M(),weight);
 
+        h_missingP_IM[3]->Fill(LmissingProton.M(),weight);
         h_wOnly3g_Im[3]->Fill(omega_tmp.M(),weight);
         h_missingProton_Im[3]->Fill(LmissingProton.M(),weight);
         h_2gMassComb[3]->Fill((g[0]+g[1]).M(),weight);
@@ -601,7 +616,7 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
 
 void scratch_damaurer_MC_pw_ppi0g_p3g::ShowResult()
 {    
-
+   /*
    ant::canvas(GetName()+": All candidates deposited Calo vs Veto energy")
            << drawoption("pcolz")
            << h_AllCaloVSVetoEnergies_CB
@@ -671,6 +686,12 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ShowResult()
             << h_doubly_wp_DCS_reconstructed_lab
             << h_doubly_wp_DCS_reconstructed_cmFrame
             << endc; // actually draws the canvas
+            */
+    ant::canvas c1(GetName()+": IM(missingP)");
+    for (unsigned int i=0; i<nrCuts; i++){
+            c1 << h_missingP_IM[i];
+    }
+            c1 << endc; // actually draws the canvas
 
 }
 
