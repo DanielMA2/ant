@@ -34,6 +34,7 @@ scratch_damaurer_MC_pw_ppi0g_p3g::scratch_damaurer_MC_pw_ppi0g_p3g(const string&
     const BinSettings Calo_Energy_bins(1000, 0, 1200);
     const BinSettings initialBeamE_bins(1000,0, 1600);
     const BinSettings cos_bins(100,-1,1);
+    const BinSettings statistic_bins(number_of_bins,lower_edge,upper_edge);
     //const BinSettings cos_bins_BackToBack(1000,-1,1);
     //const BinSettings wpi0_Q_bins(100, 0, 1500);
     const BinSettings sqrt_S_bins(100,s_square_min,s_square_max);
@@ -57,8 +58,6 @@ scratch_damaurer_MC_pw_ppi0g_p3g::scratch_damaurer_MC_pw_ppi0g_p3g(const string&
     const BinSettings E_omega_bins(100, 400, 1800);
     const BinSettings E_pi0_bins(100, 0, 1600);
 
-    const string cuts[nrCuts_total] = {"CUT#0_NoCuts", "CUT#1_Sel3Neu1Cha", "CUT#2_OmegaEthreshold", "CUT#3_ImMissingParticle_+-20%mp", "CUT#4_SelMinM(2neu-mpi0)_+-20%mpi0"};
-
     // HistFac is a protected member of the base class "Physics"
     // use it to conveniently create histograms (and other ROOT objects) at the right location
     // using the make methods
@@ -72,6 +71,7 @@ scratch_damaurer_MC_pw_ppi0g_p3g::scratch_damaurer_MC_pw_ppi0g_p3g(const string&
     auto hf_CrossSection = new HistogramFactory("hf_CrossSection", HistFac, "");
     auto hf_CaloEvsVetoE = new HistogramFactory("hf_CaloEvsVetoE", HistFac, "");
     auto hf_ExtraHists = new HistogramFactory("hf_ExtraHists", HistFac, "");
+    auto hf_RecData_CandStat = new HistogramFactory("hf_RecData_CandStat", HistFac, "");
 
     auto hfTagger = new HistogramFactory("Tagger", HistFac, "");
     auto hfOnlyEnergy = new HistogramFactory("All_the_candidate_energies", HistFac, "");
@@ -175,6 +175,18 @@ scratch_damaurer_MC_pw_ppi0g_p3g::scratch_damaurer_MC_pw_ppi0g_p3g(const string&
                                          );
 
     }
+
+    h_RecData_neuCandStat = hf_RecData_CandStat->makeTH1D("Analysis: Statistics of neutral particles",     // title
+                                     "Cuts", "#",     // xlabel, ylabel
+                                     statistic_bins,  // our binnings
+                                     "h_RecData_neuCandStat", true    // ROOT object name, auto-generated if omitted
+                                     );
+
+    h_RecData_chaCandStat = hf_RecData_CandStat->makeTH1D("Analysis: Statistics of charged particles",     // title
+                                      "Cuts", "#",     // xlabel, ylabel
+                                      statistic_bins,  // our binnings
+                                      "h_RecData_chaCandStat", true    // ROOT object name, auto-generated if omitted
+                                      );
 
     h_TaggerTime = hfTagger->makeTH1D("Tagger Time",     // title
                                     "t [ns]", "#",     // xlabel, ylabel
@@ -433,12 +445,14 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
         h_beamE[0]->Fill(InitialPhotonVec.E(),weight);
 
         for (unsigned int i=0; i<neutral.size(); i++){
+            neuStat[0]+=weight;
             h_neuEkinVSPhi[0]->Fill(neuPhi[i],neuCanCaloE[i],weight);
             h_neuEkinVSTheta[0]->Fill(neuThe[i],neuCanCaloE[i],weight);
             if(neuCanInCB[i]){h_AllCaloEvsVetoE_CB[0]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);}
             if(neuCanInTAPS[i]){h_AllCaloEvsVetoE_TAPS[0]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);}
         }
         for (unsigned int i=0; i<charged.size(); i++){
+            chaStat[0]+=weight;
             h_chaEkinVSPhi[0]->Fill(chaPhi[i],chaCanCaloE[i],weight);
             h_chaEkinVSTheta[0]->Fill(chaThe[i],chaCanCaloE[i],weight);
             if(chaCanInCB[i]){h_AllCaloEvsVetoE_CB[0]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);}
@@ -477,12 +491,14 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
         h_beamE[1]->Fill(InitialPhotonVec.E(),weight);
 
         for (unsigned int i=0; i<neutral.size(); i++){
+            neuStat[1]+=weight;
             h_neuEkinVSPhi[1]->Fill(neuPhi[i],neuCanCaloE[i],weight);
             h_neuEkinVSTheta[1]->Fill(neuThe[i],neuCanCaloE[i],weight);
             if(neuCanInCB[i]){h_AllCaloEvsVetoE_CB[1]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);}
             if(neuCanInTAPS[i]){h_AllCaloEvsVetoE_TAPS[1]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);}
         }
         for (unsigned int i=0; i<charged.size(); i++){
+            chaStat[1]+=weight;
             h_chaEkinVSPhi[1]->Fill(chaPhi[i],chaCanCaloE[i],weight);
             h_chaEkinVSTheta[1]->Fill(chaThe[i],chaCanCaloE[i],weight);
             if(chaCanInCB[i]){h_AllCaloEvsVetoE_CB[1]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);}
@@ -513,12 +529,14 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
         h_beamE[2]->Fill(InitialPhotonVec.E(),weight);
 
         for (unsigned int i=0; i<neutral.size(); i++){
+            neuStat[2]+=weight;
             h_neuEkinVSPhi[2]->Fill(neuPhi[i],neuCanCaloE[i],weight);
             h_neuEkinVSTheta[2]->Fill(neuThe[i],neuCanCaloE[i],weight);
             if(neuCanInCB[i]){h_AllCaloEvsVetoE_CB[2]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);}
             if(neuCanInTAPS[i]){h_AllCaloEvsVetoE_TAPS[2]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);}
         }
         for (unsigned int i=0; i<charged.size(); i++){
+            chaStat[2]+=weight;
             h_chaEkinVSPhi[2]->Fill(chaPhi[i],chaCanCaloE[i],weight);
             h_chaEkinVSTheta[2]->Fill(chaThe[i],chaCanCaloE[i],weight);
             if(chaCanInCB[i]){h_AllCaloEvsVetoE_CB[2]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);}
@@ -543,12 +561,14 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
         h_beamE[3]->Fill(InitialPhotonVec.E(),weight);
 
         for (unsigned int i=0; i<neutral.size(); i++){
+            neuStat[3]+=weight;
             h_neuEkinVSPhi[3]->Fill(neuPhi[i],neuCanCaloE[i],weight);
             h_neuEkinVSTheta[3]->Fill(neuThe[i],neuCanCaloE[i],weight);
             if(neuCanInCB[i]){h_AllCaloEvsVetoE_CB[3]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);}
             if(neuCanInTAPS[i]){h_AllCaloEvsVetoE_TAPS[3]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);}
         }
         for (unsigned int i=0; i<charged.size(); i++){
+            chaStat[3]+=weight;
             h_chaEkinVSPhi[3]->Fill(chaPhi[i],chaCanCaloE[i],weight);
             h_chaEkinVSTheta[3]->Fill(chaThe[i],chaCanCaloE[i],weight);
             if(chaCanInCB[i]){h_AllCaloEvsVetoE_CB[3]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);}
@@ -638,12 +658,14 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
         h_beamE[4]->Fill(InitialPhotonVec.E(),weight);
 
         for (unsigned int i=0; i<neutral.size(); i++){
+            neuStat[4]+=weight;
             h_neuEkinVSPhi[4]->Fill(neuPhi[i],neuCanCaloE[i],weight);
             h_neuEkinVSTheta[4]->Fill(neuThe[i],neuCanCaloE[i],weight);
             if(neuCanInCB[i]){h_AllCaloEvsVetoE_CB[4]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);}
             if(neuCanInTAPS[i]){h_AllCaloEvsVetoE_TAPS[4]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);}
         }
         for (unsigned int i=0; i<charged.size(); i++){
+            chaStat[4]+=weight;
             h_chaEkinVSPhi[4]->Fill(chaPhi[i],chaCanCaloE[i],weight);
             h_chaEkinVSTheta[4]->Fill(chaThe[i],chaCanCaloE[i],weight);
             if(chaCanInCB[i]){h_AllCaloEvsVetoE_CB[4]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);}
@@ -757,6 +779,24 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ShowResult()
             << h_doubly_wp_DCS_reconstructed_cmFrame
             << endc; // actually draws the canvas
 */
+
+    for (unsigned int i=0; i<nrCuts_total; i++){
+        cout << "Amount of neutral candidates after " << i << " cuts: " << neuStat[i] << endl;
+        cout << "Amount of charged candidates after " << i << " cuts: " << chaStat[i] << endl;
+        h_RecData_neuCandStat->SetBinContent(i*steps+1, neuStat[i]);
+        h_RecData_neuCandStat->GetXaxis()->SetBinLabel(i*steps+1,cuts[i].c_str());
+        h_RecData_chaCandStat->SetBinContent(i*steps+1, chaStat[i]);
+        h_RecData_chaCandStat->GetXaxis()->SetBinLabel(i*steps+1,cuts[i].c_str());
+
+    }
+
+    ant::canvas(GetName()+": Statistics of neutral candidates")
+            << h_RecData_neuCandStat
+            << endc; // actually draws the canvas
+
+    ant::canvas(GetName()+": Statistics of charged candidates")
+            << h_RecData_chaCandStat
+            << endc; // actually draws the canvas
 
     ant::canvas c1(GetName()+": IM(missingP)");
     for (unsigned int i=0; i<(nrCuts_total-1); i++){

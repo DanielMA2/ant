@@ -56,6 +56,7 @@ protected:
     static constexpr auto radtodeg = std_ext::radian_to_degree(1.0);
 
 //-- Histograms
+
 static const int nrCuts_total = 5;
 static const int nrCuts_pi0 = 2;
 static const int nrCuts_VetoSel = 2;
@@ -103,6 +104,9 @@ private:
     TH1D* h_3gPolarAnglesTAPS;
     TH1D* h_3gAzimuthAngles;
 
+    TH1D* h_RecData_neuCandStat;
+    TH1D* h_RecData_chaCandStat;
+
     TH2D* h_3g_EvTheta_CB;
     TH2D* h_3g_EvTheta_TAPS;
     TH2D* h_p_EvTheta;
@@ -114,6 +118,8 @@ private:
 
     PromptRandom::Switch promptrandom;
     utils::TriggerSimulation triggersimu;
+
+    std::string cuts[nrCuts_total] = {"CUT#0_NoCuts", "CUT#1_Sel3Neu1Cha", "CUT#2_OmegaEthreshold", "CUT#3_ImMissingParticle_+-20%mp", "CUT#4_SelMinM(2neu-mpi0)_+-20%mpi0"};
 
     double max_particles = 1000000;
     double vetoEthreshold = 0;
@@ -139,9 +145,17 @@ private:
     double ProtonPolarAngles_TAPS_err;
     double ProtonPolarAngles_CB_err;
 
+    double neuStat[nrCuts_total] = {0};
+    double chaStat[nrCuts_total] = {0};
+
     double weight_res = 0;
 
     std::shared_ptr<expconfig::detector::TAPS> taps;
+
+    Int_t number_of_bins = (nrCuts_total)*10;
+    Int_t lower_edge = 0;
+    Int_t upper_edge = nrCuts_total;
+    int steps = (int)(number_of_bins/(upper_edge-lower_edge));
 
 };
 
