@@ -29,7 +29,7 @@ scratch_damaurer_MC_pw_ppi0g_p3g::scratch_damaurer_MC_pw_ppi0g_p3g(const string&
 {
     taps = make_shared<expconfig::detector::TAPS_2013_11>(false, false, false);
 
-    const BinSettings tagger_time_bins(1000, -200, 200);
+    const BinSettings tagger_time_bins(1000, 0, 20);
     const BinSettings Veto_Energy_bins(1000, 0, 10);
     const BinSettings Calo_Energy_bins(1000, 0, 1200);
     const BinSettings initialBeamE_bins(1000,0, 1600);
@@ -71,6 +71,7 @@ scratch_damaurer_MC_pw_ppi0g_p3g::scratch_damaurer_MC_pw_ppi0g_p3g(const string&
     auto hf_CrossSection = new HistogramFactory("hf_CrossSection", HistFac, "");
     auto hf_CaloEvsVetoE = new HistogramFactory("hf_CaloEvsVetoE", HistFac, "");
     auto hf_ExtraHists = new HistogramFactory("hf_ExtraHists", HistFac, "");
+    auto hf_TimeHists = new HistogramFactory("hf_TimeHists", HistFac, "");
     auto hf_RecData_CandStat = new HistogramFactory("hf_RecData_CandStat", HistFac, "");
 
     auto hfTagger = new HistogramFactory("Tagger", HistFac, "");
@@ -126,6 +127,30 @@ scratch_damaurer_MC_pw_ppi0g_p3g::scratch_damaurer_MC_pw_ppi0g_p3g(const string&
                                                              "E_{photonbeam} [MeV]", "#",     // xlabel, ylabel
                                                              initialBeamE_bins,  // our binnings
                                                              "h_beamE_"+cuts[i], true     // ROOT object name, auto-generated if omitted
+                                                             );
+
+        h_neuTimesCB[i] = hf_TimeHists->makeTH1D("Neutrals time in CB "+cuts[i],     // title
+                                                             "t [ns]", "#",     // xlabel, ylabel
+                                                             tagger_time_bins,  // our binnings
+                                                             "neuTimesCB_"+cuts[i], true     // ROOT object name, auto-generated if omitted
+                                                             );
+
+        h_neuTimesTAPS[i] = hf_TimeHists->makeTH1D("Neutrals time in TAPS "+cuts[i],     // title
+                                                             "t [ns]", "#",     // xlabel, ylabel
+                                                             tagger_time_bins,  // our binnings
+                                                             "neuTimesTAPS_"+cuts[i], true     // ROOT object name, auto-generated if omitted
+                                                             );
+
+        h_chaTimesCB[i] = hf_TimeHists->makeTH1D("Charged time in CB "+cuts[i],     // title
+                                                             "t [ns]", "#",     // xlabel, ylabel
+                                                             tagger_time_bins,  // our binnings
+                                                             "chaTimesCB_"+cuts[i], true     // ROOT object name, auto-generated if omitted
+                                                             );
+
+        h_chaTimesTAPS[i] = hf_TimeHists->makeTH1D("Charged time in TAPS "+cuts[i],     // title
+                                                             "t [ns]", "#",     // xlabel, ylabel
+                                                             tagger_time_bins,  // our binnings
+                                                             "chaTimesTAPS_"+cuts[i], true     // ROOT object name, auto-generated if omitted
                                                              );
 
     }
@@ -323,11 +348,13 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
     vector<double> neuCanCluSize;
     vector<double> neuCanCaloE;
     vector<double> neuCanVetoE;
+    vector<double> neuCanTime;
     vector<double> neuThe;
     vector<double> neuPhi;
     vector<double> chaCanCluSize;
     vector<double> chaCanCaloE;
     vector<double> chaCanVetoE;
+    vector<double> chaCanTime;
     vector<double> chaThe;
     vector<double> chaPhi;
 
@@ -342,6 +369,7 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
             neuCanCluSize.push_back(cand->ClusterSize);
             neuCanCaloE.push_back(cand->CaloEnergy);
             neuCanVetoE.push_back(cand->VetoEnergy);
+            neuCanTime.push_back(cand->Time);
 
             if(cand->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
                 neuCanInCB.push_back(true);
@@ -364,6 +392,7 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
             chaCanCluSize.push_back(cand->ClusterSize);
             chaCanCaloE.push_back(cand->CaloEnergy);
             chaCanVetoE.push_back(cand->VetoEnergy);
+            chaCanTime.push_back(cand->Time);
 
             if(cand->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
                 chaCanInCB.push_back(true);
@@ -448,15 +477,27 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
             neuStat[0]+=weight;
             h_neuEkinVSPhi[0]->Fill(neuPhi[i],neuCanCaloE[i],weight);
             h_neuEkinVSTheta[0]->Fill(neuThe[i],neuCanCaloE[i],weight);
-            if(neuCanInCB[i]){h_AllCaloEvsVetoE_CB[0]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);}
-            if(neuCanInTAPS[i]){h_AllCaloEvsVetoE_TAPS[0]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);}
+            if(neuCanInCB[i]){
+                h_AllCaloEvsVetoE_CB[0]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
+                h_neuTimesCB[0]->Fill(neuCanTime[i],weight);
+            }
+            if(neuCanInTAPS[i]){
+                h_AllCaloEvsVetoE_TAPS[0]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
+                h_neuTimesTAPS[0]->Fill(neuCanTime[i],weight);
+            }
         }
         for (unsigned int i=0; i<charged.size(); i++){
             chaStat[0]+=weight;
             h_chaEkinVSPhi[0]->Fill(chaPhi[i],chaCanCaloE[i],weight);
             h_chaEkinVSTheta[0]->Fill(chaThe[i],chaCanCaloE[i],weight);
-            if(chaCanInCB[i]){h_AllCaloEvsVetoE_CB[0]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);}
-            if(chaCanInTAPS[i]){h_AllCaloEvsVetoE_TAPS[0]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);}
+            if(chaCanInCB[i]){
+                h_AllCaloEvsVetoE_CB[0]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
+                h_chaTimesCB[0]->Fill(chaCanTime[i],weight);
+            }
+            if(chaCanInTAPS[i]){
+                h_AllCaloEvsVetoE_TAPS[0]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
+                h_chaTimesTAPS[0]->Fill(chaCanTime[i],weight);
+            }
         }
 
         if(!(neuCanCaloE.size() == neu_nrSel && chaCanCaloE.size() == cha_nrSel))
@@ -494,15 +535,27 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
             neuStat[1]+=weight;
             h_neuEkinVSPhi[1]->Fill(neuPhi[i],neuCanCaloE[i],weight);
             h_neuEkinVSTheta[1]->Fill(neuThe[i],neuCanCaloE[i],weight);
-            if(neuCanInCB[i]){h_AllCaloEvsVetoE_CB[1]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);}
-            if(neuCanInTAPS[i]){h_AllCaloEvsVetoE_TAPS[1]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);}
+            if(neuCanInCB[i]){
+                h_AllCaloEvsVetoE_CB[1]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
+                h_neuTimesCB[1]->Fill(neuCanTime[i],weight);
+            }
+            if(neuCanInTAPS[i]){
+                h_AllCaloEvsVetoE_TAPS[1]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
+                h_neuTimesTAPS[1]->Fill(neuCanTime[i],weight);
+            }
         }
         for (unsigned int i=0; i<charged.size(); i++){
             chaStat[1]+=weight;
             h_chaEkinVSPhi[1]->Fill(chaPhi[i],chaCanCaloE[i],weight);
             h_chaEkinVSTheta[1]->Fill(chaThe[i],chaCanCaloE[i],weight);
-            if(chaCanInCB[i]){h_AllCaloEvsVetoE_CB[1]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);}
-            if(chaCanInTAPS[i]){h_AllCaloEvsVetoE_TAPS[1]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);}
+            if(chaCanInCB[i]){
+                h_AllCaloEvsVetoE_CB[1]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
+                h_chaTimesCB[1]->Fill(chaCanTime[i],weight);
+            }
+            if(chaCanInTAPS[i]){
+                h_AllCaloEvsVetoE_TAPS[1]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
+                h_chaTimesTAPS[1]->Fill(chaCanTime[i],weight);
+            }
         }
 
         if(!(InitialPhotonVec.E()>=Omega_Ethreshold))
@@ -532,15 +585,27 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
             neuStat[2]+=weight;
             h_neuEkinVSPhi[2]->Fill(neuPhi[i],neuCanCaloE[i],weight);
             h_neuEkinVSTheta[2]->Fill(neuThe[i],neuCanCaloE[i],weight);
-            if(neuCanInCB[i]){h_AllCaloEvsVetoE_CB[2]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);}
-            if(neuCanInTAPS[i]){h_AllCaloEvsVetoE_TAPS[2]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);}
+            if(neuCanInCB[i]){
+                h_AllCaloEvsVetoE_CB[2]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
+                h_neuTimesCB[2]->Fill(neuCanTime[i],weight);
+            }
+            if(neuCanInTAPS[i]){
+                h_AllCaloEvsVetoE_TAPS[2]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
+                h_neuTimesTAPS[2]->Fill(neuCanTime[i],weight);
+            }
         }
         for (unsigned int i=0; i<charged.size(); i++){
             chaStat[2]+=weight;
             h_chaEkinVSPhi[2]->Fill(chaPhi[i],chaCanCaloE[i],weight);
             h_chaEkinVSTheta[2]->Fill(chaThe[i],chaCanCaloE[i],weight);
-            if(chaCanInCB[i]){h_AllCaloEvsVetoE_CB[2]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);}
-            if(chaCanInTAPS[i]){h_AllCaloEvsVetoE_TAPS[2]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);}
+            if(chaCanInCB[i]){
+                h_AllCaloEvsVetoE_CB[2]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
+                h_chaTimesCB[2]->Fill(chaCanTime[i],weight);
+            }
+            if(chaCanInTAPS[i]){
+                h_AllCaloEvsVetoE_TAPS[2]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
+                h_chaTimesTAPS[2]->Fill(chaCanTime[i],weight);
+            }
         }
 
         double cut_shift1 = mp*0.2;
@@ -564,15 +629,27 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
             neuStat[3]+=weight;
             h_neuEkinVSPhi[3]->Fill(neuPhi[i],neuCanCaloE[i],weight);
             h_neuEkinVSTheta[3]->Fill(neuThe[i],neuCanCaloE[i],weight);
-            if(neuCanInCB[i]){h_AllCaloEvsVetoE_CB[3]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);}
-            if(neuCanInTAPS[i]){h_AllCaloEvsVetoE_TAPS[3]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);}
+            if(neuCanInCB[i]){
+                h_AllCaloEvsVetoE_CB[3]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
+                h_neuTimesCB[3]->Fill(neuCanTime[i],weight);
+            }
+            if(neuCanInTAPS[i]){
+                h_AllCaloEvsVetoE_TAPS[3]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
+                h_neuTimesTAPS[3]->Fill(neuCanTime[i],weight);
+            }
         }
         for (unsigned int i=0; i<charged.size(); i++){
             chaStat[3]+=weight;
             h_chaEkinVSPhi[3]->Fill(chaPhi[i],chaCanCaloE[i],weight);
             h_chaEkinVSTheta[3]->Fill(chaThe[i],chaCanCaloE[i],weight);
-            if(chaCanInCB[i]){h_AllCaloEvsVetoE_CB[3]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);}
-            if(chaCanInTAPS[i]){h_AllCaloEvsVetoE_TAPS[3]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);}
+            if(chaCanInCB[i]){
+                h_AllCaloEvsVetoE_CB[3]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
+                h_chaTimesCB[3]->Fill(chaCanTime[i],weight);
+            }
+            if(chaCanInTAPS[i]){
+                h_AllCaloEvsVetoE_TAPS[3]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
+                h_chaTimesTAPS[3]->Fill(chaCanTime[i],weight);
+            }
         }
 
         //LorentzBoost-Stuff with opening angle selections:
@@ -661,15 +738,27 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
             neuStat[4]+=weight;
             h_neuEkinVSPhi[4]->Fill(neuPhi[i],neuCanCaloE[i],weight);
             h_neuEkinVSTheta[4]->Fill(neuThe[i],neuCanCaloE[i],weight);
-            if(neuCanInCB[i]){h_AllCaloEvsVetoE_CB[4]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);}
-            if(neuCanInTAPS[i]){h_AllCaloEvsVetoE_TAPS[4]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);}
+            if(neuCanInCB[i]){
+                h_AllCaloEvsVetoE_CB[4]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
+                h_neuTimesCB[4]->Fill(neuCanTime[i],weight);
+            }
+            if(neuCanInTAPS[i]){
+                h_AllCaloEvsVetoE_TAPS[4]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
+                h_neuTimesTAPS[4]->Fill(neuCanTime[i],weight);
+            }
         }
         for (unsigned int i=0; i<charged.size(); i++){
             chaStat[4]+=weight;
             h_chaEkinVSPhi[4]->Fill(chaPhi[i],chaCanCaloE[i],weight);
             h_chaEkinVSTheta[4]->Fill(chaThe[i],chaCanCaloE[i],weight);
-            if(chaCanInCB[i]){h_AllCaloEvsVetoE_CB[4]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);}
-            if(chaCanInTAPS[i]){h_AllCaloEvsVetoE_TAPS[4]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);}
+            if(chaCanInCB[i]){
+                h_AllCaloEvsVetoE_CB[4]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
+                h_chaTimesCB[4]->Fill(chaCanTime[i],weight);
+            }
+            if(chaCanInTAPS[i]){
+                h_AllCaloEvsVetoE_TAPS[4]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
+                h_chaTimesTAPS[4]->Fill(chaCanTime[i],weight);
+            }
         }
 
         /*
@@ -723,62 +812,6 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
 
 void scratch_damaurer_MC_pw_ppi0g_p3g::ShowResult()
 {    
-/*
-   ant::canvas(GetName()+": All candidates deposited Calo vs Veto energy")
-           << drawoption("pcolz")
-           << h_AllCaloVSVetoEnergies_CB
-           << h_AllCaloVSVetoEnergies_TAPS
-           << endc; // actually draws the canvas
-
-   ant::canvas(GetName()+": Deposited Calo vs Veto energy of expected uncharged candidates.")
-           << drawoption("pcolz")
-           << h_NeuCaloVSVetoEnergies_CB
-           << h_NeuCaloVSVetoEnergies_TAPS
-           << endc; // actually draws the canvas
-
-   for (unsigned int i=0; i<nrCuts_IM; i++){
-
-       stringstream ss;
-       ss << i;
-       string myString = ss.str();
-       ant::canvas(GetName()+": Deposited Calo vs Veto energy of expected charged candidates after "+myString+ " applied cuts")
-               << drawoption("pcolz")
-               << h_ChaCaloVSVetoEnergies_CB[i]
-               << h_ChaCaloVSVetoEnergies_TAPS[i]
-               << endc; // actually draws the canvas
-   }
-
-    for (unsigned int i=0; i<nrCuts_pi0; i++){
-
-        stringstream ss;
-        ss << i;
-        string myString = ss.str();
-
-        ant::canvas(GetName()+": Rec. pi0: Invariant mass after "+myString+ " applied cuts")
-                << h_Pi0Only2g_Im[i]
-                << endc; // actually draws the canvas
-
-    }
-
-    ant::canvas(GetName()+": Rec. Omega & protons: EvsTheta distribution")
-            << drawoption("pcolz")
-            << h_w_EvTheta
-            << h_p_EvTheta
-            << endc; // actually draws the canvas
-
-    ant::canvas(GetName()+": Rec. wpi0g decay: EvsTheta distribution")
-            << drawoption("pcolz")
-            << h_wg_EvTheta
-            << h_wpi0_EvTheta
-            << h_wpi02g_EvTheta
-            << endc; // actually draws the canvas
-
-    ant::canvas(GetName()+": Cross section checks")
-            << drawoption("Surf")
-            << h_doubly_wp_DCS_reconstructed_lab
-            << h_doubly_wp_DCS_reconstructed_cmFrame
-            << endc; // actually draws the canvas
-*/
 
     for (unsigned int i=0; i<nrCuts_total; i++){
         cout << "Amount of neutral candidates after " << i << " cuts: " << neuStat[i] << endl;
@@ -872,12 +905,97 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ShowResult()
     }
             c11 << endc; // actually draws the canvas
 
-    ant::canvas c12(GetName()+": charged candidates Ekin vs Phi");
+    ant::canvas c12(GetName()+": charged Ekin vs Phi");
             c12 << drawoption("pcolz");
     for (unsigned int i=0; i<nrCuts_total; i++){
             c12 << h_chaEkinVSPhi[i];
     }
             c12 << endc; // actually draws the canvas
+
+    ant::canvas c13(GetName()+": charged time CB");
+            c13 << drawoption("pcolz");
+    for (unsigned int i=0; i<nrCuts_total; i++){
+            c13 << h_chaTimesCB[i];
+    }
+            c13 << endc; // actually draws the canvas
+
+    ant::canvas c14(GetName()+": charged time TAPS");
+            c14 << drawoption("pcolz");
+    for (unsigned int i=0; i<nrCuts_total; i++){
+            c14 << h_chaTimesTAPS[i];
+    }
+            c14 << endc; // actually draws the canvas
+
+    ant::canvas c15(GetName()+": neutrals time CB");
+            c15 << drawoption("pcolz");
+    for (unsigned int i=0; i<nrCuts_total; i++){
+            c15 << h_neuTimesCB[i];
+    }
+            c15 << endc; // actually draws the canvas
+
+    ant::canvas c16(GetName()+": neutrals time TAPS");
+            c16 << drawoption("pcolz");
+    for (unsigned int i=0; i<nrCuts_total; i++){
+            c16 << h_neuTimesTAPS[i];
+    }
+            c16 << endc; // actually draws the canvas
+
+   /*
+   ant::canvas(GetName()+": All candidates deposited Calo vs Veto energy")
+           << drawoption("pcolz")
+           << h_AllCaloVSVetoEnergies_CB
+           << h_AllCaloVSVetoEnergies_TAPS
+           << endc; // actually draws the canvas
+
+   ant::canvas(GetName()+": Deposited Calo vs Veto energy of expected uncharged candidates.")
+           << drawoption("pcolz")
+           << h_NeuCaloVSVetoEnergies_CB
+           << h_NeuCaloVSVetoEnergies_TAPS
+           << endc; // actually draws the canvas
+
+   for (unsigned int i=0; i<nrCuts_IM; i++){
+
+       stringstream ss;
+       ss << i;
+       string myString = ss.str();
+       ant::canvas(GetName()+": Deposited Calo vs Veto energy of expected charged candidates after "+myString+ " applied cuts")
+               << drawoption("pcolz")
+               << h_ChaCaloVSVetoEnergies_CB[i]
+               << h_ChaCaloVSVetoEnergies_TAPS[i]
+               << endc; // actually draws the canvas
+   }
+
+    for (unsigned int i=0; i<nrCuts_pi0; i++){
+
+        stringstream ss;
+        ss << i;
+        string myString = ss.str();
+
+        ant::canvas(GetName()+": Rec. pi0: Invariant mass after "+myString+ " applied cuts")
+                << h_Pi0Only2g_Im[i]
+                << endc; // actually draws the canvas
+
+    }
+
+    ant::canvas(GetName()+": Rec. Omega & protons: EvsTheta distribution")
+            << drawoption("pcolz")
+            << h_w_EvTheta
+            << h_p_EvTheta
+            << endc; // actually draws the canvas
+
+    ant::canvas(GetName()+": Rec. wpi0g decay: EvsTheta distribution")
+            << drawoption("pcolz")
+            << h_wg_EvTheta
+            << h_wpi0_EvTheta
+            << h_wpi02g_EvTheta
+            << endc; // actually draws the canvas
+
+    ant::canvas(GetName()+": Cross section checks")
+            << drawoption("Surf")
+            << h_doubly_wp_DCS_reconstructed_lab
+            << h_doubly_wp_DCS_reconstructed_cmFrame
+            << endc; // actually draws the canvas
+*/
 
 
 }

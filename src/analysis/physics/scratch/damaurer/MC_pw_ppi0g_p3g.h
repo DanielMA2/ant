@@ -85,6 +85,11 @@ private:
     TH2D* h_neuEkinVSPhi[nrCuts_total];
     TH2D* h_chaEkinVSPhi[nrCuts_total];
 
+    TH1D* h_neuTimesCB[nrCuts_total];
+    TH1D* h_neuTimesTAPS[nrCuts_total];
+    TH1D* h_chaTimesCB[nrCuts_total];
+    TH1D* h_chaTimesTAPS[nrCuts_total];
+
     TH1D* h_2gPi0_IM[nrCuts_pi0];
 
     //TH1D* h_pi0g_BackToBack[nrCuts_BackToBack];
