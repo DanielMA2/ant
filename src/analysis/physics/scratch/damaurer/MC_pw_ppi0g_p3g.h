@@ -89,6 +89,10 @@ private:
     TH1D* h_neuTimesTAPS[nrCuts_total];
     TH1D* h_chaTimesCB[nrCuts_total];
     TH1D* h_chaTimesTAPS[nrCuts_total];
+    TH1D* h_neuTimeDiffCorTaggCB[nrCuts_total];
+    TH1D* h_neuTimeDiffCorTaggTAPS[nrCuts_total];
+    TH1D* h_chaTimeDiffCorTaggCB[nrCuts_total];
+    TH1D* h_chaTimeDiffCorTaggTAPS[nrCuts_total];
 
     TH1D* h_2gPi0_IM[nrCuts_pi0];
 

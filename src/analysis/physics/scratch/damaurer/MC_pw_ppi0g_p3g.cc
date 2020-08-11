@@ -29,20 +29,20 @@ scratch_damaurer_MC_pw_ppi0g_p3g::scratch_damaurer_MC_pw_ppi0g_p3g(const string&
 {
     taps = make_shared<expconfig::detector::TAPS_2013_11>(false, false, false);
 
-    const BinSettings tagger_time_bins(1000, 0, 20);
+    const BinSettings timeCB_bins(200, 0, 5);
+    const BinSettings timeDiffCorTaggCB_bins(200, -7,0);
+    const BinSettings timeTAPS_bins(200, 0, 19);
+    const BinSettings timeDiffCorTaggTAPS_bins(200, -19,0);
+
     const BinSettings Veto_Energy_bins(1000, 0, 10);
     const BinSettings Calo_Energy_bins(1000, 0, 1200);
-    const BinSettings initialBeamE_bins(1000,0, 1600);
+    const BinSettings initialBeamE_bins(200,0, 1600);
     const BinSettings cos_bins(100,-1,1);
     const BinSettings statistic_bins(number_of_bins,lower_edge,upper_edge);
-    //const BinSettings cos_bins_BackToBack(1000,-1,1);
-    //const BinSettings wpi0_Q_bins(100, 0, 1500);
     const BinSettings sqrt_S_bins(100,s_square_min,s_square_max);
 
     const BinSettings phi_bins(720, -180, 180);
     const BinSettings theta_bins(360, 0, 180);
-
-    const BinSettings proton_theta_bins(180, 0, 90);
     const BinSettings theta_bins_CB(140, 19, 160);
     const BinSettings theta_bins_TAPS(25, 0, 25);
 
@@ -57,6 +57,9 @@ scratch_damaurer_MC_pw_ppi0g_p3g::scratch_damaurer_MC_pw_ppi0g_p3g(const string&
     const BinSettings E_proton_bins(100, 900, 2000);
     const BinSettings E_omega_bins(100, 400, 1800);
     const BinSettings E_pi0_bins(100, 0, 1600);
+    //const BinSettings cos_bins_BackToBack(1000,-1,1);
+    //const BinSettings wpi0_Q_bins(100, 0, 1500);
+    //const BinSettings proton_theta_bins(180, 0, 90);
 
     // HistFac is a protected member of the base class "Physics"
     // use it to conveniently create histograms (and other ROOT objects) at the right location
@@ -65,19 +68,22 @@ scratch_damaurer_MC_pw_ppi0g_p3g::scratch_damaurer_MC_pw_ppi0g_p3g(const string&
     auto hf_missingP_IM = new HistogramFactory("hf_missingP_IM", HistFac, "");
     auto hf_3g_IM = new HistogramFactory("hf_3g_IM", HistFac, "");
     auto hf_2gComb_IM = new HistogramFactory("hf_2gComb_IM", HistFac, "");
-    auto hf_2gPi0_IM = new HistogramFactory("hf_2gComb_IM", HistFac, "");
+    auto hf_2gPi0_IM = new HistogramFactory("hf_2gPi0_IM", HistFac, "");
     auto hf_EvsTheta = new HistogramFactory("hf_EvsTheta", HistFac, "");
     auto hf_EvsPhi = new HistogramFactory("hf_EvsPhi", HistFac, "");
     auto hf_CrossSection = new HistogramFactory("hf_CrossSection", HistFac, "");
     auto hf_CaloEvsVetoE = new HistogramFactory("hf_CaloEvsVetoE", HistFac, "");
-    auto hf_ExtraHists = new HistogramFactory("hf_ExtraHists", HistFac, "");
-    auto hf_TimeHists = new HistogramFactory("hf_TimeHists", HistFac, "");
     auto hf_RecData_CandStat = new HistogramFactory("hf_RecData_CandStat", HistFac, "");
+    auto hf_TimesCB = new HistogramFactory("hf_TimesCB", HistFac, "");
+    auto hf_TimesTAPS = new HistogramFactory("hf_TimesTAPS", HistFac, "");
+    auto hf_TimeDiffCorTaggCB = new HistogramFactory("hf_TimeDiffCorTaggCB", HistFac, "");
+    auto hf_TimeDiffCorTaggTAPS = new HistogramFactory("hf_TimeDiffCorTaggTAPS", HistFac, "");
+    auto hf_Extras = new HistogramFactory("hf_Extras", HistFac, "");
 
-    auto hfTagger = new HistogramFactory("Tagger", HistFac, "");
+    auto hfTagger = new HistogramFactory("hfTagger", HistFac, "");
     auto hfOnlyEnergy = new HistogramFactory("All_the_candidate_energies", HistFac, "");
     auto hfOnlyAngles = new HistogramFactory("All_the_candidate_angles", HistFac, "");
-    auto hf_wpi0g_EvsTheta = new HistogramFactory("Energy_vs_theta_dists", HistFac, "");
+    auto hf_wpi0g_EvsTheta = new HistogramFactory("hf_wpi0g_EvsTheta", HistFac, "");
     //auto hf_extras = new HistogramFactory("Some_additional_extra_hists", HistFac, "");
 
     for (unsigned int i=0; i<nrCuts_total; i++){
@@ -123,34 +129,57 @@ scratch_damaurer_MC_pw_ppi0g_p3g::scratch_damaurer_MC_pw_ppi0g_p3g(const string&
                                               "h_chaEkinVSPhi_"+cuts[i], true    // ROOT object name, auto-generated if omitted
                                               );
 
-        h_beamE[i] = hf_ExtraHists->makeTH1D("Initial photon beam energy "+cuts[i],     // title
+        h_beamE[i] = hf_Extras->makeTH1D("Initial photon beam energy "+cuts[i],     // title
                                                              "E_{photonbeam} [MeV]", "#",     // xlabel, ylabel
                                                              initialBeamE_bins,  // our binnings
                                                              "h_beamE_"+cuts[i], true     // ROOT object name, auto-generated if omitted
                                                              );
 
-        h_neuTimesCB[i] = hf_TimeHists->makeTH1D("Neutrals time in CB "+cuts[i],     // title
-                                                             "t [ns]", "#",     // xlabel, ylabel
-                                                             tagger_time_bins,  // our binnings
+        h_neuTimesCB[i] = hf_TimesCB->makeTH1D("Neutrals time in CB "+cuts[i],     // title
+                                                             "t_{CB} [ns]", "#",     // xlabel, ylabel
+                                                             timeCB_bins,  // our binnings
                                                              "neuTimesCB_"+cuts[i], true     // ROOT object name, auto-generated if omitted
                                                              );
 
-        h_neuTimesTAPS[i] = hf_TimeHists->makeTH1D("Neutrals time in TAPS "+cuts[i],     // title
-                                                             "t [ns]", "#",     // xlabel, ylabel
-                                                             tagger_time_bins,  // our binnings
+        h_neuTimesTAPS[i] = hf_TimesTAPS->makeTH1D("Neutrals time in TAPS "+cuts[i],     // title
+                                                             "t_{TAPS} [ns]", "#",     // xlabel, ylabel
+                                                             timeTAPS_bins,  // our binnings
                                                              "neuTimesTAPS_"+cuts[i], true     // ROOT object name, auto-generated if omitted
                                                              );
 
-        h_chaTimesCB[i] = hf_TimeHists->makeTH1D("Charged time in CB "+cuts[i],     // title
-                                                             "t [ns]", "#",     // xlabel, ylabel
-                                                             tagger_time_bins,  // our binnings
+        h_chaTimesCB[i] = hf_TimesCB->makeTH1D("Charged time in CB "+cuts[i],     // title
+                                                             "t_{CB} [ns]", "#",     // xlabel, ylabel
+                                                             timeCB_bins,  // our binnings
                                                              "chaTimesCB_"+cuts[i], true     // ROOT object name, auto-generated if omitted
                                                              );
 
-        h_chaTimesTAPS[i] = hf_TimeHists->makeTH1D("Charged time in TAPS "+cuts[i],     // title
-                                                             "t [ns]", "#",     // xlabel, ylabel
-                                                             tagger_time_bins,  // our binnings
+        h_chaTimesTAPS[i] = hf_TimesTAPS->makeTH1D("Charged time in TAPS "+cuts[i],     // title
+                                                             "t_{TAPS} [ns]", "#",     // xlabel, ylabel
+                                                             timeTAPS_bins,  // our binnings
                                                              "chaTimesTAPS_"+cuts[i], true     // ROOT object name, auto-generated if omitted
+                                                             );
+        h_neuTimeDiffCorTaggCB[i] = hf_TimeDiffCorTaggCB->makeTH1D("Neutrals time diff to cor tagg-time in CB "+cuts[i],     // title
+                                                             "(t_{corTagg}-t_{CB}) [ns]", "#",     // xlabel, ylabel
+                                                             timeDiffCorTaggCB_bins,  // our binnings
+                                                             "h_neuTimeDiffCorTaggCB_"+cuts[i], true     // ROOT object name, auto-generated if omitted
+                                                             );
+
+        h_neuTimeDiffCorTaggTAPS[i] = hf_TimeDiffCorTaggTAPS->makeTH1D("Neutrals time diff to cor tagg-time in TAPS "+cuts[i],     // title
+                                                             "(t_{corTagg}-t_{TAPS}) [ns]", "#",     // xlabel, ylabel
+                                                             timeDiffCorTaggTAPS_bins,  // our binnings
+                                                             "h_neuTimeDiffCorTaggTAPS_"+cuts[i], true     // ROOT object name, auto-generated if omitted
+                                                             );
+
+        h_chaTimeDiffCorTaggCB[i] = hf_TimeDiffCorTaggCB->makeTH1D("Charged time diff to cor tagg-time in CB "+cuts[i],     // title
+                                                             "(t_{corTagg}-t_{CB}) [ns]", "#",     // xlabel, ylabel
+                                                             timeDiffCorTaggCB_bins,  // our binnings
+                                                             "h_chaTimeDiffCorTaggCB_"+cuts[i], true     // ROOT object name, auto-generated if omitted
+                                                             );
+
+        h_chaTimeDiffCorTaggTAPS[i] = hf_TimeDiffCorTaggTAPS->makeTH1D("Charged time diff to cor tagg-time in TAPS "+cuts[i],     // title
+                                                             "(t_{corTagg}-t_{TAPS}) [ns]", "#",     // xlabel, ylabel
+                                                             timeDiffCorTaggTAPS_bins,  // our binnings
+                                                             "h_chaTimeDiffCorTaggTAPS_"+cuts[i], true     // ROOT object name, auto-generated if omitted
                                                              );
 
     }
@@ -215,7 +244,7 @@ scratch_damaurer_MC_pw_ppi0g_p3g::scratch_damaurer_MC_pw_ppi0g_p3g(const string&
 
     h_TaggerTime = hfTagger->makeTH1D("Tagger Time",     // title
                                     "t [ns]", "#",     // xlabel, ylabel
-                                    tagger_time_bins,  // our binnings
+                                    timeCB_bins,  // our binnings
                                     "h_TaggerTime"     // ROOT object name, auto-generated if omitted
                                     );
     
@@ -454,10 +483,12 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
 
     TParticle proton;
     TParticle omega_tmp;
+    double corTaggTime;
 
     for (const auto& taggerhit : event.Reconstructed().TaggerHits) { // Event loop
 
-        promptrandom.SetTaggerTime(triggersimu.GetCorrectedTaggerTime(taggerhit));
+        corTaggTime = triggersimu.GetCorrectedTaggerTime(taggerhit);
+        promptrandom.SetTaggerTime(corTaggTime);
 
         if (promptrandom.State() == PromptRandom::Case::Outside)
             continue;
@@ -480,10 +511,12 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
             if(neuCanInCB[i]){
                 h_AllCaloEvsVetoE_CB[0]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
                 h_neuTimesCB[0]->Fill(neuCanTime[i],weight);
+                h_neuTimeDiffCorTaggCB[0]->Fill(corTaggTime-neuCanTime[i],weight);
             }
             if(neuCanInTAPS[i]){
                 h_AllCaloEvsVetoE_TAPS[0]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
                 h_neuTimesTAPS[0]->Fill(neuCanTime[i],weight);
+                h_neuTimeDiffCorTaggTAPS[0]->Fill(corTaggTime-neuCanTime[i],weight);
             }
         }
         for (unsigned int i=0; i<charged.size(); i++){
@@ -493,10 +526,12 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
             if(chaCanInCB[i]){
                 h_AllCaloEvsVetoE_CB[0]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
                 h_chaTimesCB[0]->Fill(chaCanTime[i],weight);
+                h_chaTimeDiffCorTaggCB[0]->Fill(corTaggTime-chaCanTime[i],weight);
             }
             if(chaCanInTAPS[i]){
                 h_AllCaloEvsVetoE_TAPS[0]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
                 h_chaTimesTAPS[0]->Fill(chaCanTime[i],weight);
+                h_chaTimeDiffCorTaggTAPS[0]->Fill(corTaggTime-chaCanTime[i],weight);
             }
         }
 
@@ -538,10 +573,12 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
             if(neuCanInCB[i]){
                 h_AllCaloEvsVetoE_CB[1]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
                 h_neuTimesCB[1]->Fill(neuCanTime[i],weight);
+                h_neuTimeDiffCorTaggCB[1]->Fill(corTaggTime-neuCanTime[i],weight);
             }
             if(neuCanInTAPS[i]){
                 h_AllCaloEvsVetoE_TAPS[1]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
                 h_neuTimesTAPS[1]->Fill(neuCanTime[i],weight);
+                h_neuTimeDiffCorTaggTAPS[1]->Fill(corTaggTime-neuCanTime[i],weight);
             }
         }
         for (unsigned int i=0; i<charged.size(); i++){
@@ -551,10 +588,12 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
             if(chaCanInCB[i]){
                 h_AllCaloEvsVetoE_CB[1]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
                 h_chaTimesCB[1]->Fill(chaCanTime[i],weight);
+                h_chaTimeDiffCorTaggCB[1]->Fill(corTaggTime-chaCanTime[i],weight);
             }
             if(chaCanInTAPS[i]){
                 h_AllCaloEvsVetoE_TAPS[1]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
                 h_chaTimesTAPS[1]->Fill(chaCanTime[i],weight);
+                h_chaTimeDiffCorTaggTAPS[1]->Fill(corTaggTime-chaCanTime[i],weight);
             }
         }
 
@@ -588,10 +627,12 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
             if(neuCanInCB[i]){
                 h_AllCaloEvsVetoE_CB[2]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
                 h_neuTimesCB[2]->Fill(neuCanTime[i],weight);
+                h_neuTimeDiffCorTaggCB[2]->Fill(corTaggTime-neuCanTime[i],weight);
             }
             if(neuCanInTAPS[i]){
                 h_AllCaloEvsVetoE_TAPS[2]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
                 h_neuTimesTAPS[2]->Fill(neuCanTime[i],weight);
+                h_neuTimeDiffCorTaggTAPS[2]->Fill(corTaggTime-neuCanTime[i],weight);
             }
         }
         for (unsigned int i=0; i<charged.size(); i++){
@@ -601,10 +642,12 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
             if(chaCanInCB[i]){
                 h_AllCaloEvsVetoE_CB[2]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
                 h_chaTimesCB[2]->Fill(chaCanTime[i],weight);
+                h_chaTimeDiffCorTaggCB[2]->Fill(corTaggTime-chaCanTime[i],weight);
             }
             if(chaCanInTAPS[i]){
                 h_AllCaloEvsVetoE_TAPS[2]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
                 h_chaTimesTAPS[2]->Fill(chaCanTime[i],weight);
+                h_chaTimeDiffCorTaggTAPS[2]->Fill(corTaggTime-chaCanTime[i],weight);
             }
         }
 
@@ -632,10 +675,12 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
             if(neuCanInCB[i]){
                 h_AllCaloEvsVetoE_CB[3]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
                 h_neuTimesCB[3]->Fill(neuCanTime[i],weight);
+                h_neuTimeDiffCorTaggCB[3]->Fill(corTaggTime-neuCanTime[i],weight);
             }
             if(neuCanInTAPS[i]){
                 h_AllCaloEvsVetoE_TAPS[3]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
                 h_neuTimesTAPS[3]->Fill(neuCanTime[i],weight);
+                h_neuTimeDiffCorTaggTAPS[3]->Fill(corTaggTime-neuCanTime[i],weight);
             }
         }
         for (unsigned int i=0; i<charged.size(); i++){
@@ -645,10 +690,12 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
             if(chaCanInCB[i]){
                 h_AllCaloEvsVetoE_CB[3]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
                 h_chaTimesCB[3]->Fill(chaCanTime[i],weight);
+                h_chaTimeDiffCorTaggCB[3]->Fill(corTaggTime-chaCanTime[i],weight);
             }
             if(chaCanInTAPS[i]){
                 h_AllCaloEvsVetoE_TAPS[3]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
                 h_chaTimesTAPS[3]->Fill(chaCanTime[i],weight);
+                h_chaTimeDiffCorTaggTAPS[3]->Fill(corTaggTime-chaCanTime[i],weight);
             }
         }
 
@@ -741,10 +788,12 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
             if(neuCanInCB[i]){
                 h_AllCaloEvsVetoE_CB[4]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
                 h_neuTimesCB[4]->Fill(neuCanTime[i],weight);
+                h_neuTimeDiffCorTaggCB[4]->Fill(corTaggTime-neuCanTime[i],weight);
             }
             if(neuCanInTAPS[i]){
                 h_AllCaloEvsVetoE_TAPS[4]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
                 h_neuTimesTAPS[4]->Fill(neuCanTime[i],weight);
+                h_neuTimeDiffCorTaggTAPS[4]->Fill(corTaggTime-neuCanTime[i],weight);
             }
         }
         for (unsigned int i=0; i<charged.size(); i++){
@@ -754,10 +803,12 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
             if(chaCanInCB[i]){
                 h_AllCaloEvsVetoE_CB[4]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
                 h_chaTimesCB[4]->Fill(chaCanTime[i],weight);
+                h_chaTimeDiffCorTaggCB[4]->Fill(corTaggTime-chaCanTime[i],weight);
             }
             if(chaCanInTAPS[i]){
                 h_AllCaloEvsVetoE_TAPS[4]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
                 h_chaTimesTAPS[4]->Fill(chaCanTime[i],weight);
+                h_chaTimeDiffCorTaggTAPS[4]->Fill(corTaggTime-chaCanTime[i],weight);
             }
         }
 
@@ -830,6 +881,8 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ShowResult()
     ant::canvas(GetName()+": Statistics of charged candidates")
             << h_RecData_chaCandStat
             << endc; // actually draws the canvas
+
+/*
 
     ant::canvas c1(GetName()+": IM(missingP)");
     for (unsigned int i=0; i<(nrCuts_total-1); i++){
@@ -912,6 +965,8 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ShowResult()
     }
             c12 << endc; // actually draws the canvas
 
+    */
+
     ant::canvas c13(GetName()+": charged time CB");
             c13 << drawoption("pcolz");
     for (unsigned int i=0; i<nrCuts_total; i++){
@@ -939,6 +994,34 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ShowResult()
             c16 << h_neuTimesTAPS[i];
     }
             c16 << endc; // actually draws the canvas
+
+    ant::canvas c17(GetName()+": charged time-diff to cor. Tagg time in CB");
+            c17 << drawoption("pcolz");
+    for (unsigned int i=0; i<nrCuts_total; i++){
+            c17 << h_chaTimeDiffCorTaggCB[i];
+    }
+            c17 << endc; // actually draws the canvas
+
+    ant::canvas c18(GetName()+": charged time-diff to cor. Tagg time in TAPS");
+            c18 << drawoption("pcolz");
+    for (unsigned int i=0; i<nrCuts_total; i++){
+            c18 << h_chaTimeDiffCorTaggTAPS[i];
+    }
+            c18 << endc; // actually draws the canvas
+
+    ant::canvas c19(GetName()+": neutrals time-diff to cor. Tagg time in CB");
+            c19 << drawoption("pcolz");
+    for (unsigned int i=0; i<nrCuts_total; i++){
+            c19 << h_neuTimeDiffCorTaggCB[i];
+    }
+            c19 << endc; // actually draws the canvas
+
+    ant::canvas c20(GetName()+": neutrals time-diff to cor. Tagg time in TAPS");
+            c20 << drawoption("pcolz");
+    for (unsigned int i=0; i<nrCuts_total; i++){
+            c20 << h_neuTimeDiffCorTaggTAPS[i];
+    }
+            c20 << endc; // actually draws the canvas
 
    /*
    ant::canvas(GetName()+": All candidates deposited Calo vs Veto energy")
