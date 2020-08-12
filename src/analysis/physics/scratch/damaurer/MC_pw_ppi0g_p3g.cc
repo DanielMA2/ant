@@ -600,16 +600,6 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
         if(!(InitialPhotonVec.E()>=Omega_Ethreshold))
             continue;
 
-        /*
-        for(int i=0; i<neu_nrSel;i++){
-            h_3gEvsTheta[1]->Fill(g[i].Theta()*radtodeg,g[i].E(),weight);
-            h_3gEvsPhi[1]->Fill(g[i].Phi()*radtodeg,g[i].E(),weight);
-        }
-
-        h_1chaEvsTheta[1]->Fill(Lp.Theta()*radtodeg,Lp.E(),weight);
-        h_1chaEvsPhi[1]->Fill(Lp.Phi()*radtodeg,Lp.E(),weight);
-        */
-
         h_missingP_IM[1]->Fill(LmissingProton.M(),weight);
         h_3g_IM[1]->Fill(omega_tmp.M(),weight);
 
@@ -651,11 +641,7 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
             }
         }
 
-        double cut_shift1 = mp*0.2;
-        //t.ProtonIm = proton_missing_particle.M();
-        //double cut_shift2 = mw*0.2;
-
-        if(!(LmissingProton.M() > (mp-cut_shift1) && LmissingProton.M() < (mp+cut_shift1)))
+        if(!(LmissingProton.M() > (mp-2*sigmaMissingP) && LmissingProton.M() < (mp+2*sigmaMissingP)))
             continue;
 
         h_missingP_IM[2]->Fill(LmissingProton.M(),weight);
@@ -766,8 +752,7 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
 
         h_2gPi0_IM[0]->Fill(wpi0.M(),weight);
 
-        double cut_shift3 = mpi0*0.2;
-        if(!(wpi0.M()>(mpi0-cut_shift3) && wpi0.M()<(mpi0+cut_shift3)))
+        if(!(wpi0.M()>(mpi0-2*sigmaPi0IM) && wpi0.M()<(mpi0+2*sigmaPi0IM)))
             continue;
 
         h_2gPi0_IM[1]->Fill(wpi0.M(),weight);
