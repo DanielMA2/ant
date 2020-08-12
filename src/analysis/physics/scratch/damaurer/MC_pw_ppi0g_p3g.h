@@ -128,7 +128,7 @@ private:
     PromptRandom::Switch promptrandom;
     utils::TriggerSimulation triggersimu;
 
-    std::string cuts[nrCuts_total] = {"CUT#0_NoCuts", "CUT#1_Sel3Neu1Cha", "CUT#2_OmegaEthreshold", "CUT#3_ImMissingParticle_+-20%mp", "CUT#4_SelMinM(2neu-mpi0)_+-20%mpi0"};
+    std::string cuts[nrCuts_total] = {"CUT#0_NoCuts", "CUT#1_Sel3Neu1Cha", "CUT#2_OmegaEthreshold", "CUT#3_ImMissingParticle_+-2sigma_mp", "CUT#4_SelMinM(2neu-mpi0)_+-2sigma_mpi0"};
 
     double max_particles = 1000000;
     double vetoEthreshold = 0;
