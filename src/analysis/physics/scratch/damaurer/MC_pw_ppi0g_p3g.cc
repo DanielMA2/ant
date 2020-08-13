@@ -38,7 +38,7 @@ scratch_damaurer_MC_pw_ppi0g_p3g::scratch_damaurer_MC_pw_ppi0g_p3g(const string&
     const BinSettings Calo_Energy_bins(1000, 0, 1200);
     const BinSettings initialBeamE_bins(200,0, 1600);
     const BinSettings cos_bins(100,-1,1);
-    const BinSettings statistic_bins(number_of_bins,lower_edge,upper_edge);
+    const BinSettings statistic_bins((nrCuts_total)*10,0,nrCuts_total);
     const BinSettings sqrt_S_bins(100,s_square_min,s_square_max);
 
     const BinSettings phi_bins(720, -180, 180);
@@ -230,16 +230,16 @@ scratch_damaurer_MC_pw_ppi0g_p3g::scratch_damaurer_MC_pw_ppi0g_p3g(const string&
 
     }
 
-    h_RecData_neuCandStat = hf_RecData_CandStat->makeTH1D("Analysis: Statistics of neutral particles",     // title
+    h_RecData_Stat = hf_RecData_CandStat->makeTH1D("Amount of events after cuts:",     // title
                                      "Cuts", "#",     // xlabel, ylabel
                                      statistic_bins,  // our binnings
-                                     "h_RecData_neuCandStat", true    // ROOT object name, auto-generated if omitted
+                                     "h_RecData_Stat", true    // ROOT object name, auto-generated if omitted
                                      );
 
-    h_RecData_chaCandStat = hf_RecData_CandStat->makeTH1D("Analysis: Statistics of charged particles",     // title
-                                      "Cuts", "#",     // xlabel, ylabel
+    h_RecData_relStat = hf_RecData_CandStat->makeTH1D("rel. amount of events after cuts:",     // title
+                                      "Cuts", "rel. #",     // xlabel, ylabel
                                       statistic_bins,  // our binnings
-                                      "h_RecData_chaCandStat", true    // ROOT object name, auto-generated if omitted
+                                      "h_RecData_relStat", true    // ROOT object name, auto-generated if omitted
                                       );
 
     h_TaggerTime = hfTagger->makeTH1D("Tagger Time",     // title
@@ -501,11 +501,12 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
 
         const double weight = promptrandom.FillWeight();
 
+        stat[0]+=weight;
+
         h_TaggerTime->Fill(taggerhit.Time, weight);
         h_beamE[0]->Fill(InitialPhotonVec.E(),weight);
 
         for (unsigned int i=0; i<neutral.size(); i++){
-            neuStat[0]+=weight;
             h_neuEkinVSPhi[0]->Fill(neuPhi[i],neuCanCaloE[i],weight);
             h_neuEkinVSTheta[0]->Fill(neuThe[i],neuCanCaloE[i],weight);
             if(neuCanInCB[i]){
@@ -520,7 +521,6 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
             }
         }
         for (unsigned int i=0; i<charged.size(); i++){
-            chaStat[0]+=weight;
             h_chaEkinVSPhi[0]->Fill(chaPhi[i],chaCanCaloE[i],weight);
             h_chaEkinVSTheta[0]->Fill(chaThe[i],chaCanCaloE[i],weight);
             if(chaCanInCB[i]){
@@ -537,6 +537,8 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
 
         if(!(neuCanCaloE.size() == neu_nrSel && chaCanCaloE.size() == cha_nrSel))
             continue;
+
+        stat[1]+=weight;
 
         TLorentzVector L3g;
 
@@ -567,7 +569,6 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
         h_beamE[1]->Fill(InitialPhotonVec.E(),weight);
 
         for (unsigned int i=0; i<neutral.size(); i++){
-            neuStat[1]+=weight;
             h_neuEkinVSPhi[1]->Fill(neuPhi[i],neuCanCaloE[i],weight);
             h_neuEkinVSTheta[1]->Fill(neuThe[i],neuCanCaloE[i],weight);
             if(neuCanInCB[i]){
@@ -582,7 +583,6 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
             }
         }
         for (unsigned int i=0; i<charged.size(); i++){
-            chaStat[1]+=weight;
             h_chaEkinVSPhi[1]->Fill(chaPhi[i],chaCanCaloE[i],weight);
             h_chaEkinVSTheta[1]->Fill(chaThe[i],chaCanCaloE[i],weight);
             if(chaCanInCB[i]){
@@ -600,6 +600,8 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
         if(!(InitialPhotonVec.E()>=Omega_Ethreshold))
             continue;
 
+        stat[2]+=weight;
+
         h_missingP_IM[1]->Fill(LmissingProton.M(),weight);
         h_3g_IM[1]->Fill(omega_tmp.M(),weight);
 
@@ -611,7 +613,6 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
         h_beamE[2]->Fill(InitialPhotonVec.E(),weight);
 
         for (unsigned int i=0; i<neutral.size(); i++){
-            neuStat[2]+=weight;
             h_neuEkinVSPhi[2]->Fill(neuPhi[i],neuCanCaloE[i],weight);
             h_neuEkinVSTheta[2]->Fill(neuThe[i],neuCanCaloE[i],weight);
             if(neuCanInCB[i]){
@@ -626,7 +627,6 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
             }
         }
         for (unsigned int i=0; i<charged.size(); i++){
-            chaStat[2]+=weight;
             h_chaEkinVSPhi[2]->Fill(chaPhi[i],chaCanCaloE[i],weight);
             h_chaEkinVSTheta[2]->Fill(chaThe[i],chaCanCaloE[i],weight);
             if(chaCanInCB[i]){
@@ -644,6 +644,8 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
         if(!(LmissingProton.M() > (mp-2*sigmaMissingP) && LmissingProton.M() < (mp+2*sigmaMissingP)))
             continue;
 
+        stat[3]+=weight;
+
         h_missingP_IM[2]->Fill(LmissingProton.M(),weight);
         h_3g_IM[2]->Fill(omega_tmp.M(),weight);
 
@@ -655,7 +657,6 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
         h_beamE[3]->Fill(InitialPhotonVec.E(),weight);
 
         for (unsigned int i=0; i<neutral.size(); i++){
-            neuStat[3]+=weight;
             h_neuEkinVSPhi[3]->Fill(neuPhi[i],neuCanCaloE[i],weight);
             h_neuEkinVSTheta[3]->Fill(neuThe[i],neuCanCaloE[i],weight);
             if(neuCanInCB[i]){
@@ -670,7 +671,6 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
             }
         }
         for (unsigned int i=0; i<charged.size(); i++){
-            chaStat[3]+=weight;
             h_chaEkinVSPhi[3]->Fill(chaPhi[i],chaCanCaloE[i],weight);
             h_chaEkinVSTheta[3]->Fill(chaThe[i],chaCanCaloE[i],weight);
             if(chaCanInCB[i]){
@@ -755,6 +755,8 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
         if(!(wpi0.M()>(mpi0-2*sigmaPi0IM) && wpi0.M()<(mpi0+2*sigmaPi0IM)))
             continue;
 
+        stat[4]+=weight;
+
         h_2gPi0_IM[1]->Fill(wpi0.M(),weight);
 
         h_missingP_IM[3]->Fill(LmissingProton.M(),weight);
@@ -767,7 +769,6 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
         h_beamE[4]->Fill(InitialPhotonVec.E(),weight);
 
         for (unsigned int i=0; i<neutral.size(); i++){
-            neuStat[4]+=weight;
             h_neuEkinVSPhi[4]->Fill(neuPhi[i],neuCanCaloE[i],weight);
             h_neuEkinVSTheta[4]->Fill(neuThe[i],neuCanCaloE[i],weight);
             if(neuCanInCB[i]){
@@ -782,7 +783,6 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
             }
         }
         for (unsigned int i=0; i<charged.size(); i++){
-            chaStat[4]+=weight;
             h_chaEkinVSPhi[4]->Fill(chaPhi[i],chaCanCaloE[i],weight);
             h_chaEkinVSTheta[4]->Fill(chaThe[i],chaCanCaloE[i],weight);
             if(chaCanInCB[i]){
@@ -849,22 +849,26 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
 void scratch_damaurer_MC_pw_ppi0g_p3g::ShowResult()
 {    
 
-    for (unsigned int i=0; i<nrCuts_total; i++){
-        cout << "Amount of neutral candidates after " << i << " cuts: " << neuStat[i] << endl;
-        cout << "Amount of charged candidates after " << i << " cuts: " << chaStat[i] << endl;
-        h_RecData_neuCandStat->SetBinContent(i*steps+1, neuStat[i]);
-        h_RecData_neuCandStat->GetXaxis()->SetBinLabel(i*steps+1,cuts[i].c_str());
-        h_RecData_chaCandStat->SetBinContent(i*steps+1, chaStat[i]);
-        h_RecData_chaCandStat->GetXaxis()->SetBinLabel(i*steps+1,cuts[i].c_str());
+    int lower_edge = 0;
+    int upper_edge = nrCuts_total;
+    int number_of_bins = nrCuts_total*10;
+    int steps = (int)(number_of_bins/(upper_edge-lower_edge));
 
+    for (unsigned int i=0; i<nrCuts_total; i++){
+        cout << "Amount events after " << i << " applied cuts: " << stat[i] << endl;
+        h_RecData_Stat->SetBinContent(i*steps+1, stat[i]);
+        h_RecData_Stat->GetXaxis()->SetBinLabel(i*steps+1,cuts[i].c_str());
     }
 
-    ant::canvas(GetName()+": Statistics of neutral candidates")
-            << h_RecData_neuCandStat
-            << endc; // actually draws the canvas
+    for (unsigned int i=0; i<(nrCuts_total-1); i++){
+        cout << "Relative amount of events after " << (i+1) << " applied cuts: " << stat[i+1]/stat[0] << endl;
+        h_RecData_relStat->SetBinContent((i+1)*steps+1, stat[i+1]/stat[0]);
+        h_RecData_relStat->GetXaxis()->SetBinLabel((i+1)*steps+1,cuts[i+1].c_str());
+    }
 
-    ant::canvas(GetName()+": Statistics of charged candidates")
-            << h_RecData_chaCandStat
+    ant::canvas(GetName()+": Event-Statistics after applied cuts:")
+            << h_RecData_Stat
+            << h_RecData_relStat
             << endc; // actually draws the canvas
 
 /*

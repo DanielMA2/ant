@@ -113,8 +113,8 @@ private:
     TH1D* h_3gPolarAnglesTAPS;
     TH1D* h_3gAzimuthAngles;
 
-    TH1D* h_RecData_neuCandStat;
-    TH1D* h_RecData_chaCandStat;
+    TH1D* h_RecData_relStat;
+    TH1D* h_RecData_Stat;
 
     TH2D* h_3g_EvTheta_CB;
     TH2D* h_3g_EvTheta_TAPS;
@@ -154,19 +154,13 @@ private:
     double ProtonPolarAngles_TAPS_err;
     double ProtonPolarAngles_CB_err;
 
-    double neuStat[nrCuts_total] = {0};
-    double chaStat[nrCuts_total] = {0};
+    long double stat[nrCuts_total] = {0};
 
     double weight_res = 0;
     double sigmaMissingP = 50.138;
     double sigmaPi0IM = 12.494;
 
     std::shared_ptr<expconfig::detector::TAPS> taps;
-
-    Int_t number_of_bins = (nrCuts_total)*10;
-    Int_t lower_edge = 0;
-    Int_t upper_edge = nrCuts_total;
-    int steps = (int)(number_of_bins/(upper_edge-lower_edge));
 
 };
 
