@@ -29,10 +29,9 @@ scratch_damaurer_MC_pw_ppi0g_p3g::scratch_damaurer_MC_pw_ppi0g_p3g(const string&
 {
     taps = make_shared<expconfig::detector::TAPS_2013_11>(false, false, false);
 
-    const BinSettings timeCB_bins(200, 0, 5);
-    const BinSettings timeDiffCorTaggCB_bins(200, -7,0);
-    const BinSettings timeTAPS_bins(200, 0, 19);
-    const BinSettings timeDiffCorTaggTAPS_bins(200, -19,0);
+    const BinSettings time_bins(200, 0,10);
+    const BinSettings timeDiffCorTaggCB_bins(200, -5,10);
+    const BinSettings timeDiffCorTaggTAPS_bins(200, -5,20);
 
     const BinSettings Veto_Energy_bins(1000, 0, 10);
     const BinSettings Calo_Energy_bins(1000, 0, 1200);
@@ -74,8 +73,6 @@ scratch_damaurer_MC_pw_ppi0g_p3g::scratch_damaurer_MC_pw_ppi0g_p3g(const string&
     auto hf_CrossSection = new HistogramFactory("hf_CrossSection", HistFac, "");
     auto hf_CaloEvsVetoE = new HistogramFactory("hf_CaloEvsVetoE", HistFac, "");
     auto hf_RecData_CandStat = new HistogramFactory("hf_RecData_CandStat", HistFac, "");
-    auto hf_TimesCB = new HistogramFactory("hf_TimesCB", HistFac, "");
-    auto hf_TimesTAPS = new HistogramFactory("hf_TimesTAPS", HistFac, "");
     auto hf_TimeDiffCorTaggCB = new HistogramFactory("hf_TimeDiffCorTaggCB", HistFac, "");
     auto hf_TimeDiffCorTaggTAPS = new HistogramFactory("hf_TimeDiffCorTaggTAPS", HistFac, "");
     auto hf_Extras = new HistogramFactory("hf_Extras", HistFac, "");
@@ -135,49 +132,26 @@ scratch_damaurer_MC_pw_ppi0g_p3g::scratch_damaurer_MC_pw_ppi0g_p3g(const string&
                                                              "h_beamE_"+cuts[i], true     // ROOT object name, auto-generated if omitted
                                                              );
 
-        h_neuTimesCB[i] = hf_TimesCB->makeTH1D("Neutrals time in CB "+cuts[i],     // title
-                                                             "t_{CB} [ns]", "#",     // xlabel, ylabel
-                                                             timeCB_bins,  // our binnings
-                                                             "neuTimesCB_"+cuts[i], true     // ROOT object name, auto-generated if omitted
-                                                             );
-
-        h_neuTimesTAPS[i] = hf_TimesTAPS->makeTH1D("Neutrals time in TAPS "+cuts[i],     // title
-                                                             "t_{TAPS} [ns]", "#",     // xlabel, ylabel
-                                                             timeTAPS_bins,  // our binnings
-                                                             "neuTimesTAPS_"+cuts[i], true     // ROOT object name, auto-generated if omitted
-                                                             );
-
-        h_chaTimesCB[i] = hf_TimesCB->makeTH1D("Charged time in CB "+cuts[i],     // title
-                                                             "t_{CB} [ns]", "#",     // xlabel, ylabel
-                                                             timeCB_bins,  // our binnings
-                                                             "chaTimesCB_"+cuts[i], true     // ROOT object name, auto-generated if omitted
-                                                             );
-
-        h_chaTimesTAPS[i] = hf_TimesTAPS->makeTH1D("Charged time in TAPS "+cuts[i],     // title
-                                                             "t_{TAPS} [ns]", "#",     // xlabel, ylabel
-                                                             timeTAPS_bins,  // our binnings
-                                                             "chaTimesTAPS_"+cuts[i], true     // ROOT object name, auto-generated if omitted
-                                                             );
         h_neuTimeDiffCorTaggCB[i] = hf_TimeDiffCorTaggCB->makeTH1D("Neutrals time diff to cor tagg-time in CB "+cuts[i],     // title
-                                                             "(t_{corTagg}-t_{CB}) [ns]", "#",     // xlabel, ylabel
+                                                             "t_{CB}-t_{Tagger} [ns]", "#",     // xlabel, ylabel
                                                              timeDiffCorTaggCB_bins,  // our binnings
                                                              "h_neuTimeDiffCorTaggCB_"+cuts[i], true     // ROOT object name, auto-generated if omitted
                                                              );
 
         h_neuTimeDiffCorTaggTAPS[i] = hf_TimeDiffCorTaggTAPS->makeTH1D("Neutrals time diff to cor tagg-time in TAPS "+cuts[i],     // title
-                                                             "(t_{corTagg}-t_{TAPS}) [ns]", "#",     // xlabel, ylabel
+                                                             "t_{TAPS}-t_{Tagger} [ns]", "#",     // xlabel, ylabel
                                                              timeDiffCorTaggTAPS_bins,  // our binnings
                                                              "h_neuTimeDiffCorTaggTAPS_"+cuts[i], true     // ROOT object name, auto-generated if omitted
                                                              );
 
         h_chaTimeDiffCorTaggCB[i] = hf_TimeDiffCorTaggCB->makeTH1D("Charged time diff to cor tagg-time in CB "+cuts[i],     // title
-                                                             "(t_{corTagg}-t_{CB}) [ns]", "#",     // xlabel, ylabel
+                                                             "(t_{CB}-t_{Tagger}) [ns]", "#",     // xlabel, ylabel
                                                              timeDiffCorTaggCB_bins,  // our binnings
                                                              "h_chaTimeDiffCorTaggCB_"+cuts[i], true     // ROOT object name, auto-generated if omitted
                                                              );
 
         h_chaTimeDiffCorTaggTAPS[i] = hf_TimeDiffCorTaggTAPS->makeTH1D("Charged time diff to cor tagg-time in TAPS "+cuts[i],     // title
-                                                             "(t_{corTagg}-t_{TAPS}) [ns]", "#",     // xlabel, ylabel
+                                                             "t_{TAPS}-t_{Tagger} [ns]", "#",     // xlabel, ylabel
                                                              timeDiffCorTaggTAPS_bins,  // our binnings
                                                              "h_chaTimeDiffCorTaggTAPS_"+cuts[i], true     // ROOT object name, auto-generated if omitted
                                                              );
@@ -244,7 +218,7 @@ scratch_damaurer_MC_pw_ppi0g_p3g::scratch_damaurer_MC_pw_ppi0g_p3g(const string&
 
     h_TaggerTime = hfTagger->makeTH1D("Tagger Time",     // title
                                     "t [ns]", "#",     // xlabel, ylabel
-                                    timeCB_bins,  // our binnings
+                                    time_bins,  // our binnings
                                     "h_TaggerTime"     // ROOT object name, auto-generated if omitted
                                     );
     
@@ -511,13 +485,11 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
             h_neuEkinVSTheta[0]->Fill(neuThe[i],neuCanCaloE[i],weight);
             if(neuCanInCB[i]){
                 h_AllCaloEvsVetoE_CB[0]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
-                h_neuTimesCB[0]->Fill(neuCanTime[i],weight);
-                h_neuTimeDiffCorTaggCB[0]->Fill(corTaggTime-neuCanTime[i],weight);
+                h_neuTimeDiffCorTaggCB[0]->Fill(neuCanTime[i]-corTaggTime,weight);
             }
             if(neuCanInTAPS[i]){
                 h_AllCaloEvsVetoE_TAPS[0]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
-                h_neuTimesTAPS[0]->Fill(neuCanTime[i],weight);
-                h_neuTimeDiffCorTaggTAPS[0]->Fill(corTaggTime-neuCanTime[i],weight);
+                h_neuTimeDiffCorTaggTAPS[0]->Fill(neuCanTime[i]-corTaggTime,weight);
             }
         }
         for (unsigned int i=0; i<charged.size(); i++){
@@ -525,13 +497,11 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
             h_chaEkinVSTheta[0]->Fill(chaThe[i],chaCanCaloE[i],weight);
             if(chaCanInCB[i]){
                 h_AllCaloEvsVetoE_CB[0]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
-                h_chaTimesCB[0]->Fill(chaCanTime[i],weight);
-                h_chaTimeDiffCorTaggCB[0]->Fill(corTaggTime-chaCanTime[i],weight);
+                h_chaTimeDiffCorTaggCB[0]->Fill(chaCanTime[i]-corTaggTime,weight);
             }
             if(chaCanInTAPS[i]){
                 h_AllCaloEvsVetoE_TAPS[0]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
-                h_chaTimesTAPS[0]->Fill(chaCanTime[i],weight);
-                h_chaTimeDiffCorTaggTAPS[0]->Fill(corTaggTime-chaCanTime[i],weight);
+                h_chaTimeDiffCorTaggTAPS[0]->Fill(chaCanTime[i]-corTaggTime,weight);
             }
         }
 
@@ -573,13 +543,11 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
             h_neuEkinVSTheta[1]->Fill(neuThe[i],neuCanCaloE[i],weight);
             if(neuCanInCB[i]){
                 h_AllCaloEvsVetoE_CB[1]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
-                h_neuTimesCB[1]->Fill(neuCanTime[i],weight);
-                h_neuTimeDiffCorTaggCB[1]->Fill(corTaggTime-neuCanTime[i],weight);
+                h_neuTimeDiffCorTaggCB[1]->Fill(neuCanTime[i]-corTaggTime,weight);
             }
             if(neuCanInTAPS[i]){
                 h_AllCaloEvsVetoE_TAPS[1]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
-                h_neuTimesTAPS[1]->Fill(neuCanTime[i],weight);
-                h_neuTimeDiffCorTaggTAPS[1]->Fill(corTaggTime-neuCanTime[i],weight);
+                h_neuTimeDiffCorTaggTAPS[1]->Fill(neuCanTime[i]-corTaggTime,weight);
             }
         }
         for (unsigned int i=0; i<charged.size(); i++){
@@ -587,17 +555,15 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
             h_chaEkinVSTheta[1]->Fill(chaThe[i],chaCanCaloE[i],weight);
             if(chaCanInCB[i]){
                 h_AllCaloEvsVetoE_CB[1]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
-                h_chaTimesCB[1]->Fill(chaCanTime[i],weight);
-                h_chaTimeDiffCorTaggCB[1]->Fill(corTaggTime-chaCanTime[i],weight);
+                h_chaTimeDiffCorTaggCB[1]->Fill(chaCanTime[i]-corTaggTime,weight);
             }
             if(chaCanInTAPS[i]){
                 h_AllCaloEvsVetoE_TAPS[1]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
-                h_chaTimesTAPS[1]->Fill(chaCanTime[i],weight);
-                h_chaTimeDiffCorTaggTAPS[1]->Fill(corTaggTime-chaCanTime[i],weight);
+                h_chaTimeDiffCorTaggTAPS[1]->Fill(chaCanTime[i]-corTaggTime,weight);
             }
         }
 
-        if(!(InitialPhotonVec.E()>=Omega_Ethreshold))
+        if(!(LmissingProton.M() > (mp-2*sigmaMissingP) && LmissingProton.M() < (mp+2*sigmaMissingP)))
             continue;
 
         stat[2]+=weight;
@@ -617,13 +583,11 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
             h_neuEkinVSTheta[2]->Fill(neuThe[i],neuCanCaloE[i],weight);
             if(neuCanInCB[i]){
                 h_AllCaloEvsVetoE_CB[2]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
-                h_neuTimesCB[2]->Fill(neuCanTime[i],weight);
-                h_neuTimeDiffCorTaggCB[2]->Fill(corTaggTime-neuCanTime[i],weight);
+                h_neuTimeDiffCorTaggCB[2]->Fill(neuCanTime[i]-corTaggTime,weight);
             }
             if(neuCanInTAPS[i]){
                 h_AllCaloEvsVetoE_TAPS[2]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
-                h_neuTimesTAPS[2]->Fill(neuCanTime[i],weight);
-                h_neuTimeDiffCorTaggTAPS[2]->Fill(corTaggTime-neuCanTime[i],weight);
+                h_neuTimeDiffCorTaggTAPS[2]->Fill(neuCanTime[i]-corTaggTime,weight);
             }
         }
         for (unsigned int i=0; i<charged.size(); i++){
@@ -631,17 +595,15 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
             h_chaEkinVSTheta[2]->Fill(chaThe[i],chaCanCaloE[i],weight);
             if(chaCanInCB[i]){
                 h_AllCaloEvsVetoE_CB[2]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
-                h_chaTimesCB[2]->Fill(chaCanTime[i],weight);
-                h_chaTimeDiffCorTaggCB[2]->Fill(corTaggTime-chaCanTime[i],weight);
+                h_chaTimeDiffCorTaggCB[2]->Fill(chaCanTime[i]-corTaggTime,weight);
             }
             if(chaCanInTAPS[i]){
                 h_AllCaloEvsVetoE_TAPS[2]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
-                h_chaTimesTAPS[2]->Fill(chaCanTime[i],weight);
-                h_chaTimeDiffCorTaggTAPS[2]->Fill(corTaggTime-chaCanTime[i],weight);
+                h_chaTimeDiffCorTaggTAPS[2]->Fill(chaCanTime[i]-corTaggTime,weight);
             }
         }
 
-        if(!(LmissingProton.M() > (mp-2*sigmaMissingP) && LmissingProton.M() < (mp+2*sigmaMissingP)))
+        if(!(InitialPhotonVec.E()>=Omega_Ethreshold))
             continue;
 
         stat[3]+=weight;
@@ -661,13 +623,11 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
             h_neuEkinVSTheta[3]->Fill(neuThe[i],neuCanCaloE[i],weight);
             if(neuCanInCB[i]){
                 h_AllCaloEvsVetoE_CB[3]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
-                h_neuTimesCB[3]->Fill(neuCanTime[i],weight);
-                h_neuTimeDiffCorTaggCB[3]->Fill(corTaggTime-neuCanTime[i],weight);
+                h_neuTimeDiffCorTaggCB[3]->Fill(neuCanTime[i]-corTaggTime,weight);
             }
             if(neuCanInTAPS[i]){
                 h_AllCaloEvsVetoE_TAPS[3]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
-                h_neuTimesTAPS[3]->Fill(neuCanTime[i],weight);
-                h_neuTimeDiffCorTaggTAPS[3]->Fill(corTaggTime-neuCanTime[i],weight);
+                h_neuTimeDiffCorTaggTAPS[3]->Fill(neuCanTime[i]-corTaggTime,weight);
             }
         }
         for (unsigned int i=0; i<charged.size(); i++){
@@ -675,13 +635,11 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
             h_chaEkinVSTheta[3]->Fill(chaThe[i],chaCanCaloE[i],weight);
             if(chaCanInCB[i]){
                 h_AllCaloEvsVetoE_CB[3]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
-                h_chaTimesCB[3]->Fill(chaCanTime[i],weight);
-                h_chaTimeDiffCorTaggCB[3]->Fill(corTaggTime-chaCanTime[i],weight);
+                h_chaTimeDiffCorTaggCB[3]->Fill(chaCanTime[i]-corTaggTime,weight);
             }
             if(chaCanInTAPS[i]){
                 h_AllCaloEvsVetoE_TAPS[3]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
-                h_chaTimesTAPS[3]->Fill(chaCanTime[i],weight);
-                h_chaTimeDiffCorTaggTAPS[3]->Fill(corTaggTime-chaCanTime[i],weight);
+                h_chaTimeDiffCorTaggTAPS[3]->Fill(chaCanTime[i]-corTaggTime,weight);
             }
         }
 
@@ -773,13 +731,11 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
             h_neuEkinVSTheta[4]->Fill(neuThe[i],neuCanCaloE[i],weight);
             if(neuCanInCB[i]){
                 h_AllCaloEvsVetoE_CB[4]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
-                h_neuTimesCB[4]->Fill(neuCanTime[i],weight);
-                h_neuTimeDiffCorTaggCB[4]->Fill(corTaggTime-neuCanTime[i],weight);
+                h_neuTimeDiffCorTaggCB[4]->Fill(neuCanTime[i]-corTaggTime,weight);
             }
             if(neuCanInTAPS[i]){
                 h_AllCaloEvsVetoE_TAPS[4]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
-                h_neuTimesTAPS[4]->Fill(neuCanTime[i],weight);
-                h_neuTimeDiffCorTaggTAPS[4]->Fill(corTaggTime-neuCanTime[i],weight);
+                h_neuTimeDiffCorTaggTAPS[4]->Fill(neuCanTime[i]-corTaggTime,weight);
             }
         }
         for (unsigned int i=0; i<charged.size(); i++){
@@ -787,13 +743,11 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
             h_chaEkinVSTheta[4]->Fill(chaThe[i],chaCanCaloE[i],weight);
             if(chaCanInCB[i]){
                 h_AllCaloEvsVetoE_CB[4]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
-                h_chaTimesCB[4]->Fill(chaCanTime[i],weight);
-                h_chaTimeDiffCorTaggCB[4]->Fill(corTaggTime-chaCanTime[i],weight);
+                h_chaTimeDiffCorTaggCB[4]->Fill(chaCanTime[i]-corTaggTime,weight);
             }
             if(chaCanInTAPS[i]){
                 h_AllCaloEvsVetoE_TAPS[4]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
-                h_chaTimesTAPS[4]->Fill(chaCanTime[i],weight);
-                h_chaTimeDiffCorTaggTAPS[4]->Fill(corTaggTime-chaCanTime[i],weight);
+                h_chaTimeDiffCorTaggTAPS[4]->Fill(chaCanTime[i]-corTaggTime,weight);
             }
         }
 
@@ -871,8 +825,6 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ShowResult()
             << h_RecData_relStat
             << endc; // actually draws the canvas
 
-/*
-
     ant::canvas c1(GetName()+": IM(missingP)");
     for (unsigned int i=0; i<(nrCuts_total-1); i++){
             c1 << h_missingP_IM[i];
@@ -925,6 +877,7 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ShowResult()
     }
             c8 << endc; // actually draws the canvas
 
+/*
 
     ant::canvas c9(GetName()+": Photons Ekin vs Theta");
             c9 << drawoption("pcolz");
@@ -955,34 +908,6 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ShowResult()
             c12 << endc; // actually draws the canvas
 
     */
-
-    ant::canvas c13(GetName()+": charged time CB");
-            c13 << drawoption("pcolz");
-    for (unsigned int i=0; i<nrCuts_total; i++){
-            c13 << h_chaTimesCB[i];
-    }
-            c13 << endc; // actually draws the canvas
-
-    ant::canvas c14(GetName()+": charged time TAPS");
-            c14 << drawoption("pcolz");
-    for (unsigned int i=0; i<nrCuts_total; i++){
-            c14 << h_chaTimesTAPS[i];
-    }
-            c14 << endc; // actually draws the canvas
-
-    ant::canvas c15(GetName()+": neutrals time CB");
-            c15 << drawoption("pcolz");
-    for (unsigned int i=0; i<nrCuts_total; i++){
-            c15 << h_neuTimesCB[i];
-    }
-            c15 << endc; // actually draws the canvas
-
-    ant::canvas c16(GetName()+": neutrals time TAPS");
-            c16 << drawoption("pcolz");
-    for (unsigned int i=0; i<nrCuts_total; i++){
-            c16 << h_neuTimesTAPS[i];
-    }
-            c16 << endc; // actually draws the canvas
 
     ant::canvas c17(GetName()+": charged time-diff to cor. Tagg time in CB");
             c17 << drawoption("pcolz");
