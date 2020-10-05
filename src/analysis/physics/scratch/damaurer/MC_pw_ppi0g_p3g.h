@@ -153,8 +153,15 @@ private:
     long double stat[nrCuts_total] = {0};
 
     double weight_res = 0;
-    double sigmaMissingP = 50.138;
-    double sigmaPi0IM = 12.494;
+
+    double mpFit = 926.144;
+    double mpi0Fit = 136.905;
+
+    double sigmaMissingP = 61.1838;
+    double sigmaPi0IM = 16.4186;
+
+    //double sigmaMissingP = 50.138;
+    //double sigmaPi0IM = 12.494;
 
     std::shared_ptr<expconfig::detector::TAPS> taps;
 

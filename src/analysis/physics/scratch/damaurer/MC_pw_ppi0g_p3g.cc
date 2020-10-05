@@ -563,7 +563,7 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
             }
         }
 
-        if(!(LmissingProton.M() > (mp-2*sigmaMissingP) && LmissingProton.M() < (mp+2*sigmaMissingP)))
+        if(!(LmissingProton.M() > (mpFit-1.5*sigmaMissingP) && LmissingProton.M() < (mpFit+1.5*sigmaMissingP)))
             continue;
 
         stat[2]+=weight;
@@ -710,7 +710,7 @@ void scratch_damaurer_MC_pw_ppi0g_p3g::ProcessEvent(const TEvent& event, manager
 
         h_2gPi0_IM[0]->Fill(wpi0.M(),weight);
 
-        if(!(wpi0.M()>(mpi0-2*sigmaPi0IM) && wpi0.M()<(mpi0+2*sigmaPi0IM)))
+        if(!(wpi0.M()>(mpi0Fit-3*sigmaPi0IM) && wpi0.M()<(mpi0Fit+3*sigmaPi0IM)))
             continue;
 
         stat[4]+=weight;
