@@ -127,7 +127,7 @@ private:
     std::string cuts[nrCuts_total] = {"CUT#0_NoCuts", "CUT#1_Sel3Neu1Cha", "CUT#2_ImMissingParticle_+-2sigma_mp", "CUT#3_OmegaEthreshold", "CUT#4_SelMinM(2neu-mpi0)_+-2sigma_mpi0"};
 
     double max_particles = 1000000;
-    double vetoEthreshold = 0;
+    double vetoEthreshold = 0.1;
     long double mpi0 = 134.9766;
     long double mp = 938.2720813;
     long double mw = 782.65;
