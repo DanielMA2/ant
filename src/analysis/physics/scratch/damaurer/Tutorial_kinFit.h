@@ -19,7 +19,7 @@ namespace analysis {
 namespace physics {
 
 // choose a nice name for your class
-class Tutorial_test : public Physics {
+class scratch_damaurer_Tutorial_kinFit : public Physics {
 public:
 
     // use "struct" to avoid all those public keywords...
@@ -34,8 +34,8 @@ public:
 
 private:
 
-    TH1D* h_nClusters;
-    TH1D* h_nClusters_pr;
+    TH1D* h_nClusters;   
+    TH1D* h_TaggerTime;
 
     tree_t t;
 
@@ -45,13 +45,14 @@ private:
     utils::TriggerSimulation triggersimu;
 public:
     // physics need to implement this public constructor...
-    Tutorial_test(const std::string& name, OptionsPtr opts);
+    scratch_damaurer_Tutorial_kinFit(const std::string& name, OptionsPtr opts);
 
     // ...and the following method (use override keyword)
     virtual void ProcessEvent(const TEvent& event, manager_t& manager) override;
 
     // optional method (called in interactive mode to show histograms)
     virtual void ShowResult() override;
+    virtual void Finish() override;
 };
 
 
