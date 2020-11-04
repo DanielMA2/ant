@@ -3,6 +3,7 @@
 
 // physics classes need to derive from this interface
 #include "physics/Physics.h"
+#include "TLorentzVector.h"
 
 // Ant provides many utility classes,
 // such as support for prompt-random handling,
@@ -12,6 +13,17 @@
 
 // handle ROOT's TTree
 #include "base/WrapTTree.h"
+
+//Including detecor properties
+#include "expconfig/detectors/Tagger.h"
+#include "expconfig/detectors/PID.h"
+#include "expconfig/detectors/TAPSVeto.h"
+#include "expconfig/detectors/CB.h"
+
+//Include Kinematic fitter
+#include "analysis/utils/fitter/KinFitter.h"
+#include "analysis/utils/Uncertainties.h"
+#include "analysis/utils/ProtonPhotonCombs.h"
 
 // the physics classes reside in this nested namespace
 namespace ant {
@@ -31,6 +43,25 @@ public:
 //        ADD_BRANCH_T(std::vector<double>, Numbers, 3) // vector Numbers is three items large now
     };
 
+protected:
+
+    // use this instance to handle prompt-random weighting
+    PromptRandom::Switch promptrandom;
+    // this encapsulates trigger timings and other related things (CBESum)
+    utils::TriggerSimulation triggersimu;
+
+    using particle_comb_t = utils::ProtonPhotonCombs::comb_t;
+    using particle_combs_t = utils::ProtonPhotonCombs::Combinations_t;
+
+    static constexpr auto radtodeg = std_ext::radian_to_degree(1.0);
+
+    utils::UncertaintyModelPtr fit_model;
+    utils::KinFitter fitter;
+
+    std::shared_ptr<expconfig::detector::Tagger> tagger_detector;
+    std::shared_ptr<expconfig::detector::CB> cb_detector;
+    std::shared_ptr<expconfig::detector::PID> pid_detector;
+    std::shared_ptr<expconfig::detector::TAPSVeto> veto_detector;
 
 private:
 
@@ -39,10 +70,6 @@ private:
 
     tree_t t;
 
-    // use this instance to handle prompt-random weighting
-    PromptRandom::Switch promptrandom;
-    // this encapsulates trigger timings and other related things (CBESum)
-    utils::TriggerSimulation triggersimu;
 public:
     // physics need to implement this public constructor...
     scratch_damaurer_Tutorial_kinFit(const std::string& name, OptionsPtr opts);
