@@ -9,6 +9,13 @@ using namespace ant;
 using namespace ant::analysis;
 using namespace ant::analysis::physics;
 
+APLCON::Fit_Settings_t scratch_damaurer_Tutorial_kinFit::MakeFitSettings(unsigned max_iterations)
+{
+    APLCON::Fit_Settings_t settings;
+    settings.MaxIterations = max_iterations;
+    return settings;
+}
+
 scratch_damaurer_Tutorial_kinFit::scratch_damaurer_Tutorial_kinFit(const string& name, OptionsPtr opts) :
     Physics(name, opts),
 
@@ -43,6 +50,8 @@ scratch_damaurer_Tutorial_kinFit::scratch_damaurer_Tutorial_kinFit(const string&
                                         tagger_time_bins,  // our binnings
                                         "h_TaggerTime"     // ROOT object name, auto-generated if omitted
                                         );
+
+    //hist = HistFac.makeTH1D(" Accepted Events", "step", "#", BinSettings(10), "steps");
 
     // define some prompt and random windows (in nanoseconds)
     promptrandom.AddPromptRange({ -7,   7}); // in nanoseconds
@@ -82,6 +91,7 @@ void scratch_damaurer_Tutorial_kinFit::ProcessEvent(const TEvent& event, manager
         if(promptrandom.State() == PromptRandom::Case::Outside)
             continue;
 
+
         const double TaggWeight = promptrandom.FillWeight();
 
         TLorentzVector InitialPhotonVec = taggerhit.GetPhotonBeam();
@@ -100,6 +110,7 @@ void scratch_damaurer_Tutorial_kinFit::ProcessEvent(const TEvent& event, manager
         //Photon-proton comb:
 
         //Performing the kinFit
+
         APLCON::Result_t fitresult = fitter.DoFit(taggerhit.PhotonEnergy, proton, photons);
 
         // check if the fit converged
@@ -114,6 +125,7 @@ void scratch_damaurer_Tutorial_kinFit::ProcessEvent(const TEvent& event, manager
         auto fitted_proton = fitter.GetFittedProton();
         auto fitted_photons = fitter.GetFittedPhotons();
         auto iterations = fitresult.NIterations;
+
 
     } 
 

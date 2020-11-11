@@ -11,6 +11,11 @@
 #include "plot/PromptRandomHist.h"
 #include "utils/TriggerSimulation.h"
 
+//Include Kinematic fitter
+#include "analysis/utils/fitter/KinFitter.h"
+#include "analysis/utils/Uncertainties.h"
+#include "analysis/utils/ProtonPhotonCombs.h"
+
 // handle ROOT's TTree
 #include "base/WrapTTree.h"
 
@@ -27,9 +32,9 @@ namespace detector {
 namespace analysis {
 namespace physics {
 
-class scratch_damaurer_wp_pi0gp_3gp_kinFit : public Physics {
+class scratch_damaurer_pw_ppi0g_p3g_kinFit : public Physics {
 public:
-    scratch_damaurer_wp_pi0gp_3gp_kinFit(const std::string& name, OptionsPtr opts);
+    scratch_damaurer_pw_ppi0g_p3g_kinFit(const std::string& name, OptionsPtr opts);
     virtual void ProcessEvent(const TEvent& event, manager_t& manager) override;
     virtual void ShowResult() override;
     virtual void Finish() override;
@@ -53,18 +58,22 @@ public:
     };
 
 protected:
+
+    static APLCON::Fit_Settings_t MakeFitSettings(unsigned);
     static constexpr auto radtodeg = std_ext::radian_to_degree(1.0);
+    utils::UncertaintyModelPtr fit_model;
+    utils::KinFitter fitter;
 
-//-- Histograms
+    //-- Histograms
 
-static const int nrCuts_total = 5;
-static const int nrCuts_pi0 = 2;
-static const int nrCuts_VetoSel = 2;
+    static const int nrCuts_total = 5;
+    static const int nrCuts_pi0 = 2;
+    static const int nrCuts_VetoSel = 2;
 
-static const int neu_nrSel = 3;
-static const int cha_nrSel = 1;
+    static const int neu_nrSel = 3;
+    static const int cha_nrSel = 1;
 
-const int nr_pi0g = 2;
+    const int nr_pi0g = 2;
 
 private:
 

@@ -1,4 +1,4 @@
-﻿#include "wp_pi0gp_3gp_kinFit.h"
+﻿#include "pw_ppi0g_p3g_kinFit.h"
 #include "base/WrapTFile.h"
 
 #include "base/ParticleType.h"
@@ -13,6 +13,7 @@
 #include "TH1D.h"
 #include "TLorentzVector.h"
 #include "expconfig/detectors/TAPS.h"
+#include "utils/uncertainties/Interpolated.h"
 
 #include <iostream>
 #include <memory>
@@ -24,9 +25,24 @@ using namespace ant;
 using namespace ant::analysis;
 using namespace ant::analysis::physics;
 
-scratch_damaurer_wp_pi0gp_3gp_kinFit::scratch_damaurer_wp_pi0gp_3gp_kinFit(const string& name, OptionsPtr opts) :
-    Physics(name, opts)
+APLCON::Fit_Settings_t scratch_damaurer_pw_ppi0g_p3g_kinFit::MakeFitSettings(unsigned max_iterations)
 {
+    APLCON::Fit_Settings_t settings;
+    settings.MaxIterations = max_iterations;
+    return settings;
+}
+
+scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const string& name, OptionsPtr opts) :
+    Physics(name, opts),
+
+    fit_model(utils::UncertaintyModels::Interpolated::makeAndLoad(
+                           utils::UncertaintyModels::Interpolated::Type_t::MC,
+                           make_shared<utils::UncertaintyModels::FitterSergey>())),
+    fitter(nullptr, opts->Get<bool>("FitZVertex", true))
+
+{
+
+    fitter.SetZVertexSigma(3.0);
     taps = make_shared<expconfig::detector::TAPS_2013_11>(false, false, false);
 
     const BinSettings time_bins(200, 0,10);
@@ -333,12 +349,17 @@ scratch_damaurer_wp_pi0gp_3gp_kinFit::scratch_damaurer_wp_pi0gp_3gp_kinFit(const
 
 }
 
-void scratch_damaurer_wp_pi0gp_3gp_kinFit::ProcessEvent(const TEvent& event, manager_t&)
+void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, manager_t&)
 {
     triggersimu.ProcessEvent(event); 
 
+    // set fitter uncertainty models
+    fitter.SetUncertaintyModel(fit_model);
+
+    const auto& data = event.Reconstructed();
+    const auto& candidates = data.Candidates;
+
     //Fill e.g. the polar angle distribution into a histogram
-    const auto& candidates = event.Reconstructed().Candidates;
     TCandidatePtrList all;
     TCandidatePtrList neutral;
     TCandidatePtrList charged;
@@ -459,7 +480,7 @@ void scratch_damaurer_wp_pi0gp_3gp_kinFit::ProcessEvent(const TEvent& event, man
     TParticle omega_tmp;
     double corTaggTime;
 
-    for (const auto& taggerhit : event.Reconstructed().TaggerHits) { // Event loop
+    for (const auto& taggerhit : data.TaggerHits) { // Event loop
 
         corTaggTime = triggersimu.GetCorrectedTaggerTime(taggerhit);
         promptrandom.SetTaggerTime(corTaggTime);
@@ -789,18 +810,18 @@ void scratch_damaurer_wp_pi0gp_3gp_kinFit::ProcessEvent(const TEvent& event, man
         //Filling the tree for further analysis
 
         t.TaggW = promptrandom.FillWeight();
-        t.nClusters = event.Reconstructed().Clusters.size();
+        t.nClusters = data.Clusters.size();
         t.PhotonAzimuthAngles = PhotonPhi;
         t.PhotonPolarAngles = PhotonThe;
         t.PhotonPolarAnglesCB = PhotonTheCB;
         t.PhotonPolarAnglesTAPS = PhotonTheTAPS;
         t.Tree->Fill();     
     }
-    h_nClusters->Fill(event.Reconstructed().Clusters.size());
+    h_nClusters->Fill(data.Clusters.size());
 
 }
 
-void scratch_damaurer_wp_pi0gp_3gp_kinFit::ShowResult()
+void scratch_damaurer_pw_ppi0g_p3g_kinFit::ShowResult()
 {    
 
     int lower_edge = 0;
@@ -997,7 +1018,7 @@ void scratch_damaurer_wp_pi0gp_3gp_kinFit::ShowResult()
 
 }
 
-void scratch_damaurer_wp_pi0gp_3gp_kinFit::Finish()
+void scratch_damaurer_pw_ppi0g_p3g_kinFit::Finish()
 {
     cout << "please work!" << endl;
 /*
@@ -1062,4 +1083,4 @@ void scratch_damaurer_wp_pi0gp_3gp_kinFit::Finish()
 
 }
 
-AUTO_REGISTER_PHYSICS(scratch_damaurer_wp_pi0gp_3gp_kinFit)
+AUTO_REGISTER_PHYSICS(scratch_damaurer_pw_ppi0g_p3g_kinFit)

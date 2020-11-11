@@ -63,10 +63,12 @@ protected:
     std::shared_ptr<expconfig::detector::PID> pid_detector;
     std::shared_ptr<expconfig::detector::TAPSVeto> veto_detector;
 
+
 private:
 
     TH1D* h_nClusters;   
     TH1D* h_TaggerTime;
+    //TH1D* hist;
 
     tree_t t;
 
@@ -80,6 +82,8 @@ public:
     // optional method (called in interactive mode to show histograms)
     virtual void ShowResult() override;
     virtual void Finish() override;
+
+    static APLCON::Fit_Settings_t MakeFitSettings(unsigned);
 };
 
 
