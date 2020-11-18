@@ -73,6 +73,8 @@ protected:
     static const int neu_nrSel = 3;
     static const int cha_nrSel = 1;
 
+    static const int nrPartType = 2;
+
     const int nr_pi0g = 2;
 
 private:
@@ -130,13 +132,30 @@ private:
     TH2D* h_wpi02g_EvTheta;
     //TH1D* h_Reconstructed_Data_Statistics;
 
+    //KinFit-overview:
+    //TH1D* h_Steps;
+    TH1D* h_Probability;
+    TH1D* h_Fit_zvert;
+    TH1D* h_fitEbeam;
+    TH1D* h_IM3g_Fit;
+    TH1D* h_IM2gPi0_Fit;
+
+    TH2D* h_Ek_dev_CB[nrPartType];
+    TH2D* h_Theta_dev_CB[nrPartType];
+    TH2D* h_Phi_dev_CB[nrPartType];
+
+    TH2D* h_Ek_dev_TAPS[nrPartType];
+    TH2D* h_Theta_dev_TAPS[nrPartType];
+    TH2D* h_Phi_dev_TAPS[nrPartType];
+
     PromptRandom::Switch promptrandom;
     utils::TriggerSimulation triggersimu;
 
     std::string cuts[nrCuts_total] = {"CUT#0_NoCuts", "CUT#1_Sel3Neu1Cha", "CUT#2_ImMissingParticle_+-2sigma_mp", "CUT#3_OmegaEthreshold", "CUT#4_SelMinM(2neu-mpi0)_+-2sigma_mpi0"};
+    std::string fitPartName[nrPartType] ={"protons" , "photons"};
 
     double max_particles = 1000000;
-    double vetoEthreshold = 0.1;
+    double vetoEthreshold = 0.2;
     long double mpi0 = 134.9766;
     long double mp = 938.2720813;
     long double mw = 782.65;
