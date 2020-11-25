@@ -74,6 +74,7 @@ protected:
     static const int cha_nrSel = 1;
 
     static const int nrPartType = 2;
+    static const int nrFitVars = 4;
 
     const int nr_pi0g = 2;
 
@@ -148,11 +149,16 @@ private:
     TH2D* h_Theta_dev_TAPS[nrPartType];
     TH2D* h_Phi_dev_TAPS[nrPartType];
 
+    TH1D *h_PartPulls_CB[nrPartType][nrFitVars];
+    TH1D *h_PartPulls_TAPS[nrPartType][nrFitVars];
+
     PromptRandom::Switch promptrandom;
     utils::TriggerSimulation triggersimu;
 
     std::string cuts[nrCuts_total] = {"CUT#0_NoCuts", "CUT#1_Sel3Neu1Cha", "CUT#2_ImMissingParticle_+-2sigma_mp", "CUT#3_OmegaEthreshold", "CUT#4_SelMinM(2neu-mpi0)_+-2sigma_mpi0"};
     std::string fitPartName[nrPartType] ={"protons" , "photons"};
+    std::string fitvarnameCB[nrFitVars] = {"invEk","theta","phi","R"};
+    std::string fitvarnameTA[nrFitVars] = {"invEk","Rxy","phi","L"};
 
     double max_particles = 1000000;
     double vetoEthreshold = 0.2;
