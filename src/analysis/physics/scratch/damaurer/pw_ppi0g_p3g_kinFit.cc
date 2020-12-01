@@ -118,6 +118,8 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
     auto hf_CombCBKF = new HistogramFactory("KinFit_CBvarComb2d", HistFac, "");
     auto hf_CombTAPSKF = new HistogramFactory("KinFit_TAPSvarComb2d", HistFac, "");
 
+    auto hf_invmassKF = new HistogramFactory("KinFit_invmass", HistFac, "");
+
     auto hfPullsCBKF = new HistogramFactory("KinFit_CBpulls", HistFac, "");
     auto hfPullsTAPSKF = new HistogramFactory("KinFit_TAPSpulls", HistFac, "");
 
@@ -267,6 +269,7 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
                                    );
 
     h_nClusters = hf_Tagger->makeTH1D("Number of Clusters", "nClusters", "#", BinSettings(15), "h_nClusters");
+    h_nCandidates = hf_Tagger->makeTH1D("Number of Candidates", "nCandidates", "#", BinSettings(10), "h_nCandidates");
 
     h_VetoEnergies = hf_Tagger->makeTH1D("Veto Energies", "E [MeV]", "#", Veto_Energy_bins, "h_VetoEnergies");
 
@@ -363,17 +366,13 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
 
     //KinFit-overview:
     //h_Steps = hf_OverviewKF->makeTH1D("Steps","","",BinSettings(10),"h_Steps");
-    h_Probability = hf_OverviewKF->makeTH1D("Fit probability","P(#chi^{2})","#",BinSettings(1000,0.,1.),"h_Probability",true);
-    h_Fit_zvert = hf_OverviewKF->makeTH1D("Fitted z-vertex","z [cm]","#",BinSettings(50,-15,15),"h_Fit_zvert",true);
-    h_fitEbeam = hf_OverviewKF->makeTH1D("Fitted beam energy","E [MeV]","#",BinSettings(1600,0.,1600.),"h_fitEbeam",true);
-    h_IM3g_Fit = hf_OverviewKF->makeTH1D("Fitted photons invariant mass","Im(3g_fit) [MeV]","#",BinSettings(1200,0.,1200.),"h_IM3g_Fit",true);
-
-    h_IM2gPi0_Fit = hf_OverviewKF->makeTH1D("IM(2gPi0) for fitted photons",     // title
-                                     "IM(2gPi0) [MeV]", "#",     // xlabel, ylabel
-                                     Im_pi0_bins,  // our binnings
-                                     "h_IM2gPi0_Fit", true     // ROOT object name, auto-generated if omitted
-                                     );
-
+    for (unsigned int i=0; i<nrCutsKF; i++){
+        h_Probability[i] = hf_OverviewKF->makeTH1D(Form("Fit probability %s",cutsKF[i].c_str()),"P(#chi^{2})","#",BinSettings(1000,0.,1.),Form("h_Probability_%s",cutsKF[i].c_str()),true);
+        h_Fit_zvert[i] = hf_OverviewKF->makeTH1D(Form("Fitted z-vertex %s",cutsKF[i].c_str()),"z [cm]","#",BinSettings(50,-15,15),Form("h_Fit_zvert_%s",cutsKF[i].c_str()),true);
+        h_fitEbeam[i] = hf_OverviewKF->makeTH1D(Form("Fitted beam energy %s",cutsKF[i].c_str()),"E [MeV]","#",BinSettings(1600,0.,1600.),Form("h_fitEbeam_%s",cutsKF[i].c_str()),true);
+        h_IM3g_Fit[i] = hf_invmassKF->makeTH1D(Form("Fitted photons invariant mass %s",cutsKF[i].c_str()),"Im(3g_fit) [MeV]","#",BinSettings(1200,0.,1200.),Form("h_IM3g_Fit_%s",cutsKF[i].c_str()),true);
+        h_IM2gPi0_Fit[i] = hf_invmassKF->makeTH1D(Form("IM(2gPi0) for fitted photons %s",cutsKF[i].c_str()),"IM(2gPi0) [MeV]", "#",Im_pi0_bins,Form("h_IM2gPi0_Fit_%s",cutsKF[i].c_str()), true);
+    }
 
     for (unsigned int i=0; i<nrPartType; i++){ //0 refers to proton, 1 to photons
 
@@ -451,6 +450,7 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
     const auto& data = event.Reconstructed();
     const auto& candidates = data.Candidates;
     h_nClusters->Fill(data.Clusters.size());
+    h_nCandidates->Fill(data.Candidates.size());
 
     //Fill e.g. the polar angle distribution into a histogram
     TCandidatePtrList all;
@@ -950,11 +950,11 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
         vec3 vertshift{0,0,fit_z_vert};
         fitbeamE = fitter.GetFittedBeamE();
 
-        h_Probability->Fill(best_probability,weight);
-        h_Fit_zvert->Fill(fit_z_vert,weight);
-        h_fitEbeam->Fill(fitbeamE,weight);
+        h_Probability[0]->Fill(best_probability,weight);
+        h_Fit_zvert[0]->Fill(fit_z_vert,weight);
+        h_fitEbeam[0]->Fill(fitbeamE,weight);
 
-        h_IM3g_Fit->Fill((*fitted_photons.at(0) + *fitted_photons.at(1) + *fitted_photons.at(2)).M(),weight);
+        h_IM3g_Fit[0]->Fill((*fitted_photons.at(0) + *fitted_photons.at(1) + *fitted_photons.at(2)).M(),weight);
 
         long double fitphotcomb1 = (*fitted_photons.at(0) + *fitted_photons.at(1)).M();
         long double fitphotcomb2 = (*fitted_photons.at(0) + *fitted_photons.at(2)).M();
@@ -973,7 +973,7 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
             pi02g_fitM = fitphotcomb3;
         }
 
-        h_IM2gPi0_Fit->Fill(pi02g_fitM,weight);
+        h_IM2gPi0_Fit[0]->Fill(pi02g_fitM,weight);
 
         if(proton_toFit->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
 
@@ -1019,6 +1019,54 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
 
         }
 
+        if(!(best_probability>0.01))
+            continue;
+
+        h_Probability[1]->Fill(best_probability,weight);
+        h_Fit_zvert[1]->Fill(fit_z_vert,weight);
+        h_fitEbeam[1]->Fill(fitbeamE,weight);
+
+        h_IM3g_Fit[1]->Fill((*fitted_photons.at(0) + *fitted_photons.at(1) + *fitted_photons.at(2)).M(),weight);
+        h_IM2gPi0_Fit[1]->Fill(pi02g_fitM,weight);
+
+        stat[5]+=weight;
+
+        h_2gPi0_IM[2]->Fill(wpi0.M(),weight);
+
+        h_missingP_IM[4]->Fill(LmissingProton.M(),weight);
+        h_3g_IM[4]->Fill(omega_tmp.M(),weight);
+        h_2gComb_IM[4]->Fill((g[0]+g[1]).M(),weight);
+        h_2gComb_IM[4]->Fill((g[0]+g[2]).M(),weight);
+        h_2gComb_IM[4]->Fill((g[1]+g[2]).M(),weight);
+
+        h_doublyDCScm_gp_wp[4]->Fill(cos(Linitial.Angle(Lw_boosted.Vect())),Linitial.M(),weight);
+        h_beamE[5]->Fill(InitialPhotonVec.E(),weight);
+
+        for (unsigned int i=0; i<neutral.size(); i++){
+            h_neuEkinVSPhi[5]->Fill(neuPhi[i],neuCanCaloE[i],weight);
+            h_neuEkinVSTheta[5]->Fill(neuThe[i],neuCanCaloE[i],weight);
+            if(neuCanInCB[i]){
+                h_AllCaloEvsVetoE_CB[5]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
+                h_neuTimeDiffCorTaggCB[5]->Fill(neuCanTime[i]-corTaggTime,weight);
+            }
+            if(neuCanInTAPS[i]){
+                h_AllCaloEvsVetoE_TAPS[5]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
+                h_neuTimeDiffCorTaggTAPS[5]->Fill(neuCanTime[i]-corTaggTime,weight);
+            }
+        }
+        for (unsigned int i=0; i<charged.size(); i++){
+            h_chaEkinVSPhi[5]->Fill(chaPhi[i],chaCanCaloE[i],weight);
+            h_chaEkinVSTheta[5]->Fill(chaThe[i],chaCanCaloE[i],weight);
+            if(chaCanInCB[i]){
+                h_AllCaloEvsVetoE_CB[5]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
+                h_chaTimeDiffCorTaggCB[5]->Fill(chaCanTime[i]-corTaggTime,weight);
+            }
+            if(chaCanInTAPS[i]){
+                h_AllCaloEvsVetoE_TAPS[5]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
+                h_chaTimeDiffCorTaggTAPS[5]->Fill(chaCanTime[i]-corTaggTime,weight);
+            }
+        }
+
 
         //Filling the tree for further analysis
 
@@ -1041,13 +1089,13 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ShowResult()
     int number_of_bins = nrCuts_total*10;
     int steps = (int)(number_of_bins/(upper_edge-lower_edge));
 
-    /*
 
     for (unsigned int i=0; i<nrCuts_total; i++){
         cout << "Amount events after " << i << " applied cuts: " << stat[i] << endl;
         h_RecData_Stat->SetBinContent(i*steps+1, stat[i]);
         h_RecData_Stat->GetXaxis()->SetBinLabel(i*steps+1,cuts[i].c_str());
     }
+
 
     for (unsigned int i=0; i<(nrCuts_total-1); i++){
         cout << "Relative amount of events after " << (i+1) << " applied cuts: " << stat[i+1]/stat[0] << endl;
@@ -1059,6 +1107,8 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ShowResult()
             << h_RecData_Stat
             << h_RecData_relStat
             << endc; // actually draws the canvas
+
+    /*
 
     ant::canvas c1(GetName()+": IM(missingP)");
     for (unsigned int i=0; i<(nrCuts_total-1); i++){
@@ -1231,13 +1281,20 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ShowResult()
             << endc; // actually draws the canvas
 */
 
-    ant::canvas(GetName()+": Kinfit overview")
-            << h_Fit_zvert
-            << h_Probability
-            << h_fitEbeam
-            << h_IM3g_Fit
-            << h_IM2gPi0_Fit
-            << endc; // actually draws the canvas
+    ant::canvas c_KinFit_overview(GetName()+": Kinfit overview");
+            for (unsigned int i=0; i<nrCutsKF; i++){
+            c_KinFit_overview << h_Fit_zvert[i];
+            c_KinFit_overview << h_Probability[i];
+            c_KinFit_overview << h_fitEbeam[i];
+            }
+            c_KinFit_overview << endc;
+
+    ant::canvas c_KinFit_invmass(GetName()+": KinFit invmasses");
+            for (unsigned int i=0; i<nrCutsKF; i++){
+            c_KinFit_invmass << h_IM3g_Fit[i];
+            c_KinFit_invmass << h_IM2gPi0_Fit[i];
+            }
+            c_KinFit_invmass << endc; // actually draws the canvas
 
 
     ant::canvas c_KinFit_CB(GetName()+"Rec. vs fitted particles in CB");

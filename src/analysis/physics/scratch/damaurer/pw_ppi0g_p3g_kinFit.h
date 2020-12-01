@@ -66,8 +66,8 @@ protected:
 
     //-- Histograms
 
-    static const int nrCuts_total = 5;
-    static const int nrCuts_pi0 = 2;
+    static const int nrCuts_total = 6;
+    static const int nrCuts_pi0 = 3;
     static const int nrCuts_VetoSel = 2;
 
     static const int neu_nrSel = 3;
@@ -75,6 +75,8 @@ protected:
 
     static const int nrPartType = 2;
     static const int nrFitVars = 4;
+
+    static const int nrCutsKF = 2;
 
     const int nr_pi0g = 2;
 
@@ -110,6 +112,7 @@ private:
     TH1D* h_InitialBeamE;
     TH1D* h_VetoEnergies;
     TH1D* h_nClusters;
+    TH1D* h_nCandidates;
     TH1D* h_nClusters_pr;
 
     TH1D* h_NeuAzimuthAngles;
@@ -135,11 +138,11 @@ private:
 
     //KinFit-overview:
     //TH1D* h_Steps;
-    TH1D* h_Probability;
-    TH1D* h_Fit_zvert;
-    TH1D* h_fitEbeam;
-    TH1D* h_IM3g_Fit;
-    TH1D* h_IM2gPi0_Fit;
+    TH1D* h_Probability[nrCutsKF];
+    TH1D* h_Fit_zvert[nrCutsKF];
+    TH1D* h_fitEbeam[nrCutsKF];
+    TH1D* h_IM3g_Fit[nrCutsKF];
+    TH1D* h_IM2gPi0_Fit[nrCutsKF];
 
     TH2D* h_Ek_dev_CB[nrPartType];
     TH2D* h_Theta_dev_CB[nrPartType];
@@ -155,7 +158,8 @@ private:
     PromptRandom::Switch promptrandom;
     utils::TriggerSimulation triggersimu;
 
-    std::string cuts[nrCuts_total] = {"CUT#0_NoCuts", "CUT#1_Sel3Neu1Cha", "CUT#2_ImMissingParticle_+-2sigma_mp", "CUT#3_OmegaEthreshold", "CUT#4_SelMinM(2neu-mpi0)_+-2sigma_mpi0"};
+    std::string cuts[nrCuts_total] = {"CUT#0_NoCuts", "CUT#1_Sel3Neu1Cha", "CUT#2_ImMissingParticle_+-2sigma_mp", "CUT#3_OmegaEthreshold", "CUT#4_SelMinM(2neu-mpi0)_+-2sigma_mpi0", "CUT#5_kinFit_prob"};
+    std::string cutsKF[nrCutsKF] = {"after_kinFit","after_0.5%prob_CUT"};
     std::string fitPartName[nrPartType] ={"protons" , "photons"};
     std::string fitvarnameCB[nrFitVars] = {"invEk","theta","phi","R"};
     std::string fitvarnameTA[nrFitVars] = {"invEk","Rxy","phi","L"};
