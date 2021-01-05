@@ -110,7 +110,7 @@ void scratch_damaurer_Tutorial_kinFit::ProcessEvent(const TEvent& event, manager
         //Photon-proton comb:
 
         //Performing the kinFit
-
+        /*
         APLCON::Result_t fitresult = fitter.DoFit(taggerhit.PhotonEnergy, proton, photons);
 
         // check if the fit converged
@@ -125,7 +125,7 @@ void scratch_damaurer_Tutorial_kinFit::ProcessEvent(const TEvent& event, manager
         auto fitted_proton = fitter.GetFittedProton();
         auto fitted_photons = fitter.GetFittedPhotons();
         auto iterations = fitresult.NIterations;
-
+        */
 
     } 
 

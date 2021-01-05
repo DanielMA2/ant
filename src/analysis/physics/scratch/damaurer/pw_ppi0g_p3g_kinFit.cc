@@ -1067,7 +1067,6 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
             }
         }
 
-
         //Filling the tree for further analysis
 
         t.TaggW = promptrandom.FillWeight();
