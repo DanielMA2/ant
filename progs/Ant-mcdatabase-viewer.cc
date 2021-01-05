@@ -147,7 +147,20 @@ int main( int argc, char** argv )
         histptr->SetLabelSize(0.08,"Y");
         histptr->SetMarkerStyle(7);
         histptr->SetLineColor(*cit);
-        cout << histptr->GetTitle() << " has integral:" << histptr->Integral(1,histptr->GetNbinsX()) << endl;
+        //---------------------------------------------------
+        //double res = 0;
+        double totArea = 0;            //total area
+        double totWidth = 0;           //total width
+        for(int i=1;i<=histptr->GetNbinsX();i++){           //loop over hist xBins
+            //res += histptr->GetBinContent(i);             //testing if ’res’ & integral(1,Bins) is the same
+            totArea += histptr->GetBinContent(i)*histptr->GetBinWidth(i);         //Applying the formulas
+            totWidth += histptr->GetBinWidth(i);
+        }
+        double avgCross = totArea/totWidth;         //calculate average cross section over full energy range
+        //cout << histptr->GetTitle() << " has sum of bin contents: " << res << endl;    //show sum of bin contents
+        //cout << histptr->GetTitle() << " has integral: " << histptr->Integral(1,histptr->GetNbinsX()) << " [mub]"<< endl;      //show integral
+        cout << histptr->GetTitle() << " has average cross section: " << avgCross*1000 << " nb" << endl;   //show avg cross section values
+        //----------------------------------------------------
         sumplot << histptr;
         cit.next();
     }

@@ -159,7 +159,7 @@ private:
     utils::TriggerSimulation triggersimu;
 
     std::string cuts[nrCuts_total] = {"CUT#0_NoCuts", "CUT#1_Sel3Neu1Cha", "CUT#2_ImMissingParticle_+-2sigma_mp", "CUT#3_OmegaEthreshold", "CUT#4_SelMinM(2neu-mpi0)_+-2sigma_mpi0", "CUT#5_kinFit_prob"};
-    std::string cutsKF[nrCutsKF] = {"after_kinFit","after_0.5%prob_CUT"};
+    std::string cutsKF[nrCutsKF] = {"after_kinFit","after_1%prob_CUT"};
     std::string fitPartName[nrPartType] ={"protons" , "photons"};
     std::string fitvarnameCB[nrFitVars] = {"invEk","theta","phi","R"};
     std::string fitvarnameTA[nrFitVars] = {"invEk","Rxy","phi","L"};
