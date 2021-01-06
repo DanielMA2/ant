@@ -296,6 +296,8 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
     double fitbeamE = -50;
     */
 
+    //test
+
     int cut_ind = 0;
     for(auto& taggerhit : data.TaggerHits) {
 
