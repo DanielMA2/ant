@@ -66,7 +66,11 @@ protected:
     std::shared_ptr<expconfig::detector::TAPSVeto> veto_detector;
 
     static const int nrCuts_total = 6;
+    static const int nrCuts_beforeKF = 4;
+    static const int nrCuts_KF = nrCuts_total-nrCuts_beforeKF;
+
     std::string cuts[nrCuts_total] = {"CUT#0_NoCuts","CUT#1_Sel2Neu3Cha","CUT#2_OmegaEthreshold","CUT#3_IM(2g)_mpi0+-0.4mpi0","CUT#4_mm(p)ANDkf","CUT#5_kinFit_prob_CL1%"};
+    std::string cuts_KF[nrCuts_KF] = {"CUT#4_mm(p)ANDkf","CUT#5_kinFit_prob_CL1%"};
 
     double max_particles = 1000000;
     double vetoEthreshold = 0.2;
@@ -89,7 +93,6 @@ private:
     TH1D* h_TaggerTime;
     TH1D* h_nClusters;   
     TH1D* h_nCandidates;
-    TH1D* h_Probability;
     TH2D* h_nNeuChaCandidates;
     TH1D* h_mmpFails;
     TH1D* h_kfFails;
@@ -98,6 +101,7 @@ private:
     TH1D* h_AllVetoE_CB[nrCuts_total];
     TH1D* h_AllVetoE_TAPS[nrCuts_total];
     TH1D* h_beamE[nrCuts_total];
+    TH1D* h_CBEsum[nrCuts_total];
     TH2D* h_AllCaloEvsVetoE_CB[nrCuts_total];
     TH2D* h_AllCaloEvsVetoE_TAPS[nrCuts_total];
     //TH1D* hist;
@@ -105,6 +109,14 @@ private:
     TH1D* h_2g_IM[nrCuts_total-1];
     TH1D* h_missingP_IM[nrCuts_total-1];
     TH1D* h_2gee_IM[nrCuts_total-1];
+
+    //KinFit hists:
+    TH1D* h_IM2gee_Fit[nrCuts_KF];
+    TH1D* h_IM2g_Fit[nrCuts_KF];
+    TH1D* h_IMmissingP_Fit[nrCuts_KF];
+    TH1D* h_Fit_zvert[nrCuts_KF];
+    TH1D* h_fitEbeam[nrCuts_KF];
+    TH1D* h_Probability[nrCuts_KF];
 
     tree_t t;
 
