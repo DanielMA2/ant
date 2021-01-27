@@ -59,9 +59,9 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
     const BinSettings bins_Calo_Energy(500, 0, 1200);
     const BinSettings BeamE_bins(100,0, 1600);
     const BinSettings zVert_bins(50,-15,15);
-    const BinSettings Im_pi0_bins(100, 0, 600);
-    const BinSettings Im_proton_bins(100, 0, 1800);
-    const BinSettings Im_omega_bins(100, 0, 1800);
+    const BinSettings Im_pi0_bins(200, 0, 1000);
+    const BinSettings Im_proton_bins(200, 0, 1800);
+    const BinSettings Im_omega_bins(200, 0, 1800);
     const BinSettings kf_prob_bins(1000,0.,1.);
     const BinSettings CB_Esum_bins(250,0.,2000.);
 
@@ -78,6 +78,9 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
     auto hf_OverviewKF = new HistogramFactory("hf_OverviewKF", HistFac, "");
     auto hf_invmassKF = new HistogramFactory("hf_invmassKF", HistFac, "");
     auto hf_CBEsum = new HistogramFactory("hf_CB_Esum", HistFac, "");
+
+    auto hfPullsCBKF = new HistogramFactory("KinFit_CBpulls", HistFac, "");
+    auto hfPullsTAPSKF = new HistogramFactory("KinFit_TAPSpulls", HistFac, "");
 
     // HistFac is a protected member of the base class "Physics"
     // use it to conveniently create histograms (and other ROOT objects) at the right location
@@ -168,6 +171,24 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
         h_IMmissingP_Fit[i] = hf_invmassKF->makeTH1D(Form("Fitted mm(p) %s",cuts_KF[i].c_str()),"mm(fitted_p) [MeV]","#",Im_proton_bins,Form("h_IMmissingP_Fit_%s",cuts_KF[i].c_str()),true);
         h_IM2gee_Fit[i] = hf_invmassKF->makeTH1D(Form("Fitted 2gee invariant mass %s",cuts_KF[i].c_str()),"Im(fitted_2gee) [MeV]","#",Im_omega_bins,Form("h_IM2gee_Fit_%s",cuts_KF[i].c_str()),true);
         h_IM2g_Fit[i] = hf_invmassKF->makeTH1D(Form("Fitted 2g invariant mass %s",cuts_KF[i].c_str()),"Im(fitted_2g) [MeV]", "#",Im_pi0_bins,Form("h_IM2g_Fit_%s",cuts_KF[i].c_str()), true);
+    }
+
+    for (unsigned int i=0; i<nrPartType; i++){ //0 refers to proton, 1 to photons
+
+        for (unsigned int j=0; j<nrFitVars; j++){
+
+              h_PartPulls_CB[i][j] = hfPullsCBKF->makeTH1D(Form("CB: %s pulls of fitted %s",fitvarnameCB[j].c_str(),fitPartName[i].c_str()), //title
+                                                           Form("%s pull",fitvarnameCB[j].c_str()),"#", // xlabel, ylabel
+                                                           BinSettings(200,-10.,10.),   // our binnings
+                                                           Form("h_Pulls_CB_%s_%s",fitPartName[i].c_str(),fitvarnameCB[j].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                           );
+              h_PartPulls_TAPS[i][j] = hfPullsTAPSKF->makeTH1D(Form("TAPS: %s pulls of fitted %s",fitvarnameTA[j].c_str(),fitPartName[i].c_str()), //title
+                                                               Form("%s pull",fitvarnameTA[j].c_str()),"#", // xlabel, ylabel
+                                                               BinSettings(200,-10.,10.),   // our binnings
+                                                               Form("h_Pulls_TAPS_%s_%s",fitPartName[i].c_str(),fitvarnameCB[j].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                               );
+
+        }
     }
 
     //hist = HistFac.makeTH1D(" Accepted Events", "step", "#", BinSettings(10), "steps");
@@ -540,6 +561,10 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         best_mm_proton = std_ext::NaN;
         best_mm_2gee = std_ext::NaN;
 
+        std::vector<utils::Fitter::FitParticle> bestFitParticles;
+        bestFitParticles.clear();
+        bestKFindex = 0;
+
         for(int i = 0; i<nrCombs; i++){
 
             L4g = (TLorentzVector)(*photonCombs[i].at(0)+*photonCombs[i].at(1)+*photonCombs[i].at(2)+*photonCombs[i].at(3));
@@ -563,6 +588,8 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
             if (!std_ext::copy_if_greater(best_probability, fitresult.Probability))
                 continue;
 
+            bestKFindex = i;
+
             // retrieve the fitted photon and proton information as well as the number of iterations
             bestFitted_proton = fitter.GetFittedProton();
             bestFitted_photons = fitter.GetFittedPhotons();
@@ -577,6 +604,8 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
             bestFitted_mm_2g = ((TLorentzVector)(*bestFitted_photons.at(0) + *bestFitted_photons.at(1))).M();
             bestFitted_mm_proton = ((TLorentzVector)(LorentzVec({0, 0, bestFitted_BeamE}, bestFitted_BeamE) + LorentzVec({0,0,0}, ParticleTypeDatabase::Proton.Mass()))-(TLorentzVector)(*bestFitted_photons.at(0) + *bestFitted_photons.at(1) + *bestFitted_photons.at(2) + *bestFitted_photons.at(3))).M();
 
+            bestFitParticles.clear();
+            bestFitParticles = fitter.GetFitParticles();
         }
 
         h_mmpFails->Fill(nr_mmpFails,TaggWeight);
@@ -614,6 +643,32 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         h_IM2gee_Fit[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2gee,TaggWeight);
         h_IM2g_Fit[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2g,TaggWeight);
         h_IMmissingP_Fit[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_proton,TaggWeight);
+
+        if(protonCombs[bestKFindex].at(0)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+            for (unsigned int i=0; i<nrFitVars; i++){
+                h_PartPulls_CB[0][i]->Fill(bestFitParticles.at(0).GetPulls().at(i),TaggWeight);
+            }
+        }
+        else{
+            for (unsigned int i=0; i<nrFitVars; i++){
+                h_PartPulls_TAPS[0][i]->Fill(bestFitParticles.at(0).GetPulls().at(i),TaggWeight);
+            }
+        }
+
+        for (unsigned int i=0; i<nrPhotons; i++){
+
+            if(photonCombs[bestKFindex].at(i)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+                for (unsigned int j=0; j<nrFitVars; j++){
+                    h_PartPulls_CB[1][j]->Fill(bestFitParticles.at(i+1).GetPulls().at(j),TaggWeight);
+                }
+            }
+            else{
+                for (unsigned int j=0; j<nrFitVars; j++){
+                    h_PartPulls_TAPS[1][j]->Fill(bestFitParticles.at(i+1).GetPulls().at(j),TaggWeight);
+                }
+            }
+
+        }
 
         if(!(best_probability>0.01))
             continue;
@@ -760,6 +815,22 @@ void scratch_damaurer_omega_Dalitz::ShowResult()
             c_KF_invMasses << h_IM2gee_Fit[i];
             }
             c_KF_invMasses << endc; // actually draws the canvas
+
+    ant::canvas c_kfPulls_CB(GetName()+"KinFit CB pulls");
+            for (unsigned int i=0; i<nrPartType; i++){
+                for (unsigned int j=0; j<nrFitVars; j++){
+                    c_kfPulls_CB << h_PartPulls_CB[i][j];
+                }
+            }
+            c_kfPulls_CB << endc; // actually draws the canvas
+
+    ant::canvas c_kfPulls_TAPS(GetName()+"KinFit TAPS pulls");
+            for (unsigned int i=0; i<nrPartType; i++){
+                for (unsigned int j=0; j<nrFitVars; j++){
+                    c_kfPulls_TAPS << h_PartPulls_TAPS[i][j];
+                }
+            }
+            c_kfPulls_TAPS << endc; // actually draws the canvas
 
 }
 

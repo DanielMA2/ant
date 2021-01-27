@@ -69,8 +69,16 @@ protected:
     static const int nrCuts_beforeKF = 4;
     static const int nrCuts_KF = nrCuts_total-nrCuts_beforeKF;
 
+    static const int nrPartType = 2;
+    static const int nrFitVars = 4;
+    static const int nrPhotons = 4;
+
     std::string cuts[nrCuts_total] = {"CUT#0_NoCuts","CUT#1_Sel2Neu3Cha","CUT#2_OmegaEthreshold","CUT#3_IM(2g)_mpi0+-0.4mpi0","CUT#4_mm(p)ANDkf","CUT#5_kinFit_prob_CL1%"};
     std::string cuts_KF[nrCuts_KF] = {"CUT#4_mm(p)ANDkf","CUT#5_kinFit_prob_CL1%"};
+
+    std::string fitPartName[nrPartType] ={"protons" , "photons"};
+    std::string fitvarnameCB[nrFitVars] = {"invEk","theta","phi","R"};
+    std::string fitvarnameTA[nrFitVars] = {"invEk","Rxy","phi","L"};
 
     double max_particles = 1000000;
     double vetoEthreshold = 0.2;
@@ -80,6 +88,7 @@ protected:
 
     static const int neu_nrSel = 2;
     static const int cha_nrSel = 3;
+    int bestKFindex;
 
     long double stat[nrCuts_total] = {0};
 
@@ -117,6 +126,9 @@ private:
     TH1D* h_Fit_zvert[nrCuts_KF];
     TH1D* h_fitEbeam[nrCuts_KF];
     TH1D* h_Probability[nrCuts_KF];
+
+    TH1D *h_PartPulls_CB[nrPartType][nrFitVars];
+    TH1D *h_PartPulls_TAPS[nrPartType][nrFitVars];
 
     tree_t t;
 
