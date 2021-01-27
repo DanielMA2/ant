@@ -390,9 +390,8 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
     TParticlePtr bestFitted_proton;
     TParticleList bestFitted_photons;
 
-    //test
+    int cut_ind;
 
-    int cut_ind = 0;
     for(auto& taggerhit : data.TaggerHits) {
 
         //Get corrected Taggertime
@@ -400,9 +399,11 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         promptrandom.SetTaggerTime(cortagtime);
 
         if(promptrandom.State() == PromptRandom::Case::Outside)
-            continue;
+            continue;    
 
         const double TaggWeight = promptrandom.FillWeight();
+
+        cut_ind=0;
 
         stat[cut_ind]+=TaggWeight;
 
@@ -415,6 +416,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
 
         h_nNeuChaCandidates->Fill(charged.size(), neutral.size(), TaggWeight);
 
+
         for (unsigned int i=0; i<all.size(); i++){
             if(allCanInCB[i]){
                 h_AllCaloEvsVetoE_CB[cut_ind]->Fill(allCanCaloE[i],allCanVetoE[i],TaggWeight);
@@ -426,13 +428,17 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
             }
         }
 
+
         h_CBEsum[cut_ind]->Fill(triggersimu.GetCBEnergySum(),TaggWeight);
         h_beamE[cut_ind]->Fill(InitialPhotonVec.E(),TaggWeight);
+
 
         if(!(neutral.size() == neu_nrSel && charged.size() == cha_nrSel))
             continue;
 
+
         cut_ind++;
+
         stat[cut_ind]+=TaggWeight;
 
         for (unsigned int i=0; i<all.size(); i++){
@@ -509,14 +515,12 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         h_2g_IM[cut_ind-1]->Fill(L2g.M(),TaggWeight);
         //just a test:
 
-        /*
         TLorentzVector L2g;
         for (unsigned int i=0; i<neu_nrSel; i++){
             L2g += (TLorentzVector)(*photons.at(i));
             //L2g += (TLorentzVector)(*photonCombs[0].at(i));
         }
         h_2g_IM[cut_ind-1]->Fill(L2g.M(),TaggWeight);
-        */
 
         for(int i = 0; i<nrCombs; i++){
             h_2gee_IM[cut_ind-1]->Fill(mm_2geeCombs[i],TaggWeight);
