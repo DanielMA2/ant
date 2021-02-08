@@ -66,9 +66,11 @@ protected:
 
     //-- Histograms
 
-    static const int nrCuts_total = 6;
+    static const int nrCuts_total = 7;
     static const int nrCuts_pi0 = 3;
-    static const int nrCuts_VetoSel = 2;
+    static const int nrCuts_beforeSel = 2;
+    static const int nrCuts_beforePi0 = 4;
+    static const int nrCuts_beforeKF = 5;
 
     static const int neu_nrSel = 3;
     static const int cha_nrSel = 1;
@@ -94,6 +96,8 @@ private:
     TH2D* h_AllCaloEvsVetoE_CB[nrCuts_total];
     TH2D* h_AllCaloEvsVetoE_TAPS[nrCuts_total];
 
+    TH1D* h_AllVetoE_CB[nrCuts_total];
+    TH1D* h_AllVetoE_TAPS[nrCuts_total];
     TH2D* h_neuEkinVSTheta[nrCuts_total];
     TH2D* h_chaEkinVSTheta[nrCuts_total];
     TH2D* h_neuEkinVSPhi[nrCuts_total];
@@ -155,11 +159,13 @@ private:
     TH1D *h_PartPulls_CB[nrPartType][nrFitVars];
     TH1D *h_PartPulls_TAPS[nrPartType][nrFitVars];
 
+    TH1D* h_CBEsum[nrCuts_total];
+
     PromptRandom::Switch promptrandom;
     utils::TriggerSimulation triggersimu;
 
-    std::string cuts[nrCuts_total] = {"CUT#0_NoCuts", "CUT#1_Sel3Neu1Cha", "CUT#2_ImMissingParticle_+-2sigma_mp", "CUT#3_OmegaEthreshold", "CUT#4_SelMinM(2neu-mpi0)_+-2sigma_mpi0", "CUT#5_kinFit_prob"};
-    std::string cutsKF[nrCutsKF] = {"after_kinFit","after_1%prob_CUT"};
+    std::string cuts[nrCuts_total] = {"CUT#0_NoCuts", "CUT#1_CBEsum", "CUT#2_Sel3Neu1Cha", "CUT#3_ImMissingParticle_+-2sigma_mp", "CUT#4_OmegaEthreshold", "CUT#5_SelMinM(2neu-mpi0)_+-2sigma_mpi0", "CUT#6_kinFit_prob_CL1%"};
+    std::string cutsKF[nrCutsKF] = {"after_kinFit","after_1%CL_CUT"};
     std::string fitPartName[nrPartType] ={"protons" , "photons"};
     std::string fitvarnameCB[nrFitVars] = {"invEk","theta","phi","R"};
     std::string fitvarnameTA[nrFitVars] = {"invEk","Rxy","phi","L"};

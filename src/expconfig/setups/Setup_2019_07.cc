@@ -262,8 +262,8 @@ Setup_traits::triggersimu_config_t Setup_2019_07::GetTriggerSimuConfig() const
     conf.Type = triggersimu_config_t::Type_t::CBESum;
     // from https://github.com/padlarson/a2GoAT/blob/AdlarsonAnalysis/src/AdlarsonPhysics.cc#L1018
     // First guesses of edge and width, neither has been extracted from data
-    conf.CBESum_Edge = 425; // MeV
-    conf.CBESum_Width = 20; // MeV
+    conf.CBESum_Edge = 485; // MeV
+    conf.CBESum_Width = 45; // MeV
     return conf;
 }
 

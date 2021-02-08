@@ -59,22 +59,24 @@ protected:
 
     utils::UncertaintyModelPtr fit_model;
     utils::KinFitter fitter;
+    utils::KinFitter fitter_freeZ;
 
     std::shared_ptr<expconfig::detector::Tagger> tagger_detector;
     std::shared_ptr<expconfig::detector::CB> cb_detector;
     std::shared_ptr<expconfig::detector::PID> pid_detector;
     std::shared_ptr<expconfig::detector::TAPSVeto> veto_detector;
 
-    static const int nrCuts_total = 6;
-    static const int nrCuts_beforeKF = 4;
+    static const int nrCuts_total = 8;
+    static const int nrCuts_beforeSel = 2;
+    static const int nrCuts_beforeKF = 5;
     static const int nrCuts_KF = nrCuts_total-nrCuts_beforeKF;
 
     static const int nrPartType = 2;
     static const int nrFitVars = 4;
     static const int nrPhotons = 4;
 
-    std::string cuts[nrCuts_total] = {"CUT#0_NoCuts","CUT#1_Sel2Neu3Cha","CUT#2_OmegaEthreshold","CUT#3_IM(2g)_mpi0+-0.4mpi0","CUT#4_mm(p)ANDkf","CUT#5_kinFit_prob_CL1%"};
-    std::string cuts_KF[nrCuts_KF] = {"CUT#4_mm(p)ANDkf","CUT#5_kinFit_prob_CL1%"};
+    std::string cuts[nrCuts_total] = {"CUT#0_NoCuts","CUT#1_CBEsum","CUT#2_Sel2Neu3Cha","CUT#3_OmegaEthreshold","CUT#4_IM(2g)_mpi0+-0.4mpi0","CUT#5_mm(p)ANDkf","CUT#6_kinFit_prob_CL1%","CUT#7_FreeZVert<5cm"};
+    std::string cuts_KF[nrCuts_KF] = {"CUT#5_mm(p)ANDkf","CUT#6_kinFit_prob_CL1%","CUT#7_FreeZVert<5cm"};
 
     std::string fitPartName[nrPartType] ={"protons" , "photons"};
     std::string fitvarnameCB[nrFitVars] = {"invEk","theta","phi","R"};
@@ -89,6 +91,7 @@ protected:
     static const int neu_nrSel = 2;
     static const int cha_nrSel = 3;
     int bestKFindex;
+    int bestKFindex_freeZ;
 
     long double stat[nrCuts_total] = {0};
 
@@ -98,6 +101,7 @@ protected:
 private:
 
     TH1D* h_RecData_Stat;
+    TH1D* h_RecData_relStat;
 
     TH1D* h_TaggerTime;
     TH1D* h_nClusters;   
@@ -115,9 +119,9 @@ private:
     TH2D* h_AllCaloEvsVetoE_TAPS[nrCuts_total];
     //TH1D* hist;
 
-    TH1D* h_2g_IM[nrCuts_total-1];
-    TH1D* h_missingP_IM[nrCuts_total-1];
-    TH1D* h_2gee_IM[nrCuts_total-1];
+    TH1D* h_2g_IM[nrCuts_total-2];
+    TH1D* h_missingP_IM[nrCuts_total-2];
+    TH1D* h_2gee_IM[nrCuts_total-2];
 
     //KinFit hists:
     TH1D* h_IM2gee_Fit[nrCuts_KF];
@@ -129,6 +133,9 @@ private:
 
     TH1D *h_PartPulls_CB[nrPartType][nrFitVars];
     TH1D *h_PartPulls_TAPS[nrPartType][nrFitVars];
+
+    TH1D* h_Probability_freeZ[nrCuts_KF];
+    TH1D *h_Fit_zvert_freeZ[nrCuts_KF];
 
     tree_t t;
 

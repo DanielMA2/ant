@@ -38,10 +38,19 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
     fit_model(utils::UncertaintyModels::Interpolated::makeAndLoad(
                              utils::UncertaintyModels::Interpolated::Type_t::MC,
                              make_shared<utils::UncertaintyModels::FitterSergey>())),
-    fitter(nullptr, opts->Get<bool>("FitZVertex", true))
+    fitter(nullptr, opts->Get<bool>("FitZVertex", true)),
+    fitter_freeZ(nullptr, opts->Get<bool>("FitZVertex", true))
 {
 
+    // set standard fitter with constrained Zvertex
     fitter.SetZVertexSigma(3.0);
+
+    // get target information
+    const auto target = ExpConfig::Setup::Get().GetTargetProperties();
+
+    // set sigma to 0 for unmeasured --> free z vertex
+    fitter_freeZ.SetZVertexSigma(0);
+    fitter_freeZ.SetTarget(target.length);  // double expected, target length in cm
 
     tagger_detector = ExpConfig::Setup::GetDetector<expconfig::detector::Tagger>();
     cb_detector = ExpConfig::Setup::GetDetector<expconfig::detector::CB>();
@@ -82,6 +91,8 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
     auto hfPullsCBKF = new HistogramFactory("KinFit_CBpulls", HistFac, "");
     auto hfPullsTAPSKF = new HistogramFactory("KinFit_TAPSpulls", HistFac, "");
 
+    auto hf_OverviewKF_freeZ = new HistogramFactory("hf_OverviewKF_freeZ", HistFac, "");
+
     // HistFac is a protected member of the base class "Physics"
     // use it to conveniently create histograms (and other ROOT objects) at the right location
     // using the make methods
@@ -105,6 +116,12 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
                                      statistic_bins,  // our binnings
                                      "h_RecData_Stat", true    // ROOT object name, auto-generated if omitted
                                      );
+
+    h_RecData_relStat = hf_RecData_CandStat->makeTH1D("rel. amount of events after cuts:",     // title
+                                      "Cuts", "rel. #",     // xlabel, ylabel
+                                      statistic_bins,  // our binnings
+                                      "h_RecData_relStat", true    // ROOT object name, auto-generated if omitted
+                                      );
 
     for (unsigned int i=0; i<nrCuts_total; i++){
 
@@ -142,24 +159,24 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
 
     }
 
-    for (unsigned int i=0; i<(nrCuts_total-1); i++){
+    for (unsigned int i=0; i<(nrCuts_total-nrCuts_beforeSel); i++){
 
-    h_2g_IM[i] = hf_2g_IM->makeTH1D("IM(2g) "+cuts[i+1],     // title
+    h_2g_IM[i] = hf_2g_IM->makeTH1D("IM(2g) "+cuts[i+nrCuts_beforeSel],     // title
                                          "IM(2g) [MeV]", "#",     // xlabel, ylabel
                                          Im_pi0_bins,  // our binnings
-                                         "h_2g_IM_"+cuts[i+1], true     // ROOT object name, auto-generated if omitted
+                                         "h_2g_IM_"+cuts[i+nrCuts_beforeSel], true     // ROOT object name, auto-generated if omitted
                                          );
 
-    h_missingP_IM[i] = hf_missingP_IM->makeTH1D("Im(missingP) "+cuts[i+1],     // title
+    h_missingP_IM[i] = hf_missingP_IM->makeTH1D("Im(missingP) "+cuts[i+nrCuts_beforeSel],     // title
                                                          "IM(missingP) [MeV]", "#",     // xlabel, ylabel
                                                          Im_proton_bins,  // our binnings
-                                                         "h_missingP_IM_"+cuts[i+1], true     // ROOT object name, auto-generated if omitted
+                                                         "h_missingP_IM_"+cuts[i+nrCuts_beforeSel], true     // ROOT object name, auto-generated if omitted
                                                          );
 
-    h_2gee_IM[i] = hf_2gee_IM->makeTH1D("IM(2gee) "+cuts[i+1],     // title
+    h_2gee_IM[i] = hf_2gee_IM->makeTH1D("IM(2gee) "+cuts[i+nrCuts_beforeSel],     // title
                                         "IM(2gee) [MeV]", "#",     // xlabel, ylabel
                                         Im_omega_bins,  // our binnings
-                                        "h_2gee_IM_"+cuts[i+1], true     // ROOT object name, auto-generated if omitted
+                                        "h_2gee_IM_"+cuts[i+nrCuts_beforeSel], true     // ROOT object name, auto-generated if omitted
                                         );
 
     }
@@ -171,6 +188,8 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
         h_IMmissingP_Fit[i] = hf_invmassKF->makeTH1D(Form("Fitted mm(p) %s",cuts_KF[i].c_str()),"mm(fitted_p) [MeV]","#",Im_proton_bins,Form("h_IMmissingP_Fit_%s",cuts_KF[i].c_str()),true);
         h_IM2gee_Fit[i] = hf_invmassKF->makeTH1D(Form("Fitted 2gee invariant mass %s",cuts_KF[i].c_str()),"Im(fitted_2gee) [MeV]","#",Im_omega_bins,Form("h_IM2gee_Fit_%s",cuts_KF[i].c_str()),true);
         h_IM2g_Fit[i] = hf_invmassKF->makeTH1D(Form("Fitted 2g invariant mass %s",cuts_KF[i].c_str()),"Im(fitted_2g) [MeV]", "#",Im_pi0_bins,Form("h_IM2g_Fit_%s",cuts_KF[i].c_str()), true);
+        h_Probability_freeZ[i] = hf_OverviewKF_freeZ->makeTH1D(Form("Free Z Kinfitter probability %s",cuts_KF[i].c_str()),"P(#chi^{2})","#",kf_prob_bins,Form("h_Probability_freeZ_%s",cuts_KF[i].c_str()),true);
+        h_Fit_zvert_freeZ[i] = hf_OverviewKF_freeZ->makeTH1D(Form("Fitted unconstrained z-vertex %s",cuts_KF[i].c_str()),"z [cm]","#",zVert_bins,Form("h_Fit_zvert_unconstrained_%s",cuts_KF[i].c_str()), true);
     }
 
     for (unsigned int i=0; i<nrPartType; i++){ //0 refers to proton, 1 to photons
@@ -210,6 +229,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
 
     // set fitter uncertainty models
     fitter.SetUncertaintyModel(fit_model);
+    fitter_freeZ.SetUncertaintyModel(fit_model);
 
     const auto& data = event.Reconstructed();
     const auto& clusters = data.Clusters;
@@ -401,6 +421,19 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
     int nr_mmpFails;
     int nr_kfFails;
 
+    double best_probability_freeZ;
+    double bestFitted_Zvert_freeZ;
+    double bestFitted_BeamE_freeZ;
+    double bestFitted_mm_proton_freeZ;
+    double bestFitted_mm_2gee_freeZ;
+    double bestFitted_mm_2g_freeZ;
+    double bestFitted_Iterations_freeZ;
+    double best_mm_proton_freeZ;
+    double best_mm_2gee_freeZ;
+
+    int nr_mmpFails_freeZ;
+    int nr_kfFails_freeZ;
+
     double mm_protonCombs[nrCombs];
     double mm_2geeCombs[nrCombs];
     double mm_proton;
@@ -410,6 +443,9 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
 
     TParticlePtr bestFitted_proton;
     TParticleList bestFitted_photons;
+
+    TParticlePtr bestFitted_proton_freeZ;
+    TParticleList bestFitted_photons_freeZ;
 
     int cut_ind;
 
@@ -453,10 +489,37 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         h_CBEsum[cut_ind]->Fill(triggersimu.GetCBEnergySum(),TaggWeight);
         h_beamE[cut_ind]->Fill(InitialPhotonVec.E(),TaggWeight);
 
+        if(!triggersimu.HasTriggered())
+            continue;
+
+        cut_ind++;
+
+        stat[cut_ind]+=TaggWeight;
+
+        h_TaggerTime->Fill(taggerhit.Time, TaggWeight);
+        h_nCandidates->Fill(candidates.size(), TaggWeight);
+
+        h_nNeuChaCandidates->Fill(charged.size(), neutral.size(), TaggWeight);
+
+
+        for (unsigned int i=0; i<all.size(); i++){
+            if(allCanInCB[i]){
+                h_AllCaloEvsVetoE_CB[cut_ind]->Fill(allCanCaloE[i],allCanVetoE[i],TaggWeight);
+                h_AllVetoE_CB[cut_ind]->Fill(allCanVetoE[i],TaggWeight);
+            }
+            if(allCanInTAPS[i]){
+                h_AllCaloEvsVetoE_TAPS[cut_ind]->Fill(allCanCaloE[i],allCanVetoE[i],TaggWeight);
+                h_AllVetoE_TAPS[cut_ind]->Fill(allCanVetoE[i],TaggWeight);
+            }
+        }
+
+
+        h_CBEsum[cut_ind]->Fill(triggersimu.GetCBEnergySum(),TaggWeight);
+        h_beamE[cut_ind]->Fill(InitialPhotonVec.E(),TaggWeight);
+
 
         if(!(neutral.size() == neu_nrSel && charged.size() == cha_nrSel))
             continue;
-
 
         cut_ind++;
 
@@ -476,14 +539,14 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         h_CBEsum[cut_ind]->Fill(triggersimu.GetCBEnergySum(),TaggWeight);
         h_beamE[cut_ind]->Fill(InitialPhotonVec.E(),TaggWeight);
 
-        h_2g_IM[cut_ind-1]->Fill(L2g.M(),TaggWeight);
+        h_2g_IM[cut_ind-nrCuts_beforeSel]->Fill(L2g.M(),TaggWeight);
 
         for(int i = 0; i<nrCombs; i++){
             L4gCombs[i] = (TLorentzVector)(*photonCombs[i].at(0)+*photonCombs[i].at(1)+*photonCombs[i].at(2)+*photonCombs[i].at(3));
             mm_2geeCombs[i] = L4gCombs[i].M();
             mm_protonCombs[i] = (Linitial - L4gCombs[i]).M();
-            h_2gee_IM[cut_ind-1]->Fill(mm_2geeCombs[i],TaggWeight);
-            h_missingP_IM[cut_ind-1]->Fill(mm_protonCombs[i],TaggWeight);
+            h_2gee_IM[cut_ind-nrCuts_beforeSel]->Fill(mm_2geeCombs[i],TaggWeight);
+            h_missingP_IM[cut_ind-nrCuts_beforeSel]->Fill(mm_protonCombs[i],TaggWeight);
         }
 
         if(!(InitialPhotonVec.E()>=Omega_Ethreshold))
@@ -506,11 +569,11 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         h_CBEsum[cut_ind]->Fill(triggersimu.GetCBEnergySum(),TaggWeight);
         h_beamE[cut_ind]->Fill(InitialPhotonVec.E(),TaggWeight);
 
-        h_2g_IM[cut_ind-1]->Fill(L2g.M(),TaggWeight);
+        h_2g_IM[cut_ind-nrCuts_beforeSel]->Fill(L2g.M(),TaggWeight);
 
         for(int i = 0; i<nrCombs; i++){
-            h_2gee_IM[cut_ind-1]->Fill(mm_2geeCombs[i],TaggWeight);
-            h_missingP_IM[cut_ind-1]->Fill(mm_protonCombs[i],TaggWeight);
+            h_2gee_IM[cut_ind-nrCuts_beforeSel]->Fill(mm_2geeCombs[i],TaggWeight);
+            h_missingP_IM[cut_ind-nrCuts_beforeSel]->Fill(mm_protonCombs[i],TaggWeight);
         }
 
         if(!(L2g.M()>(mpi0-0.4*mpi0) && L2g.M()<(mpi0+0.4*mpi0)))
@@ -533,20 +596,93 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         h_CBEsum[cut_ind]->Fill(triggersimu.GetCBEnergySum(),TaggWeight);
         h_beamE[cut_ind]->Fill(InitialPhotonVec.E(),TaggWeight);
 
-        h_2g_IM[cut_ind-1]->Fill(L2g.M(),TaggWeight);
         //just a test:
 
+        /*
         TLorentzVector L2g;
         for (unsigned int i=0; i<neu_nrSel; i++){
             L2g += (TLorentzVector)(*photons.at(i));
             //L2g += (TLorentzVector)(*photonCombs[0].at(i));
         }
-        h_2g_IM[cut_ind-1]->Fill(L2g.M(),TaggWeight);
+        h_2g_IM[cut_ind-nrCuts_beforeSel]->Fill(L2g.M(),TaggWeight);
+        */
+
+        h_2g_IM[cut_ind-nrCuts_beforeSel]->Fill(L2g.M(),TaggWeight);
+        for(int i = 0; i<nrCombs; i++){
+            h_2gee_IM[cut_ind-nrCuts_beforeSel]->Fill(mm_2geeCombs[i],TaggWeight);
+            h_missingP_IM[cut_ind-nrCuts_beforeSel]->Fill(mm_protonCombs[i],TaggWeight);
+        }
+
+        //FreeZ kinfitter for experimenting:
+
+        nr_mmpFails_freeZ = 0;
+        nr_kfFails_freeZ = 0;
+
+        best_probability_freeZ = std_ext::NaN;
+        bestFitted_Zvert_freeZ = std_ext::NaN;
+        bestFitted_BeamE_freeZ = std_ext::NaN;
+        bestFitted_mm_proton_freeZ = std_ext::NaN;
+        bestFitted_mm_2gee_freeZ = std_ext::NaN;
+        bestFitted_mm_2g_freeZ = std_ext::NaN;
+        bestFitted_Iterations_freeZ = std_ext::NaN;
+        best_mm_proton_freeZ = std_ext::NaN;
+        best_mm_2gee_freeZ = std_ext::NaN;
+
+        std::vector<utils::Fitter::FitParticle> bestFitParticles_freeZ;
+        bestFitParticles_freeZ.clear();
+        bestKFindex_freeZ = 0;
 
         for(int i = 0; i<nrCombs; i++){
-            h_2gee_IM[cut_ind-1]->Fill(mm_2geeCombs[i],TaggWeight);
-            h_missingP_IM[cut_ind-1]->Fill(mm_protonCombs[i],TaggWeight);
+
+            L4g = (TLorentzVector)(*photonCombs[i].at(0)+*photonCombs[i].at(1)+*photonCombs[i].at(2)+*photonCombs[i].at(3));
+            mm_proton = (Linitial-L4g).M();
+
+            if(!(mm_proton > (mp-0.2*mp) && mm_proton < (mp+0.2*mp))){
+                nr_mmpFails_freeZ += 1;
+                continue;
+            }
+
+            //Performing the kinFit
+            APLCON::Result_t fitresult_freeZ = fitter_freeZ.DoFit(taggerhit.PhotonEnergy, protonCombs[i].at(0), photonCombs[i]);
+
+            // check if the fit converged
+            if (fitresult_freeZ.Status != APLCON::Result_Status_t::Success){
+                nr_kfFails_freeZ += 1;
+                continue;
+            }
+
+            // check if we found a better probability for this fit and copy it if true, continue otherwise
+            if (!std_ext::copy_if_greater(best_probability_freeZ, fitresult_freeZ.Probability))
+                continue;
+
+            bestKFindex_freeZ = i;
+
+            // retrieve the fitted photon and proton information as well as the number of iterations
+            bestFitted_proton_freeZ = fitter_freeZ.GetFittedProton();
+            bestFitted_photons_freeZ = fitter_freeZ.GetFittedPhotons();
+            bestFitted_Zvert_freeZ = fitter_freeZ.GetFittedZVertex();
+            bestFitted_BeamE_freeZ = fitter_freeZ.GetFittedBeamE();
+            bestFitted_Iterations_freeZ = fitresult_freeZ.NIterations;
+
+            best_mm_proton_freeZ = mm_proton;
+            best_mm_2gee_freeZ = L4g.M();
+
+            bestFitted_mm_2gee_freeZ = ((TLorentzVector)(*bestFitted_photons_freeZ.at(0) + *bestFitted_photons_freeZ.at(1) + *bestFitted_photons_freeZ.at(2) + *bestFitted_photons_freeZ.at(3))).M();
+            bestFitted_mm_2g_freeZ = ((TLorentzVector)(*bestFitted_photons_freeZ.at(0) + *bestFitted_photons_freeZ.at(1))).M();
+            bestFitted_mm_proton_freeZ = ((TLorentzVector)(LorentzVec({0, 0, bestFitted_BeamE_freeZ}, bestFitted_BeamE_freeZ) + LorentzVec({0,0,0}, ParticleTypeDatabase::Proton.Mass()))-(TLorentzVector)(*bestFitted_photons_freeZ.at(0) + *bestFitted_photons_freeZ.at(1) + *bestFitted_photons_freeZ.at(2) + *bestFitted_photons_freeZ.at(3))).M();
+
+            bestFitParticles_freeZ.clear();
+            bestFitParticles_freeZ = fitter_freeZ.GetFitParticles();
         }
+
+        /*
+        if(((nr_mmpFails_freeZ + nr_kfFails_freeZ) != nrCombs) && best_probability_freeZ > 0.01){
+            h_Probability_freeZ->Fill(best_probability_freeZ,TaggWeight);
+            h_Fit_zvert_freeZ->Fill(bestFitted_Zvert_freeZ,TaggWeight);
+        }
+        */
+
+        //Standard & main kinfitter for this analysis:
 
         nr_mmpFails = 0;
         nr_kfFails = 0;
@@ -612,7 +748,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         h_kfFails->Fill(nr_kfFails,TaggWeight);
         h_totalFails->Fill(nr_mmpFails+nr_kfFails,TaggWeight);
 
-        if((nr_mmpFails + nr_kfFails) == nrCombs)
+        if(!((nr_mmpFails + nr_kfFails) != nrCombs && (nr_mmpFails_freeZ + nr_kfFails_freeZ) != nrCombs))
             continue;
 
         cut_ind++;
@@ -632,10 +768,10 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         h_CBEsum[cut_ind]->Fill(triggersimu.GetCBEnergySum(),TaggWeight);
         h_beamE[cut_ind]->Fill(InitialPhotonVec.E(),TaggWeight);
 
-        h_2g_IM[cut_ind-1]->Fill(L2g.M(),TaggWeight);
+        h_2g_IM[cut_ind-nrCuts_beforeSel]->Fill(L2g.M(),TaggWeight);
 
-        h_missingP_IM[cut_ind-1]->Fill(best_mm_proton,TaggWeight);
-        h_2gee_IM[cut_ind-1]->Fill(best_mm_2gee,TaggWeight);
+        h_missingP_IM[cut_ind-nrCuts_beforeSel]->Fill(best_mm_proton,TaggWeight);
+        h_2gee_IM[cut_ind-nrCuts_beforeSel]->Fill(best_mm_2gee,TaggWeight);
 
         h_Probability[cut_ind-nrCuts_beforeKF]->Fill(best_probability,TaggWeight);
         h_Fit_zvert[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_Zvert,TaggWeight);
@@ -643,6 +779,8 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         h_IM2gee_Fit[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2gee,TaggWeight);
         h_IM2g_Fit[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2g,TaggWeight);
         h_IMmissingP_Fit[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_proton,TaggWeight);
+        h_Probability_freeZ[cut_ind-nrCuts_beforeKF]->Fill(best_probability_freeZ,TaggWeight);
+        h_Fit_zvert_freeZ[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_Zvert_freeZ,TaggWeight);
 
         if(protonCombs[bestKFindex].at(0)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
             for (unsigned int i=0; i<nrFitVars; i++){
@@ -670,7 +808,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
 
         }
 
-        if(!(best_probability>0.01))
+        if(!(best_probability > 0.01 && best_probability_freeZ > 0.01))
             continue;
 
         cut_ind++;
@@ -690,10 +828,10 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         h_CBEsum[cut_ind]->Fill(triggersimu.GetCBEnergySum(),TaggWeight);
         h_beamE[cut_ind]->Fill(InitialPhotonVec.E(),TaggWeight);
 
-        h_2g_IM[cut_ind-1]->Fill(L2g.M(),TaggWeight);
+        h_2g_IM[cut_ind-nrCuts_beforeSel]->Fill(L2g.M(),TaggWeight);
 
-        h_missingP_IM[cut_ind-1]->Fill(best_mm_proton,TaggWeight);
-        h_2gee_IM[cut_ind-1]->Fill(best_mm_2gee,TaggWeight);
+        h_missingP_IM[cut_ind-nrCuts_beforeSel]->Fill(best_mm_proton,TaggWeight);
+        h_2gee_IM[cut_ind-nrCuts_beforeSel]->Fill(best_mm_2gee,TaggWeight);
 
         h_Probability[cut_ind-nrCuts_beforeKF]->Fill(best_probability,TaggWeight);
         h_Fit_zvert[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_Zvert,TaggWeight);
@@ -701,6 +839,42 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         h_IM2gee_Fit[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2gee,TaggWeight);
         h_IM2g_Fit[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2g,TaggWeight);
         h_IMmissingP_Fit[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_proton,TaggWeight);
+        h_Probability_freeZ[cut_ind-nrCuts_beforeKF]->Fill(best_probability_freeZ,TaggWeight);
+        h_Fit_zvert_freeZ[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_Zvert_freeZ,TaggWeight);
+
+        if(!(bestFitted_Zvert_freeZ < 5))
+            continue;
+
+        cut_ind++;
+        stat[cut_ind]+=TaggWeight;
+
+        for (unsigned int i=0; i<all.size(); i++){
+            if(allCanInCB[i]){
+                h_AllCaloEvsVetoE_CB[cut_ind]->Fill(allCanCaloE[i],allCanVetoE[i],TaggWeight);
+                h_AllVetoE_CB[cut_ind]->Fill(allCanVetoE[i],TaggWeight);
+            }
+            if(allCanInTAPS[i]){
+                h_AllCaloEvsVetoE_TAPS[cut_ind]->Fill(allCanCaloE[i],allCanVetoE[i],TaggWeight);
+                h_AllVetoE_TAPS[cut_ind]->Fill(allCanVetoE[i],TaggWeight);
+            }
+        }
+
+        h_CBEsum[cut_ind]->Fill(triggersimu.GetCBEnergySum(),TaggWeight);
+        h_beamE[cut_ind]->Fill(InitialPhotonVec.E(),TaggWeight);
+
+        h_2g_IM[cut_ind-2]->Fill(L2g.M(),TaggWeight);
+
+        h_missingP_IM[cut_ind-2]->Fill(best_mm_proton,TaggWeight);
+        h_2gee_IM[cut_ind-2]->Fill(best_mm_2gee,TaggWeight);
+
+        h_Probability[cut_ind-nrCuts_beforeKF]->Fill(best_probability,TaggWeight);
+        h_Fit_zvert[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_Zvert,TaggWeight);
+        h_fitEbeam[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_BeamE,TaggWeight);
+        h_IM2gee_Fit[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2gee,TaggWeight);
+        h_IM2g_Fit[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2g,TaggWeight);
+        h_IMmissingP_Fit[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_proton,TaggWeight);
+        h_Probability_freeZ[cut_ind-nrCuts_beforeKF]->Fill(best_probability_freeZ,TaggWeight);
+        h_Fit_zvert_freeZ[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_Zvert_freeZ,TaggWeight);
 
         t.TaggW = TaggWeight;
         t.nClusters = data.Clusters.size();
@@ -729,10 +903,18 @@ void scratch_damaurer_omega_Dalitz::ShowResult()
         h_RecData_Stat->GetXaxis()->SetBinLabel(i*steps+1,cuts[i].c_str());
     }
 
+    for (unsigned int i=0; i<(nrCuts_total-1); i++){
+        cout << "Relative amount of events after " << (i+1) << " applied cuts: " << stat[i+1]/stat[0] << endl;
+        h_RecData_relStat->SetBinContent((i+1)*steps+1, stat[i+1]/stat[0]);
+        h_RecData_relStat->GetXaxis()->SetBinLabel((i+1)*steps+1,cuts[i+1].c_str());
+    }
+
     ant::canvas(GetName()+": Event statistics after applied cuts:")
             << h_RecData_Stat
+            << h_RecData_relStat
             << endc; // actually draws the canvas
 
+    /*
     ant::canvas c_Tagger_hists(GetName()+": Some basic hists");
             c_Tagger_hists << h_TaggerTime;
             c_Tagger_hists << h_nClusters;
@@ -774,20 +956,22 @@ void scratch_damaurer_omega_Dalitz::ShowResult()
     }
             c_CBEsum << endc; // actually draws the canvas
 
+    */
+
     ant::canvas c_2g_IM(GetName()+": IM(2g)");
-    for (unsigned int i=0; i<(nrCuts_total-1); i++){
+    for (unsigned int i=0; i<(nrCuts_total-nrCuts_beforeSel); i++){
             c_2g_IM << h_2g_IM[i];
     }
             c_2g_IM << endc; // actually draws the canvas
 
     ant::canvas c_mmp(GetName()+": mm(p)");
-    for (unsigned int i=0; i<(nrCuts_total-1); i++){
+    for (unsigned int i=0; i<(nrCuts_total-nrCuts_beforeSel); i++){
             c_mmp << h_missingP_IM[i];
     }
             c_mmp << endc; // actually draws the canvas
 
     ant::canvas c_IM_2gee(GetName()+": IM(2gee)");
-    for (unsigned int i=0; i<(nrCuts_total-1); i++){
+    for (unsigned int i=0; i<(nrCuts_total-nrCuts_beforeSel); i++){
             c_IM_2gee << h_2gee_IM[i];
     }
             c_IM_2gee << endc; // actually draws the canvas
@@ -831,6 +1015,14 @@ void scratch_damaurer_omega_Dalitz::ShowResult()
                 }
             }
             c_kfPulls_TAPS << endc; // actually draws the canvas
+
+    ant::canvas c_KF_Overview_freeZ(GetName()+": KinFit_freeZ overview");
+            //c_KF_Overview << drawoption("pcolz");
+            for (unsigned int i=0; i<nrCuts_KF; i++){
+            c_KF_Overview_freeZ << h_Probability_freeZ[i];
+            c_KF_Overview_freeZ << h_Fit_zvert_freeZ[i];
+            }
+            c_KF_Overview_freeZ << endc; // actually draws the canvas
 
 }
 
