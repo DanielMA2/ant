@@ -67,17 +67,17 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
     const BinSettings theta_bins_CB(140, 19, 160);
     const BinSettings theta_bins_TAPS(25, 0, 25);
 
-    const BinSettings Im_proton_bins(100, 0, 1800);
-    const BinSettings Im_omega_bins(100, 0, 1800);
-    const BinSettings Im_pi0_bins(200, 0, 600);
+    const BinSettings Im_proton_bins(200, 0, 1800);
+    const BinSettings Im_omega_bins(200, 0, 1800);
+    const BinSettings Im_pi0_bins(200, 0, 900);
 
-    const BinSettings Ekin_neu_bins(100, 0, 1600);
-    const BinSettings Ekin_cha_bins(100, 0, 1000);
+    const BinSettings Ekin_neu_bins(200, 0, 1600);
+    const BinSettings Ekin_cha_bins(200, 0, 1000);
 
-    const BinSettings E_photon_bins(100, 0, 1600);
-    const BinSettings E_proton_bins(100, 900, 2000);
-    const BinSettings E_omega_bins(100, 400, 1800);
-    const BinSettings E_pi0_bins(100, 0, 1600);
+    const BinSettings E_photon_bins(200, 0, 1600);
+    const BinSettings E_proton_bins(200, 900, 2000);
+    const BinSettings E_omega_bins(200, 400, 1800);
+    const BinSettings E_pi0_bins(200, 0, 1600);
     const BinSettings CB_Esum_bins(250,0.,2000.);
     const BinSettings bins_Veto_Energy(500, 0, 10);
     //const BinSettings cos_bins_BackToBack(1000,-1,1);
