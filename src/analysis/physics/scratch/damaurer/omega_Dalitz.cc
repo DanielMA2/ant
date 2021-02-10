@@ -68,6 +68,7 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
     const BinSettings bins_Calo_Energy(500, 0, 1200);
     const BinSettings BeamE_bins(100,0, 1600);
     const BinSettings zVert_bins(50,-15,15);
+    const BinSettings zVertFree_bins(50,-20,20);
     const BinSettings Im_pi0_bins(200, 0, 1000);
     const BinSettings Im_proton_bins(200, 0, 1800);
     const BinSettings Im_omega_bins(200, 0, 1800);
@@ -189,7 +190,7 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
         h_IM2gee_Fit[i] = hf_invmassKF->makeTH1D(Form("Fitted 2gee invariant mass %s",cuts_KF[i].c_str()),"Im(fitted_2gee) [MeV]","#",Im_omega_bins,Form("h_IM2gee_Fit_%s",cuts_KF[i].c_str()),true);
         h_IM2g_Fit[i] = hf_invmassKF->makeTH1D(Form("Fitted 2g invariant mass %s",cuts_KF[i].c_str()),"Im(fitted_2g) [MeV]", "#",Im_pi0_bins,Form("h_IM2g_Fit_%s",cuts_KF[i].c_str()), true);
         h_Probability_freeZ[i] = hf_OverviewKF_freeZ->makeTH1D(Form("Free Z Kinfitter probability %s",cuts_KF[i].c_str()),"P(#chi^{2})","#",kf_prob_bins,Form("h_Probability_freeZ_%s",cuts_KF[i].c_str()),true);
-        h_Fit_zvert_freeZ[i] = hf_OverviewKF_freeZ->makeTH1D(Form("Fitted unconstrained z-vertex %s",cuts_KF[i].c_str()),"z [cm]","#",zVert_bins,Form("h_Fit_zvert_unconstrained_%s",cuts_KF[i].c_str()), true);
+        h_Fit_zvert_freeZ[i] = hf_OverviewKF_freeZ->makeTH1D(Form("Fitted unconstrained z-vertex %s",cuts_KF[i].c_str()),"z [cm]","#",zVertFree_bins,Form("h_Fit_zvert_unconstrained_%s",cuts_KF[i].c_str()), true);
     }
 
     for (unsigned int i=0; i<nrPartType; i++){ //0 refers to proton, 1 to photons
@@ -956,7 +957,7 @@ void scratch_damaurer_omega_Dalitz::ShowResult()
     }
             c_CBEsum << endc; // actually draws the canvas
 
-    */
+
 
     ant::canvas c_2g_IM(GetName()+": IM(2g)");
     for (unsigned int i=0; i<(nrCuts_total-nrCuts_beforeSel); i++){
@@ -1023,6 +1024,8 @@ void scratch_damaurer_omega_Dalitz::ShowResult()
             c_KF_Overview_freeZ << h_Fit_zvert_freeZ[i];
             }
             c_KF_Overview_freeZ << endc; // actually draws the canvas
+
+    */
 
 }
 

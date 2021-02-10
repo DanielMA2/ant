@@ -1210,13 +1210,13 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ShowResult()
             << h_RecData_relStat
             << endc; // actually draws the canvas
 
+    /*
+
     ant::canvas c1(GetName()+": IM(missingP)");
     for (unsigned int i=0; i<(nrCuts_total-nrCuts_beforeSel); i++){
             c1 << h_missingP_IM[i];
     }
             c1 << endc; // actually draws the canvas
-
-    /*
 
     ant::canvas c2(GetName()+": IM(3neu)");
     for (unsigned int i=0; i<(nrCuts_total-nrCuts_beforeSel); i++){
@@ -1381,7 +1381,6 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ShowResult()
             << h_doubly_wp_DCS_reconstructed_lab
             << h_doubly_wp_DCS_reconstructed_cmFrame
             << endc; // actually draws the canvas
-*/
 
     ant::canvas c_KinFit_overview(GetName()+": Kinfit overview");
             for (unsigned int i=0; i<nrCutsKF; i++){
@@ -1439,6 +1438,8 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ShowResult()
             c_CBEsum << h_CBEsum[i];
     }
             c_CBEsum << endc; // actually draws the canvas
+
+    */
 
 }
 
