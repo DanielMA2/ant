@@ -65,7 +65,7 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
     const BinSettings bins_nChaCand(6);
     const BinSettings bins_kfFails(5);
     const BinSettings bins_Veto_Energy(500, 0, 10);
-    const BinSettings bins_Calo_Energy(500, 0, 1200);
+    const BinSettings bins_Calo_Energy(500, 0, 1100);
     const BinSettings BeamE_bins(100,0, 1600);
     const BinSettings zVert_bins(50,-15,15);
     const BinSettings zVertFree_bins(50,-20,20);
@@ -74,6 +74,10 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
     const BinSettings Im_omega_bins(200, 0, 1800);
     const BinSettings kf_prob_bins(1000,0.,1.);
     const BinSettings CB_Esum_bins(250,0.,2000.);
+    const BinSettings timeDiffCorTaggCB_bins(50, 0,10);
+    const BinSettings timeDiffCorTaggTAPS_bins(100, 0,25);
+    const BinSettings effR_bins(100, 0,20);
+    const BinSettings nCrystal_bins(25);
 
     auto hf_RecData_CandStat = new HistogramFactory("hf_RecData_CandStat", HistFac, "");
     auto hf_Tagger = new HistogramFactory("hf_Tagger", HistFac, "");
@@ -93,6 +97,14 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
     auto hfPullsTAPSKF = new HistogramFactory("KinFit_TAPSpulls", HistFac, "");
 
     auto hf_OverviewKF_freeZ = new HistogramFactory("hf_OverviewKF_freeZ", HistFac, "");
+    auto hf_cluster_effRvsCaloE = new HistogramFactory("hf_cluster_effRvsCaloE", HistFac, "");
+    auto hf_cluster_nCrystalsvsCaloE = new HistogramFactory("hf_cluster_nCrystalsvsCaloE", HistFac, "");
+
+    //Side-check hf
+    auto hf_CaloEvsVetoE_CB_SideCheck = new HistogramFactory("hf_CaloEvsVetoE_CB_SideCheck", HistFac, "");
+    auto hf_CaloEvsVetoE_TAPS_SideCheck = new HistogramFactory("hf_CaloEvsVetoE_TAPS_SideCheck", HistFac, "");
+    auto hf_TimeDiffCorTagg_CB_SideCheck = new HistogramFactory(" hf_TimeDiffCorTagg_CB_SideCheck", HistFac, "");
+    auto hf_TimeDiffCorTagg_TAPS_SideCheck = new HistogramFactory(" hf_TimeDiffCorTagg_TAPS_SideCheck", HistFac, "");
 
     // HistFac is a protected member of the base class "Physics"
     // use it to conveniently create histograms (and other ROOT objects) at the right location
@@ -191,6 +203,82 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
         h_IM2g_Fit[i] = hf_invmassKF->makeTH1D(Form("Fitted 2g invariant mass %s",cuts_KF[i].c_str()),"Im(fitted_2g) [MeV]", "#",Im_pi0_bins,Form("h_IM2g_Fit_%s",cuts_KF[i].c_str()), true);
         h_Probability_freeZ[i] = hf_OverviewKF_freeZ->makeTH1D(Form("Free Z Kinfitter probability %s",cuts_KF[i].c_str()),"P(#chi^{2})","#",kf_prob_bins,Form("h_Probability_freeZ_%s",cuts_KF[i].c_str()),true);
         h_Fit_zvert_freeZ[i] = hf_OverviewKF_freeZ->makeTH1D(Form("Fitted unconstrained z-vertex %s",cuts_KF[i].c_str()),"z [cm]","#",zVertFree_bins,Form("h_Fit_zvert_unconstrained_%s",cuts_KF[i].c_str()), true);
+
+        h_cluster_effRvsCaloE[i] = hf_cluster_effRvsCaloE->makeTH2D("No Protons: Cluster energy vs effective radius "+cuts_KF[i],     // title
+                                         "Cluster E [MeV]", "effR",  // xlabel, ylabel
+                                         bins_Calo_Energy, effR_bins,    // our binnings
+                                         "h_cluster_effRvsCaloE_"+cuts_KF[i], true    // ROOT object name, auto-generated if omitted
+                                         );
+
+        h_cluster_nCrystalsvsCaloE[i] = hf_cluster_nCrystalsvsCaloE->makeTH2D("No Protons: : Cluster energy vs number of crystals "+cuts_KF[i],     // title
+                                         "Cluster E [MeV]", "nCrystals",  // xlabel, ylabel
+                                         bins_Calo_Energy, nCrystal_bins,    // our binnings
+                                         "h_cluster_nCrystalsvsCaloE_"+cuts_KF[i], true    // ROOT object name, auto-generated if omitted
+                                         );
+
+        //Some side check hists:
+
+        h_NoProton_CaloEvsVetoE_CB[i] = hf_CaloEvsVetoE_CB_SideCheck->makeTH2D("No protons: Deposited calo vs veto energies in CB "+cuts_KF[i],     // title
+                                         "Calo E [MeV]", "Veto E [MeV]",  // xlabel, ylabel
+                                         bins_Calo_Energy, bins_Veto_Energy,    // our binnings
+                                         "h_NoProton_CaloEvsVetoE_CB_"+cuts_KF[i], true    // ROOT object name, auto-generated if omitted
+                                         );
+
+        h_NoProton_CaloEvsVetoE_TAPS[i] = hf_CaloEvsVetoE_TAPS_SideCheck->makeTH2D("No protons: Deposited calo vs veto energies in TAPS "+cuts_KF[i],     // title
+                                         "Calo E [MeV]", "Veto E [MeV]",  // xlabel, ylabel
+                                         bins_Calo_Energy, bins_Veto_Energy,    // our binnings
+                                         "h_NoProton_CaloEvsVetoE_TAPS_"+cuts_KF[i], true    // ROOT object name, auto-generated if omitted
+                                         );
+
+        h_Proton_CaloEvsVetoE_CB[i] = hf_CaloEvsVetoE_CB_SideCheck->makeTH2D("Protons: Deposited calo vs veto energies in CB "+cuts_KF[i],     // title
+                                         "Calo E [MeV]", "Veto E [MeV]",  // xlabel, ylabel
+                                         bins_Calo_Energy, bins_Veto_Energy,    // our binnings
+                                         "h_Proton_CaloEvsVetoE_CB_"+cuts_KF[i], true    // ROOT object name, auto-generated if omitted
+                                         );
+
+        h_Proton_CaloEvsVetoE_TAPS[i] = hf_CaloEvsVetoE_TAPS_SideCheck->makeTH2D("Protons: Deposited calo vs veto energies in TAPS "+cuts_KF[i],     // title
+                                         "Calo E [MeV]", "Veto E [MeV]",  // xlabel, ylabel
+                                         bins_Calo_Energy, bins_Veto_Energy,    // our binnings
+                                         "h_Proton_CaloEvsVetoE_TAPS_"+cuts_KF[i], true    // ROOT object name, auto-generated if omitted
+                                         );
+
+        h_Proton_TimeDiffCorTaggCB[i] = hf_TimeDiffCorTagg_CB_SideCheck->makeTH1D("Protons: Time diff to cor tagg-time in CB "+cuts_KF[i],     // title
+                                                             "(t_{CB}-t_{Tagger}) [ns]", "#",     // xlabel, ylabel
+                                                             timeDiffCorTaggCB_bins,  // our binnings
+                                                             "h_Proton_TimeDiffCorTaggCB_"+cuts_KF[i], true     // ROOT object name, auto-generated if omitted
+                                                             );
+
+        h_Proton_TimeDiffCorTaggTAPS[i] = hf_TimeDiffCorTagg_TAPS_SideCheck->makeTH1D("Protons: Time diff to cor tagg-time in TAPS "+cuts_KF[i],     // title
+                                                             "t_{TAPS}-t_{Tagger} [ns]", "#",     // xlabel, ylabel
+                                                             timeDiffCorTaggTAPS_bins,  // our binnings
+                                                             "h_Proton_TimeDiffCorTaggTAPS_"+cuts_KF[i], true     // ROOT object name, auto-generated if omitted
+                                                             );
+
+        h_NoProton_TimeDiffCorTaggCB[i] = hf_TimeDiffCorTagg_CB_SideCheck->makeTH1D("No protons: Time diff to cor tagg-time in CB "+cuts_KF[i],     // title
+                                                             "(t_{CB}-t_{Tagger}) [ns]", "#",     // xlabel, ylabel
+                                                             timeDiffCorTaggCB_bins,  // our binnings
+                                                             "h_NoProton_TimeDiffCorTaggCB_"+cuts_KF[i], true     // ROOT object name, auto-generated if omitted
+                                                             );
+
+        h_NoProton_TimeDiffCorTaggTAPS[i] = hf_TimeDiffCorTagg_TAPS_SideCheck->makeTH1D("No protons: Time diff to cor tagg-time in TAPS "+cuts_KF[i],     // title
+                                                             "t_{TAPS}-t_{Tagger} [ns]", "#",     // xlabel, ylabel
+                                                             timeDiffCorTaggTAPS_bins,  // our binnings
+                                                             "h_NoProton_TimeDiffCorTaggTAPS_"+cuts_KF[i], true     // ROOT object name, auto-generated if omitted
+                                                             );
+
+        h_Photon_TimeDiffCorTaggCB[i] = hf_TimeDiffCorTagg_CB_SideCheck->makeTH1D("Photons: Time diff to cor tagg-time in CB "+cuts_KF[i],     // title
+                                                             "(t_{CB}-t_{Tagger}) [ns]", "#",     // xlabel, ylabel
+                                                             timeDiffCorTaggCB_bins,  // our binnings
+                                                             "h_Photon_TimeDiffCorTaggCB_"+cuts_KF[i], true     // ROOT object name, auto-generated if omitted
+                                                             );
+
+        h_Photon_TimeDiffCorTaggTAPS[i] = hf_TimeDiffCorTagg_TAPS_SideCheck->makeTH1D("Photons: Time diff to cor tagg-time in TAPS "+cuts_KF[i],     // title
+                                                             "t_{TAPS}-t_{Tagger} [ns]", "#",     // xlabel, ylabel
+                                                             timeDiffCorTaggTAPS_bins,  // our binnings
+                                                             "h_Photon_TimeDiffCorTaggTAPS_"+cuts_KF[i], true     // ROOT object name, auto-generated if omitted
+                                                             );
+
+
     }
 
     for (unsigned int i=0; i<nrPartType; i++){ //0 refers to proton, 1 to photons
@@ -783,6 +871,8 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         h_Probability_freeZ[cut_ind-nrCuts_beforeKF]->Fill(best_probability_freeZ,TaggWeight);
         h_Fit_zvert_freeZ[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_Zvert_freeZ,TaggWeight);
 
+        //Pulls:
+
         if(protonCombs[bestKFindex].at(0)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
             for (unsigned int i=0; i<nrFitVars; i++){
                 h_PartPulls_CB[0][i]->Fill(bestFitParticles.at(0).GetPulls().at(i),TaggWeight);
@@ -808,6 +898,98 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
             }
 
         }
+
+        //effR calculation for charged cand (not proton!):
+        // CaloCluster in the candidate is the CB, get all hits in the cluster --> crystals
+        // this method doesn't make sense for clusters with only one or two contributing crystals
+        double effR_l1 = std_ext::NaN;
+        double e_l1 = std_ext::NaN;
+        double effR_l2 = std_ext::NaN;
+        double e_l2 = std_ext::NaN;
+        double nCrystals_l1 = std_ext::NaN;
+        double nCrystals_l2 = std_ext::NaN;
+
+        TClusterHitList crystals_l1 = photonCombs[bestKFindex].at(2)->Candidate->FindCaloCluster()->Hits;
+        TClusterHitList crystals_l2 = photonCombs[bestKFindex].at(3)->Candidate->FindCaloCluster()->Hits;
+        // get a (x,y,z) vector to the CB position of the central crystal of this candidate
+        vec3 central_l1 = cb_detector->GetPosition(photonCombs[bestKFindex].at(2)->Candidate->FindCaloCluster()->CentralElement);
+        vec3 central_l2 = cb_detector->GetPosition(photonCombs[bestKFindex].at(3)->Candidate->FindCaloCluster()->CentralElement);
+
+        nCrystals_l1 = crystals_l1.size();
+        nCrystals_l2 = crystals_l2.size();
+        //double nCrystals_l1 = photonCombs[bestKFindex].at(2)->Candidate->Clusters.size();
+        //double nCrystals_l2 = photonCombs[bestKFindex].at(3)->Candidate->Clusters.size();
+
+        if (nCrystals_l1 > 2){
+            effR_l1 = 0;
+            e_l1 = 0;
+            // loop over all crystals
+            for (TClusterHit crystal_l1 : crystals_l1) {
+                // r is the angle (distance) between the current crystal and the center crystal of the cluster
+                const double r = std_ext::radian_to_degree(central_l1.Angle(cb_detector->GetPosition(crystal_l1.Channel)));
+                effR_l1 += r*r*crystal_l1.Energy;
+                e_l1 += crystal_l1.Energy;
+            }
+        }
+
+        effR_l1 = sqrt(effR_l1/e_l1);
+
+        if (nCrystals_l2 > 2){
+            effR_l2 = 0;
+            e_l2 = 0;
+            // loop over all crystals
+            for (TClusterHit crystal_l2 : crystals_l2) {
+                // r is the angle (distance) between the current crystal and the center crystal of the cluster
+                const double r = std_ext::radian_to_degree(central_l2.Angle(cb_detector->GetPosition(crystal_l2.Channel)));
+                effR_l2 += r*r*crystal_l2.Energy;
+                e_l2 += crystal_l2.Energy;
+            }
+        }
+
+        effR_l2 = sqrt(effR_l2/e_l2);  // normalize energy weighted distance of the crystals to the total energy
+
+        //-----------------Filling cluster-hists of charged particles (not protons!)---------------------
+
+        if (isfinite(effR_l1)){
+            h_cluster_effRvsCaloE[cut_ind-nrCuts_beforeKF]->Fill(photonCombs[bestKFindex].at(2)->Candidate->FindCaloCluster()->Energy,effR_l1,TaggWeight);
+        }
+        if (isfinite(effR_l2)){
+            h_cluster_effRvsCaloE[cut_ind-nrCuts_beforeKF]->Fill(photonCombs[bestKFindex].at(3)->Candidate->FindCaloCluster()->Energy,effR_l2,TaggWeight);
+        }
+        h_cluster_nCrystalsvsCaloE[cut_ind-nrCuts_beforeKF]->Fill(photonCombs[bestKFindex].at(2)->Candidate->FindCaloCluster()->Energy,nCrystals_l1,TaggWeight);
+        h_cluster_nCrystalsvsCaloE[cut_ind-nrCuts_beforeKF]->Fill(photonCombs[bestKFindex].at(3)->Candidate->FindCaloCluster()->Energy,nCrystals_l2,TaggWeight);
+
+        //-----------------side-checks------------------------------------------------------------------
+
+        if(protonCombs[bestKFindex].at(0)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+            h_Proton_CaloEvsVetoE_CB[cut_ind-nrCuts_beforeKF]->Fill(protonCombs[bestKFindex].at(0)->Candidate->CaloEnergy,protonCombs[bestKFindex].at(0)->Candidate->VetoEnergy,TaggWeight);
+            h_Proton_TimeDiffCorTaggCB[cut_ind-nrCuts_beforeKF]->Fill((protonCombs[bestKFindex].at(0)->Candidate->Time)-cortagtime,TaggWeight);
+        }
+        if(protonCombs[bestKFindex].at(0)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::TAPS){
+            h_Proton_CaloEvsVetoE_TAPS[cut_ind-nrCuts_beforeKF]->Fill(protonCombs[bestKFindex].at(0)->Candidate->CaloEnergy,protonCombs[bestKFindex].at(0)->Candidate->VetoEnergy,TaggWeight);
+            h_Proton_TimeDiffCorTaggTAPS[cut_ind-nrCuts_beforeKF]->Fill((protonCombs[bestKFindex].at(0)->Candidate->Time)-cortagtime,TaggWeight);
+        }
+
+        for (unsigned int i=0; i<neu_nrSel; i++){
+
+            if(photonCombs[bestKFindex].at(i)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+                h_Photon_TimeDiffCorTaggCB[cut_ind-nrCuts_beforeKF]->Fill((photonCombs[bestKFindex].at(i)->Candidate->Time)-cortagtime,TaggWeight);
+            }
+            if(photonCombs[bestKFindex].at(i)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::TAPS){
+                h_Photon_TimeDiffCorTaggTAPS[cut_ind-nrCuts_beforeKF]->Fill((photonCombs[bestKFindex].at(i)->Candidate->Time)-cortagtime,TaggWeight);
+            }
+
+            if(photonCombs[bestKFindex].at(i+2)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+                h_NoProton_CaloEvsVetoE_CB[cut_ind-nrCuts_beforeKF]->Fill(photonCombs[bestKFindex].at(i+2)->Candidate->CaloEnergy,photonCombs[bestKFindex].at(i+2)->Candidate->VetoEnergy,TaggWeight);
+                h_NoProton_TimeDiffCorTaggCB[cut_ind-nrCuts_beforeKF]->Fill((photonCombs[bestKFindex].at(i+2)->Candidate->Time)-cortagtime,TaggWeight);
+            }
+            if(photonCombs[bestKFindex].at(i+2)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::TAPS){
+                h_NoProton_CaloEvsVetoE_TAPS[cut_ind-nrCuts_beforeKF]->Fill(photonCombs[bestKFindex].at(i+2)->Candidate->CaloEnergy,photonCombs[bestKFindex].at(i+2)->Candidate->VetoEnergy,TaggWeight);
+                h_NoProton_TimeDiffCorTaggTAPS[cut_ind-nrCuts_beforeKF]->Fill((photonCombs[bestKFindex].at(i+2)->Candidate->Time)-cortagtime,TaggWeight);
+            }
+        }
+
+        //----------------------------------------------------------------------------------------
 
         if(!(best_probability > 0.01 && best_probability_freeZ > 0.01))
             continue;
@@ -843,6 +1025,49 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         h_Probability_freeZ[cut_ind-nrCuts_beforeKF]->Fill(best_probability_freeZ,TaggWeight);
         h_Fit_zvert_freeZ[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_Zvert_freeZ,TaggWeight);
 
+        //-----------------Filling cluster-hists of charged particles (not protons!)---------------------
+
+        if (isfinite(effR_l1)){
+            h_cluster_effRvsCaloE[cut_ind-nrCuts_beforeKF]->Fill(photonCombs[bestKFindex].at(2)->Candidate->FindCaloCluster()->Energy,effR_l1,TaggWeight);
+        }
+        if (isfinite(effR_l2)){
+            h_cluster_effRvsCaloE[cut_ind-nrCuts_beforeKF]->Fill(photonCombs[bestKFindex].at(3)->Candidate->FindCaloCluster()->Energy,effR_l2,TaggWeight);
+        }
+        h_cluster_nCrystalsvsCaloE[cut_ind-nrCuts_beforeKF]->Fill(photonCombs[bestKFindex].at(2)->Candidate->FindCaloCluster()->Energy,nCrystals_l1,TaggWeight);
+        h_cluster_nCrystalsvsCaloE[cut_ind-nrCuts_beforeKF]->Fill(photonCombs[bestKFindex].at(3)->Candidate->FindCaloCluster()->Energy,nCrystals_l2,TaggWeight);
+
+        //-----------------side-checks----------------------------------------------------
+
+        if(protonCombs[bestKFindex].at(0)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+            h_Proton_CaloEvsVetoE_CB[cut_ind-nrCuts_beforeKF]->Fill(protonCombs[bestKFindex].at(0)->Candidate->CaloEnergy,protonCombs[bestKFindex].at(0)->Candidate->VetoEnergy,TaggWeight);
+            h_Proton_TimeDiffCorTaggCB[cut_ind-nrCuts_beforeKF]->Fill((protonCombs[bestKFindex].at(0)->Candidate->Time)-cortagtime,TaggWeight);
+        }
+        if(protonCombs[bestKFindex].at(0)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::TAPS){
+            h_Proton_CaloEvsVetoE_TAPS[cut_ind-nrCuts_beforeKF]->Fill(protonCombs[bestKFindex].at(0)->Candidate->CaloEnergy,protonCombs[bestKFindex].at(0)->Candidate->VetoEnergy,TaggWeight);
+            h_Proton_TimeDiffCorTaggTAPS[cut_ind-nrCuts_beforeKF]->Fill((protonCombs[bestKFindex].at(0)->Candidate->Time)-cortagtime,TaggWeight);
+        }
+
+        for (unsigned int i=0; i<neu_nrSel; i++){
+
+            if(photonCombs[bestKFindex].at(i)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+                h_Photon_TimeDiffCorTaggCB[cut_ind-nrCuts_beforeKF]->Fill((photonCombs[bestKFindex].at(i)->Candidate->Time)-cortagtime,TaggWeight);
+            }
+            if(photonCombs[bestKFindex].at(i)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::TAPS){
+                h_Photon_TimeDiffCorTaggTAPS[cut_ind-nrCuts_beforeKF]->Fill((photonCombs[bestKFindex].at(i)->Candidate->Time)-cortagtime,TaggWeight);
+            }
+
+            if(photonCombs[bestKFindex].at(i+2)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+                h_NoProton_CaloEvsVetoE_CB[cut_ind-nrCuts_beforeKF]->Fill(photonCombs[bestKFindex].at(i+2)->Candidate->CaloEnergy,photonCombs[bestKFindex].at(i+2)->Candidate->VetoEnergy,TaggWeight);
+                h_NoProton_TimeDiffCorTaggCB[cut_ind-nrCuts_beforeKF]->Fill((photonCombs[bestKFindex].at(i+2)->Candidate->Time)-cortagtime,TaggWeight);
+            }
+            if(photonCombs[bestKFindex].at(i+2)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::TAPS){
+                h_NoProton_CaloEvsVetoE_TAPS[cut_ind-nrCuts_beforeKF]->Fill(photonCombs[bestKFindex].at(i+2)->Candidate->CaloEnergy,photonCombs[bestKFindex].at(i+2)->Candidate->VetoEnergy,TaggWeight);
+                h_NoProton_TimeDiffCorTaggTAPS[cut_ind-nrCuts_beforeKF]->Fill((photonCombs[bestKFindex].at(i+2)->Candidate->Time)-cortagtime,TaggWeight);
+            }
+        }
+
+        //-----------------------------------------------------------------------------------
+
         if(!(bestFitted_Zvert_freeZ < 5))
             continue;
 
@@ -876,6 +1101,49 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         h_IMmissingP_Fit[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_proton,TaggWeight);
         h_Probability_freeZ[cut_ind-nrCuts_beforeKF]->Fill(best_probability_freeZ,TaggWeight);
         h_Fit_zvert_freeZ[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_Zvert_freeZ,TaggWeight);
+
+        //-----------------Filling cluster-hists of charged particles (not protons!)---------------------
+
+        if (isfinite(effR_l1)){
+            h_cluster_effRvsCaloE[cut_ind-nrCuts_beforeKF]->Fill(photonCombs[bestKFindex].at(2)->Candidate->FindCaloCluster()->Energy,effR_l1,TaggWeight);
+        }
+        if (isfinite(effR_l2)){
+            h_cluster_effRvsCaloE[cut_ind-nrCuts_beforeKF]->Fill(photonCombs[bestKFindex].at(3)->Candidate->FindCaloCluster()->Energy,effR_l2,TaggWeight);
+        }
+        h_cluster_nCrystalsvsCaloE[cut_ind-nrCuts_beforeKF]->Fill(photonCombs[bestKFindex].at(2)->Candidate->FindCaloCluster()->Energy,nCrystals_l1,TaggWeight);
+        h_cluster_nCrystalsvsCaloE[cut_ind-nrCuts_beforeKF]->Fill(photonCombs[bestKFindex].at(3)->Candidate->FindCaloCluster()->Energy,nCrystals_l2,TaggWeight);
+
+        //-----------------side-checks----------------------------------------------------
+
+        if(protonCombs[bestKFindex].at(0)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+            h_Proton_CaloEvsVetoE_CB[cut_ind-nrCuts_beforeKF]->Fill(protonCombs[bestKFindex].at(0)->Candidate->CaloEnergy,protonCombs[bestKFindex].at(0)->Candidate->VetoEnergy,TaggWeight);
+            h_Proton_TimeDiffCorTaggCB[cut_ind-nrCuts_beforeKF]->Fill((protonCombs[bestKFindex].at(0)->Candidate->Time)-cortagtime,TaggWeight);
+        }
+        if(protonCombs[bestKFindex].at(0)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::TAPS){
+            h_Proton_CaloEvsVetoE_TAPS[cut_ind-nrCuts_beforeKF]->Fill(protonCombs[bestKFindex].at(0)->Candidate->CaloEnergy,protonCombs[bestKFindex].at(0)->Candidate->VetoEnergy,TaggWeight);
+            h_Proton_TimeDiffCorTaggTAPS[cut_ind-nrCuts_beforeKF]->Fill((protonCombs[bestKFindex].at(0)->Candidate->Time)-cortagtime,TaggWeight);
+        }
+
+        for (unsigned int i=0; i<neu_nrSel; i++){
+
+            if(photonCombs[bestKFindex].at(i)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+                h_Photon_TimeDiffCorTaggCB[cut_ind-nrCuts_beforeKF]->Fill((photonCombs[bestKFindex].at(i)->Candidate->Time)-cortagtime,TaggWeight);
+            }
+            if(photonCombs[bestKFindex].at(i)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::TAPS){
+                h_Photon_TimeDiffCorTaggTAPS[cut_ind-nrCuts_beforeKF]->Fill((photonCombs[bestKFindex].at(i)->Candidate->Time)-cortagtime,TaggWeight);
+            }
+
+            if(photonCombs[bestKFindex].at(i+2)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+                h_NoProton_CaloEvsVetoE_CB[cut_ind-nrCuts_beforeKF]->Fill(photonCombs[bestKFindex].at(i+2)->Candidate->CaloEnergy,photonCombs[bestKFindex].at(i+2)->Candidate->VetoEnergy,TaggWeight);
+                h_NoProton_TimeDiffCorTaggCB[cut_ind-nrCuts_beforeKF]->Fill((photonCombs[bestKFindex].at(i+2)->Candidate->Time)-cortagtime,TaggWeight);
+            }
+            if(photonCombs[bestKFindex].at(i+2)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::TAPS){
+                h_NoProton_CaloEvsVetoE_TAPS[cut_ind-nrCuts_beforeKF]->Fill(photonCombs[bestKFindex].at(i+2)->Candidate->CaloEnergy,photonCombs[bestKFindex].at(i+2)->Candidate->VetoEnergy,TaggWeight);
+                h_NoProton_TimeDiffCorTaggTAPS[cut_ind-nrCuts_beforeKF]->Fill((photonCombs[bestKFindex].at(i+2)->Candidate->Time)-cortagtime,TaggWeight);
+            }
+        }
+
+        //-----------------------------------------------------------------------------------
 
         t.TaggW = TaggWeight;
         t.nClusters = data.Clusters.size();

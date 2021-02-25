@@ -6,6 +6,7 @@
 // physics classes need to derive from this interface
 #include "physics/Physics.h"
 #include "TLorentzVector.h"
+#include "analysis/utils/ClusterTools.h"
 
 // Ant provides many utility classes,
 // such as support for prompt-random handling,
@@ -60,6 +61,7 @@ protected:
     utils::UncertaintyModelPtr fit_model;
     utils::KinFitter fitter;
     utils::KinFitter fitter_freeZ;
+    utils::ClusterTools clustertools;
 
     std::shared_ptr<expconfig::detector::Tagger> tagger_detector;
     std::shared_ptr<expconfig::detector::CB> cb_detector;
@@ -130,6 +132,21 @@ private:
     TH1D* h_Fit_zvert[nrCuts_KF];
     TH1D* h_fitEbeam[nrCuts_KF];
     TH1D* h_Probability[nrCuts_KF];
+
+    TH2D* h_cluster_effRvsCaloE[nrCuts_KF];
+    TH2D* h_cluster_nCrystalsvsCaloE[nrCuts_KF];
+
+    TH2D* h_NoProton_CaloEvsVetoE_CB[nrCuts_KF];
+    TH2D* h_NoProton_CaloEvsVetoE_TAPS[nrCuts_KF];
+    TH2D* h_Proton_CaloEvsVetoE_CB[nrCuts_KF];
+    TH2D* h_Proton_CaloEvsVetoE_TAPS[nrCuts_KF];
+
+    TH1D *h_Proton_TimeDiffCorTaggCB[nrCuts_KF];
+    TH1D *h_Proton_TimeDiffCorTaggTAPS[nrCuts_KF];
+    TH1D *h_NoProton_TimeDiffCorTaggCB[nrCuts_KF];
+    TH1D *h_NoProton_TimeDiffCorTaggTAPS[nrCuts_KF];
+    TH1D *h_Photon_TimeDiffCorTaggCB[nrCuts_KF];
+    TH1D *h_Photon_TimeDiffCorTaggTAPS[nrCuts_KF];
 
     TH1D *h_PartPulls_CB[nrPartType][nrFitVars];
     TH1D *h_PartPulls_TAPS[nrPartType][nrFitVars];
