@@ -628,6 +628,7 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
         const double weight = promptrandom.FillWeight();
 
         stat[cut_ind]+=weight;
+        h_RecData_Stat->Fill(cut_ind, weight);
 
         h_TaggerTime->Fill(taggerhit.Time, weight);
 
@@ -669,6 +670,7 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
         cut_ind++;
 
         stat[cut_ind]+=weight;
+        h_RecData_Stat->Fill(cut_ind, weight);
 
         h_CBEsum[cut_ind]->Fill(triggersimu.GetCBEnergySum(),weight);
         h_beamE[cut_ind]->Fill(InitialPhotonVec.E(),weight);
@@ -707,6 +709,7 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
 
         cut_ind++;
         stat[cut_ind]+=weight;
+        h_RecData_Stat->Fill(cut_ind, weight);
 
         TLorentzVector L3g;
 
@@ -772,6 +775,7 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
 
         cut_ind++;
         stat[cut_ind]+=weight;
+        h_RecData_Stat->Fill(cut_ind, weight);
 
         h_missingP_IM[cut_ind-nrCuts_beforeSel]->Fill(LmissingProton.M(),weight);
         h_3g_IM[cut_ind-nrCuts_beforeSel]->Fill(omega_tmp.M(),weight);
@@ -818,6 +822,7 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
 
         cut_ind++;
         stat[cut_ind]+=weight;
+        h_RecData_Stat->Fill(cut_ind, weight);
 
         h_missingP_IM[cut_ind-nrCuts_beforeSel]->Fill(LmissingProton.M(),weight);
         h_3g_IM[cut_ind-nrCuts_beforeSel]->Fill(omega_tmp.M(),weight);
@@ -936,6 +941,7 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
 
         cut_ind++;
         stat[cut_ind]+=weight;
+        h_RecData_Stat->Fill(cut_ind, weight);
 
         h_2gPi0_IM[cut_ind-nrCuts_beforePi0]->Fill(wpi0.M(),weight);
 
@@ -1120,6 +1126,7 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
 
         cut_ind++;
         stat[cut_ind]+=weight;
+        h_RecData_Stat->Fill(cut_ind, weight);
 
         h_Probability[cut_ind-nrCuts_beforeKF]->Fill(best_probability,weight);
         h_Fit_zvert[cut_ind-nrCuts_beforeKF]->Fill(fit_z_vert,weight);
@@ -1186,26 +1193,23 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
 void scratch_damaurer_pw_ppi0g_p3g_kinFit::ShowResult()
 {    
 
-    int lower_edge = 0;
-    int upper_edge = nrCuts_total;
-    int number_of_bins = nrCuts_total*10;
-    int steps = (int)(number_of_bins/(upper_edge-lower_edge));
-
-
     for (unsigned int i=0; i<nrCuts_total; i++){
-        cout << "Amount events after " << i << " applied cuts: " << stat[i] << endl;
-        h_RecData_Stat->SetBinContent(i*steps+1, stat[i]);
+        cout << "Amount events after " << i << " applied cuts: " << h_RecData_Stat->GetBinContent(i*steps+1) << endl;
+        //h_RecData_Stat->SetBinContent(i*steps+1, stat[i]);
+        //h_RecData_Stat->SetBinError(i*steps+1, sqrt(stat[i]));
         h_RecData_Stat->GetXaxis()->SetBinLabel(i*steps+1,cuts[i].c_str());
     }
 
-
     for (unsigned int i=0; i<(nrCuts_total-1); i++){
-        cout << "Relative amount of events after " << (i+1) << " applied cuts: " << stat[i+1]/stat[0] << endl;
-        h_RecData_relStat->SetBinContent((i+1)*steps+1, stat[i+1]/stat[0]);
+        cout << "Relative amount of events after " << (i+1) << " applied cuts: " << (h_RecData_Stat->GetBinContent((i+1)*steps+1)/h_RecData_Stat->GetBinContent(1)) << endl;
+        //h_RecData_relStat->SetBinContent((i+1)*steps+1, stat[i+1]/stat[0]);
+        h_RecData_relStat->SetBinContent((i+1)*steps+1, (h_RecData_Stat->GetBinContent((i+1)*steps+1)/h_RecData_Stat->GetBinContent(1)));
+        h_RecData_relStat->SetBinError((i+1)*steps+1, sqrt(pow((sqrt(h_RecData_Stat->GetBinError((i+1)*steps+1))/h_RecData_Stat->GetBinContent(1)),2)+pow((sqrt(h_RecData_Stat->GetBinError(1))*h_RecData_Stat->GetBinContent((i+1)*steps+1))/(pow(h_RecData_Stat->GetBinContent(1),2)),2)));
         h_RecData_relStat->GetXaxis()->SetBinLabel((i+1)*steps+1,cuts[i+1].c_str());
     }
 
     ant::canvas(GetName()+": Event-Statistics after applied cuts:")
+            << drawoption("HIST")
             << h_RecData_Stat
             << h_RecData_relStat
             << endc; // actually draws the canvas

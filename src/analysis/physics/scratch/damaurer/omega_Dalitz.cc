@@ -550,8 +550,8 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         const double TaggWeight = promptrandom.FillWeight();
 
         cut_ind=0;
-
         stat[cut_ind]+=TaggWeight;
+        h_RecData_Stat->Fill(cut_ind, TaggWeight);
 
         TLorentzVector InitialPhotonVec = taggerhit.GetPhotonBeam();
         TLorentzVector InitialProtonVec = LorentzVec(vec3(0,0,0),ParticleTypeDatabase::Proton.Mass());
@@ -561,7 +561,6 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         h_nCandidates->Fill(candidates.size(), TaggWeight);
 
         h_nNeuChaCandidates->Fill(charged.size(), neutral.size(), TaggWeight);
-
 
         for (unsigned int i=0; i<all.size(); i++){
             if(allCanInCB[i]){
@@ -574,7 +573,6 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
             }
         }
 
-
         h_CBEsum[cut_ind]->Fill(triggersimu.GetCBEnergySum(),TaggWeight);
         h_beamE[cut_ind]->Fill(InitialPhotonVec.E(),TaggWeight);
 
@@ -582,8 +580,8 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
             continue;
 
         cut_ind++;
-
         stat[cut_ind]+=TaggWeight;
+        h_RecData_Stat->Fill(cut_ind, TaggWeight);
 
         h_TaggerTime->Fill(taggerhit.Time, TaggWeight);
         h_nCandidates->Fill(candidates.size(), TaggWeight);
@@ -611,8 +609,8 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
             continue;
 
         cut_ind++;
-
         stat[cut_ind]+=TaggWeight;
+        h_RecData_Stat->Fill(cut_ind, TaggWeight);
 
         for (unsigned int i=0; i<all.size(); i++){
             if(allCanInCB[i]){
@@ -643,6 +641,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
 
         cut_ind++;
         stat[cut_ind]+=TaggWeight;
+        h_RecData_Stat->Fill(cut_ind, TaggWeight);
 
         for (unsigned int i=0; i<all.size(); i++){
             if(allCanInCB[i]){
@@ -670,6 +669,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
 
         cut_ind++;
         stat[cut_ind]+=TaggWeight;
+        h_RecData_Stat->Fill(cut_ind, TaggWeight);
 
         for (unsigned int i=0; i<all.size(); i++){
             if(allCanInCB[i]){
@@ -842,6 +842,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
 
         cut_ind++;
         stat[cut_ind]+=TaggWeight;
+        h_RecData_Stat->Fill(cut_ind, TaggWeight);
 
         for (unsigned int i=0; i<all.size(); i++){
             if(allCanInCB[i]){
@@ -996,6 +997,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
 
         cut_ind++;
         stat[cut_ind]+=TaggWeight;
+        h_RecData_Stat->Fill(cut_ind, TaggWeight);
 
         for (unsigned int i=0; i<all.size(); i++){
             if(allCanInCB[i]){
@@ -1073,6 +1075,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
 
         cut_ind++;
         stat[cut_ind]+=TaggWeight;
+        h_RecData_Stat->Fill(cut_ind, TaggWeight);
 
         for (unsigned int i=0; i<all.size(); i++){
             if(allCanInCB[i]){
@@ -1161,24 +1164,23 @@ void scratch_damaurer_omega_Dalitz::ShowResult()
 
     // ant::canvas nice wrapper around TCanvas
 
-    int lower_edge = 0;
-    int upper_edge = nrCuts_total;
-    int number_of_bins = nrCuts_total*10;
-    int steps = (int)(number_of_bins/(upper_edge-lower_edge));
-
     for (unsigned int i=0; i<nrCuts_total; i++){
-        cout << "Amount events after " << i << " applied cuts: " << stat[i] << endl;
-        h_RecData_Stat->SetBinContent(i*steps+1, stat[i]);
+        cout << "Amount events after " << i << " applied cuts: " << h_RecData_Stat->GetBinContent(i*steps+1) << endl;
+        //h_RecData_Stat->SetBinContent(i*steps+1, stat[i]);
+        //h_RecData_Stat->SetBinError(i*steps+1, sqrt(stat[i]));
         h_RecData_Stat->GetXaxis()->SetBinLabel(i*steps+1,cuts[i].c_str());
     }
 
     for (unsigned int i=0; i<(nrCuts_total-1); i++){
-        cout << "Relative amount of events after " << (i+1) << " applied cuts: " << stat[i+1]/stat[0] << endl;
-        h_RecData_relStat->SetBinContent((i+1)*steps+1, stat[i+1]/stat[0]);
+        cout << "Relative amount of events after " << (i+1) << " applied cuts: " << (h_RecData_Stat->GetBinContent((i+1)*steps+1)/h_RecData_Stat->GetBinContent(1)) << endl;
+        //h_RecData_relStat->SetBinContent((i+1)*steps+1, stat[i+1]/stat[0]);
+        h_RecData_relStat->SetBinContent((i+1)*steps+1, (h_RecData_Stat->GetBinContent((i+1)*steps+1)/h_RecData_Stat->GetBinContent(1)));
+        h_RecData_relStat->SetBinError((i+1)*steps+1, sqrt(pow((sqrt(h_RecData_Stat->GetBinError((i+1)*steps+1))/h_RecData_Stat->GetBinContent(1)),2)+pow((sqrt(h_RecData_Stat->GetBinError(1))*h_RecData_Stat->GetBinContent((i+1)*steps+1))/(pow(h_RecData_Stat->GetBinContent(1),2)),2)));
         h_RecData_relStat->GetXaxis()->SetBinLabel((i+1)*steps+1,cuts[i+1].c_str());
     }
 
     ant::canvas(GetName()+": Event statistics after applied cuts:")
+            << drawoption("HIST")
             << h_RecData_Stat
             << h_RecData_relStat
             << endc; // actually draws the canvas

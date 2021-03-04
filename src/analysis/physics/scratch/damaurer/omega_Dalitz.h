@@ -90,6 +90,11 @@ protected:
     long double mp = 938.2720813;
     long double mw = 782.65;
 
+    int lower_edge = 0;
+    int upper_edge = nrCuts_total;
+    int number_of_bins = nrCuts_total*10;
+    int steps = (int)(number_of_bins/(upper_edge-lower_edge));
+
     static const int neu_nrSel = 2;
     static const int cha_nrSel = 3;
     int bestKFindex;
