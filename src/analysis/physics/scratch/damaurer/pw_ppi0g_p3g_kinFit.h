@@ -67,18 +67,19 @@ protected:
     //-- Histograms
 
     static const int nrCuts_total = 7;
-    static const int nrCuts_pi0 = 3;
     static const int nrCuts_beforeSel = 2;
     static const int nrCuts_beforePi0 = 4;
     static const int nrCuts_beforeKF = 5;
+
+    static const int nrCuts_pi0 = nrCuts_total-nrCuts_beforePi0;
+    static const int nrCuts_Sel = nrCuts_total-nrCuts_beforeSel;
+    static const int nrCutsKF = nrCuts_total-nrCuts_beforeKF;
 
     static const int neu_nrSel = 3;
     static const int cha_nrSel = 1;
 
     static const int nrPartType = 2;
     static const int nrFitVars = 4;
-
-    static const int nrCutsKF = 2;
 
     const int nr_pi0g = 2;
 
@@ -87,11 +88,16 @@ private:
     tree_t t;
 
     TH1D* h_beamE[nrCuts_total];
-    TH1D* h_missingP_IM[nrCuts_total-1];
-    TH1D* h_3g_IM[nrCuts_total-1];
-    TH1D* h_2gComb_IM[nrCuts_total-1];
-    TH2D* h_doublyDCScm_gp_wp[nrCuts_total-1];
-    TH2D* h_doublyDCSlab_gp_wp[nrCuts_total-1];
+    TH1D* h_missingP_IM[nrCuts_Sel];
+    TH1D* h_3g_IM[nrCuts_Sel];
+    TH1D* h_2gComb_IM[nrCuts_Sel];
+    TH2D* h_doublyDCScm_gp_wp[nrCuts_Sel];
+    TH2D* h_doublyDCSlab_gp_wp[nrCuts_Sel];
+
+    TH1D* h_wp_BackToBack[nrCuts_Sel];
+
+    TH2D* h_Proton_CaloEvsVetoE_CB[nrCuts_Sel];
+    TH2D* h_Proton_CaloEvsVetoE_TAPS[nrCuts_Sel];
 
     TH2D* h_AllCaloEvsVetoE_CB[nrCuts_total];
     TH2D* h_AllCaloEvsVetoE_TAPS[nrCuts_total];
@@ -109,6 +115,8 @@ private:
     TH1D* h_chaTimeDiffCorTaggTAPS[nrCuts_total];
 
     TH1D* h_2gPi0_IM[nrCuts_pi0];
+    TH1D* h_wpi0g_BackToBack[nrCuts_pi0];
+    TH1D* h_pi0gg_BackToBack[nrCuts_pi0];
 
     //TH1D* h_pi0g_BackToBack[nrCuts_BackToBack];
 

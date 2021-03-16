@@ -55,8 +55,8 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
     const BinSettings timeDiffCorTaggCB_bins(200, -5,10);
     const BinSettings timeDiffCorTaggTAPS_bins(200, -5,20);
 
-    const BinSettings Veto_Energy_bins(1000, 0, 10);
-    const BinSettings Calo_Energy_bins(1000, 0, 1200);
+    const BinSettings Veto_Energy_bins(500, 0, 10);
+    const BinSettings Calo_Energy_bins(500, 0, 1100);
     const BinSettings initialBeamE_bins(200,0, 1600);
     const BinSettings cos_bins(100,-1,1);
     const BinSettings statistic_bins((nrCuts_total)*10,0,nrCuts_total);
@@ -79,7 +79,6 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
     const BinSettings E_omega_bins(200, 400, 1800);
     const BinSettings E_pi0_bins(200, 0, 1600);
     const BinSettings CB_Esum_bins(250,0.,2000.);
-    const BinSettings bins_Veto_Energy(500, 0, 10);
     //const BinSettings cos_bins_BackToBack(1000,-1,1);
     //const BinSettings wpi0_Q_bins(100, 0, 1500);
     //const BinSettings proton_theta_bins(180, 0, 90);
@@ -100,6 +99,7 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
     auto hf_3g_IM = new HistogramFactory("hf_3g_IM", HistFac, "");
     auto hf_2gComb_IM = new HistogramFactory("hf_2gComb_IM", HistFac, "");
     auto hf_2gPi0_IM = new HistogramFactory("hf_2gPi0_IM", HistFac, "");
+    auto hf_BackToBack = new HistogramFactory("hf_BackToBack", HistFac, "");
     auto hf_EvsTheta = new HistogramFactory("hf_EvsTheta", HistFac, "");
     auto hf_EvsPhi = new HistogramFactory("hf_EvsPhi", HistFac, "");
     auto hf_CrossSection = new HistogramFactory("hf_CrossSection", HistFac, "");
@@ -127,6 +127,9 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
     auto hf_VetoE = new HistogramFactory("hf_VetoE", HistFac, "");
 
     auto hf_CBEsum = new HistogramFactory("hf_CB_Esum", HistFac, "");
+
+    auto hf_CaloEvsVetoE_CB_SideCheck = new HistogramFactory("hf_CaloEvsVetoE_CB_SideCheck", HistFac, "");
+    auto hf_CaloEvsVetoE_TAPS_SideCheck = new HistogramFactory("hf_CaloEvsVetoE_TAPS_SideCheck", HistFac, "");
 
     for (unsigned int i=0; i<nrCuts_total; i++){
         /*
@@ -203,13 +206,13 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
 
         h_AllVetoE_CB[i] = hf_VetoE->makeTH1D("Deposited veto energies in CB "+cuts[i],     // title
                                          "Veto E [MeV]", "#",  // xlabel, ylabel
-                                         bins_Veto_Energy,    // our binnings
+                                         Veto_Energy_bins,    // our binnings
                                          "h_AllVetoE_CB_"+cuts[i], true    // ROOT object name, auto-generated if omitted
                                          );
 
         h_AllVetoE_TAPS[i] = hf_VetoE->makeTH1D("Deposited veto energies in TAPS "+cuts[i],     // title
                                          "Veto E [MeV]", "#",  // xlabel, ylabel
-                                         bins_Veto_Energy,    // our binnings
+                                         Veto_Energy_bins,    // our binnings
                                          "h_AllVetoE_TAPS_"+cuts[i], true    // ROOT object name, auto-generated if omitted
                                          );
 
@@ -242,23 +245,54 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
                                              "h_2gComb_IM_"+cuts[i+nrCuts_beforeSel], true     // ROOT object name, auto-generated if omitted
                                              );
 
+        h_wp_BackToBack[i] = hf_BackToBack->makeTH1D("Omega Proton Back-To-Back check "+cuts[i+nrCuts_beforeSel],     // title
+                                         "cos(#Theta_{cms})", "#",     // xlabel, ylabel
+                                         cos_bins,  // our binnings
+                                         "h_wp_BackToBack_"+cuts[i+nrCuts_beforeSel], true     // ROOT object name, auto-generated if omitted
+                                         );
+
         h_doublyDCScm_gp_wp[i] = hf_CrossSection->makeTH2D("gp_wp cross section in cm-frame "+cuts[i+nrCuts_beforeSel], //title
                                                                             "cos_Theta*","sqrt_S [MeV]", // xlabel, ylabel
                                                                             cos_bins, sqrt_S_bins,    // our binnings
                                                                             "h_doublyDCScm_gp_wp_"+cuts[i+nrCuts_beforeSel], true    // ROOT object name, auto-generated if omitted
                                                                             );
 
+        h_Proton_CaloEvsVetoE_CB[i] = hf_CaloEvsVetoE_CB_SideCheck->makeTH2D("Protons: Deposited calo vs veto energies in CB "+cuts[i+nrCuts_beforeSel],     // title
+                                         "Calo E [MeV]", "Veto E [MeV]",  // xlabel, ylabel
+                                         Calo_Energy_bins, Veto_Energy_bins,    // our binnings
+                                         "h_Proton_CaloEvsVetoE_CB_"+cuts[i+nrCuts_beforeSel], true    // ROOT object name, auto-generated if omitted
+                                         );
+
+        h_Proton_CaloEvsVetoE_TAPS[i] = hf_CaloEvsVetoE_TAPS_SideCheck->makeTH2D("Protons: Deposited calo vs veto energies in TAPS "+cuts[i+nrCuts_beforeSel],     // title
+                                         "Calo E [MeV]", "Veto E [MeV]",  // xlabel, ylabel
+                                         Calo_Energy_bins, Veto_Energy_bins,    // our binnings
+                                         "h_Proton_CaloEvsVetoE_TAPS_"+cuts[i+nrCuts_beforeSel], true    // ROOT object name, auto-generated if omitted
+                                         );
+
+
     }
 
-    for (unsigned int i=0; i<nrCuts_pi0; i++){
+    for (unsigned int i=0; i<(nrCuts_total-nrCuts_beforePi0); i++){
         stringstream ss;
         ss << i;
         string myString = ss.str();
 
-        h_2gPi0_IM[i] = hf_2gPi0_IM->makeTH1D("IM(2gPi0)",     // title
+        h_2gPi0_IM[i] = hf_2gPi0_IM->makeTH1D("IM(2gPi0) "+cuts[i+nrCuts_beforePi0],     // title
                                          "IM(2gPi0) [MeV]", "#",     // xlabel, ylabel
                                          Im_pi0_bins,  // our binnings
-                                         "h_2gPi0_IM_"+myString, true     // ROOT object name, auto-generated if omitted
+                                         "h_2gPi0_IM_"+cuts[i+nrCuts_beforePi0], true     // ROOT object name, auto-generated if omitted
+                                         );
+
+        h_wpi0g_BackToBack[i] = hf_BackToBack->makeTH1D("Pi0 Gamma Back-To-Back check "+cuts[i+nrCuts_beforePi0],     // title
+                                         "cos(#Theta_{cms})", "#",     // xlabel, ylabel
+                                         cos_bins,  // our binnings
+                                         "h_wpi0g_BackToBack_"+cuts[i+nrCuts_beforePi0], true     // ROOT object name, auto-generated if omitted
+                                         );
+
+        h_pi0gg_BackToBack[i] = hf_BackToBack->makeTH1D("2Gamma Back-To-Back check "+cuts[i+nrCuts_beforePi0],     // title
+                                         "cos(#Theta_{cms})", "#",     // xlabel, ylabel
+                                         cos_bins,  // our binnings
+                                         "h_pi0gg_BackToBack_"+cuts[i+nrCuts_beforePi0], true     // ROOT object name, auto-generated if omitted
                                          );
 
     }
@@ -724,10 +758,15 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
 
         TLorentzVector LmissingProton = Linitial-Lw_tmp;
 
-        TLorentzVector Lp = Lp_tmp;
         TLorentzVector Lw = Lw_tmp;
+        TLorentzVector Lp = Lp_tmp;
         TLorentzVector Lw_boosted = Lw;
+        TLorentzVector Lp_boosted = Lp;
         Lw_boosted.Boost(-Linitial.BoostVector());
+        Lp_boosted.Boost(-Linitial.BoostVector());
+        double wp_angle = cos(Lw_boosted.Angle(Lp_boosted.Vect()));
+
+        h_wp_BackToBack[cut_ind-nrCuts_beforeSel]->Fill(wp_angle,weight);
 
         h_missingP_IM[cut_ind-nrCuts_beforeSel]->Fill(LmissingProton.M(),weight);
         h_3g_IM[cut_ind-nrCuts_beforeSel]->Fill(omega_tmp.M(),weight);
@@ -767,6 +806,13 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
                 h_AllCaloEvsVetoE_TAPS[cut_ind]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
                 h_chaTimeDiffCorTaggTAPS[cut_ind]->Fill(chaCanTime[i]-corTaggTime,weight);
             }
+        }
+
+        if(proton_toFit->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+            h_Proton_CaloEvsVetoE_CB[cut_ind-nrCuts_beforeSel]->Fill(proton_toFit->Candidate->CaloEnergy,proton_toFit->Candidate->VetoEnergy,weight);
+        }
+        if(proton_toFit->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::TAPS){
+            h_Proton_CaloEvsVetoE_TAPS[cut_ind-nrCuts_beforeSel]->Fill(proton_toFit->Candidate->CaloEnergy,proton_toFit->Candidate->VetoEnergy,weight);
         }
 
         //if(!(LmissingProton.M() > (mpFit-1.5*sigmaMissingP) && LmissingProton.M() < (mpFit+1.5*sigmaMissingP)))
@@ -777,6 +823,8 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
         stat[cut_ind]+=weight;
         h_RecData_Stat->Fill(cut_ind, weight);
 
+        h_wp_BackToBack[cut_ind-nrCuts_beforeSel]->Fill(wp_angle,weight);
+
         h_missingP_IM[cut_ind-nrCuts_beforeSel]->Fill(LmissingProton.M(),weight);
         h_3g_IM[cut_ind-nrCuts_beforeSel]->Fill(omega_tmp.M(),weight);
 
@@ -815,6 +863,13 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
                 h_AllCaloEvsVetoE_TAPS[cut_ind]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
                 h_chaTimeDiffCorTaggTAPS[cut_ind]->Fill(chaCanTime[i]-corTaggTime,weight);
             }
+        }
+
+        if(proton_toFit->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+            h_Proton_CaloEvsVetoE_CB[cut_ind-nrCuts_beforeSel]->Fill(proton_toFit->Candidate->CaloEnergy,proton_toFit->Candidate->VetoEnergy,weight);
+        }
+        if(proton_toFit->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::TAPS){
+            h_Proton_CaloEvsVetoE_TAPS[cut_ind-nrCuts_beforeSel]->Fill(proton_toFit->Candidate->CaloEnergy,proton_toFit->Candidate->VetoEnergy,weight);
         }
 
         if(!(InitialPhotonVec.E()>=Omega_Ethreshold))
@@ -824,6 +879,8 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
         stat[cut_ind]+=weight;
         h_RecData_Stat->Fill(cut_ind, weight);
 
+        h_wp_BackToBack[cut_ind-nrCuts_beforeSel]->Fill(wp_angle,weight);
+
         h_missingP_IM[cut_ind-nrCuts_beforeSel]->Fill(LmissingProton.M(),weight);
         h_3g_IM[cut_ind-nrCuts_beforeSel]->Fill(omega_tmp.M(),weight);
 
@@ -862,6 +919,13 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
                 h_AllCaloEvsVetoE_TAPS[cut_ind]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
                 h_chaTimeDiffCorTaggTAPS[cut_ind]->Fill(chaCanTime[i]-corTaggTime,weight);
             }
+        }
+
+        if(proton_toFit->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+            h_Proton_CaloEvsVetoE_CB[cut_ind-nrCuts_beforeSel]->Fill(proton_toFit->Candidate->CaloEnergy,proton_toFit->Candidate->VetoEnergy,weight);
+        }
+        if(proton_toFit->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::TAPS){
+            h_Proton_CaloEvsVetoE_TAPS[cut_ind-nrCuts_beforeSel]->Fill(proton_toFit->Candidate->CaloEnergy,proton_toFit->Candidate->VetoEnergy,weight);
         }
 
         //LorentzBoost-Stuff with opening angle selections:
@@ -936,12 +1000,33 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
             continue;
         */
 
+        TLorentzVector missing_pi0 = Linitial-Lp_tmp-wg;
+        TLorentzVector missing_Omega = Linitial-Lp_tmp;
+        TLorentzVector wpi0_boosted = wpi0;
+        wpi0_boosted.Boost(-missing_Omega.BoostVector());
+        TLorentzVector wg_boosted = wg;
+        wg_boosted.Boost(-missing_Omega.BoostVector());
+        TLorentzVector pi0g1_boosted = wpi0g[0];
+        pi0g1_boosted.Boost(-missing_pi0.BoostVector());
+        TLorentzVector pi0g2_boosted = wpi0g[1];
+        pi0g2_boosted.Boost(-missing_pi0.BoostVector());
+
+        double pi0gg_angle = cos(pi0g1_boosted.Angle(pi0g2_boosted.Vect()));
+        double wpi0g_angle = cos(wpi0_boosted.Angle(wg_boosted.Vect()));
+
+        h_wpi0g_BackToBack[cut_ind-nrCuts_beforePi0]->Fill(wpi0g_angle,weight);
+        h_pi0gg_BackToBack[cut_ind-nrCuts_beforePi0]->Fill(pi0gg_angle,weight);
+
         if(!(wpi0.M()>(mpi0-0.4*mpi0) && wpi0.M()<(mpi0+0.4*mpi0)))
             continue;
 
         cut_ind++;
         stat[cut_ind]+=weight;
         h_RecData_Stat->Fill(cut_ind, weight);
+
+        h_wp_BackToBack[cut_ind-nrCuts_beforeSel]->Fill(wp_angle,weight);
+        h_wpi0g_BackToBack[cut_ind-nrCuts_beforePi0]->Fill(wpi0g_angle,weight);
+        h_pi0gg_BackToBack[cut_ind-nrCuts_beforePi0]->Fill(pi0gg_angle,weight);
 
         h_2gPi0_IM[cut_ind-nrCuts_beforePi0]->Fill(wpi0.M(),weight);
 
@@ -984,6 +1069,15 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
                 h_chaTimeDiffCorTaggTAPS[cut_ind]->Fill(chaCanTime[i]-corTaggTime,weight);
             }
         }
+
+
+        if(proton_toFit->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+            h_Proton_CaloEvsVetoE_CB[cut_ind-nrCuts_beforeSel]->Fill(proton_toFit->Candidate->CaloEnergy,proton_toFit->Candidate->VetoEnergy,weight);
+        }
+        if(proton_toFit->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::TAPS){
+            h_Proton_CaloEvsVetoE_TAPS[cut_ind-nrCuts_beforeSel]->Fill(proton_toFit->Candidate->CaloEnergy,proton_toFit->Candidate->VetoEnergy,weight);
+        }
+
 
         /*
         if(!(charged[0]->VetoEnergy>0.9))
@@ -1128,6 +1222,10 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
         stat[cut_ind]+=weight;
         h_RecData_Stat->Fill(cut_ind, weight);
 
+        h_wp_BackToBack[cut_ind-nrCuts_beforeSel]->Fill(wp_angle,weight);
+        h_wpi0g_BackToBack[cut_ind-nrCuts_beforePi0]->Fill(wpi0g_angle,weight);
+        h_pi0gg_BackToBack[cut_ind-nrCuts_beforePi0]->Fill(pi0gg_angle,weight);
+
         h_Probability[cut_ind-nrCuts_beforeKF]->Fill(best_probability,weight);
         h_Fit_zvert[cut_ind-nrCuts_beforeKF]->Fill(fit_z_vert,weight);
         h_fitEbeam[cut_ind-nrCuts_beforeKF]->Fill(fitbeamE,weight);
@@ -1177,6 +1275,13 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
             }
         }
 
+        if(proton_toFit->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+            h_Proton_CaloEvsVetoE_CB[cut_ind-nrCuts_beforeSel]->Fill(proton_toFit->Candidate->CaloEnergy,proton_toFit->Candidate->VetoEnergy,weight);
+        }
+        if(proton_toFit->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::TAPS){
+            h_Proton_CaloEvsVetoE_TAPS[cut_ind-nrCuts_beforeSel]->Fill(proton_toFit->Candidate->CaloEnergy,proton_toFit->Candidate->VetoEnergy,weight);
+        }
+
         //Filling the tree for further analysis
 
         t.TaggW = promptrandom.FillWeight();
@@ -1201,7 +1306,7 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ShowResult()
     }
 
     for (unsigned int i=0; i<(nrCuts_total-1); i++){
-        cout << "Relative amount of events after " << (i+1) << " applied cuts: " << (h_RecData_Stat->GetBinContent((i+1)*steps+1)/h_RecData_Stat->GetBinContent(1)) << endl;
+        cout << "Relative amount of events after " << (i+1) << " applied cuts: " << 100*(h_RecData_Stat->GetBinContent((i+1)*steps+1)/h_RecData_Stat->GetBinContent(1)) << " %" << endl;
         //h_RecData_relStat->SetBinContent((i+1)*steps+1, stat[i+1]/stat[0]);
         h_RecData_relStat->SetBinContent((i+1)*steps+1, (h_RecData_Stat->GetBinContent((i+1)*steps+1)/h_RecData_Stat->GetBinContent(1)));
         h_RecData_relStat->SetBinError((i+1)*steps+1, sqrt(pow((sqrt(h_RecData_Stat->GetBinError((i+1)*steps+1))/h_RecData_Stat->GetBinContent(1)),2)+pow((sqrt(h_RecData_Stat->GetBinError(1))*h_RecData_Stat->GetBinContent((i+1)*steps+1))/(pow(h_RecData_Stat->GetBinContent(1),2)),2)));

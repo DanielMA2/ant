@@ -78,6 +78,7 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
     const BinSettings timeDiffCorTaggTAPS_bins(100, 0,25);
     const BinSettings effR_bins(100, 0,20);
     const BinSettings nCrystal_bins(25);
+    const BinSettings cos_bins(100,-1,1);
 
     auto hf_RecData_CandStat = new HistogramFactory("hf_RecData_CandStat", HistFac, "");
     auto hf_Tagger = new HistogramFactory("hf_Tagger", HistFac, "");
@@ -105,6 +106,8 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
     auto hf_CaloEvsVetoE_TAPS_SideCheck = new HistogramFactory("hf_CaloEvsVetoE_TAPS_SideCheck", HistFac, "");
     auto hf_TimeDiffCorTagg_CB_SideCheck = new HistogramFactory(" hf_TimeDiffCorTagg_CB_SideCheck", HistFac, "");
     auto hf_TimeDiffCorTagg_TAPS_SideCheck = new HistogramFactory(" hf_TimeDiffCorTagg_TAPS_SideCheck", HistFac, "");
+
+    auto hf_BackToBack = new HistogramFactory("hf_BackToBack", HistFac, "");
 
     // HistFac is a protected member of the base class "Physics"
     // use it to conveniently create histograms (and other ROOT objects) at the right location
@@ -278,6 +281,28 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
                                                              "h_Photon_TimeDiffCorTaggTAPS_"+cuts_KF[i], true     // ROOT object name, auto-generated if omitted
                                                              );
 
+        h_wp_BackToBack[i] = hf_BackToBack->makeTH1D("Omega Proton Back-To-Back check "+cuts_KF[i],     // title
+                                         "cos(#Theta_{cms})", "#",     // xlabel, ylabel
+                                         cos_bins,  // our binnings
+                                         "h_wp_BackToBack_"+cuts_KF[i], true     // ROOT object name, auto-generated if omitted
+                                         );
+
+        h_dilee_BackToBack[i] = hf_BackToBack->makeTH1D("Dilepton el pos Back-To-Back check "+cuts_KF[i],     // title
+                                         "cos(#Theta_{cms})", "#",     // xlabel, ylabel
+                                         cos_bins,  // our binnings
+                                         "h_dilee_BackToBack_"+cuts_KF[i], true     // ROOT object name, auto-generated if omitted
+                                         );
+
+        h_pi0gg_BackToBack[i] = hf_BackToBack->makeTH1D("Pi0 gg Back-To-Back check "+cuts_KF[i],     // title
+                                         "cos(#Theta_{cms})", "#",     // xlabel, ylabel
+                                         cos_bins,  // our binnings
+                                         "h_pi0gg_BackToBack_"+cuts_KF[i], true     // ROOT object name, auto-generated if omitted
+                                         );
+        h_wpi0dil_BackToBack[i] = hf_BackToBack->makeTH1D("Pi0 dilepton Back-To-Back check "+cuts_KF[i],     // title
+                                                          "cos(#Theta_{cms})", "#",     // xlabel, ylabel
+                                                          cos_bins,  // our binnings
+                                                          "h_wpi0dil_BackToBack_"+cuts_KF[i], true     // ROOT object name, auto-generated if omitted
+                                                          );
 
     }
 
@@ -833,6 +858,52 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
             bestFitParticles = fitter.GetFitParticles();
         }
 
+        TLorentzVector Lproton_tmp = (TLorentzVector)(*protonCombs[bestKFindex].at(0));
+        TLorentzVector Lomega_tmp = (TLorentzVector)(*photonCombs[bestKFindex].at(0)+*photonCombs[bestKFindex].at(1)+*photonCombs[bestKFindex].at(2)+*photonCombs[bestKFindex].at(3));
+        TLorentzVector Lpion_tmp = (TLorentzVector)(*photonCombs[bestKFindex].at(0)+*photonCombs[bestKFindex].at(1));
+        TLorentzVector Ldil_tmp = (TLorentzVector)(*photonCombs[bestKFindex].at(2)+*photonCombs[bestKFindex].at(3));
+
+        TLorentzVector missing_omega = Linitial-Lproton_tmp;
+        TLorentzVector missing_pi0 = Linitial-Lproton_tmp-Ldil_tmp;
+        TLorentzVector pi0_g1 = (TLorentzVector)(*photonCombs[bestKFindex].at(0));
+        TLorentzVector pi0_g2 = (TLorentzVector)(*photonCombs[bestKFindex].at(1));
+
+        TLorentzVector missing_dilepton = Linitial-Lproton_tmp-Lpion_tmp;
+        TLorentzVector dil_l1 = (TLorentzVector)(*photonCombs[bestKFindex].at(2));
+        TLorentzVector dil_l2 = (TLorentzVector)(*photonCombs[bestKFindex].at(3));
+
+        TLorentzVector Lp_boosted = Lproton_tmp;
+        TLorentzVector Lw_boosted = Lomega_tmp;
+        Lp_boosted.Boost(-Linitial.BoostVector());
+        Lw_boosted.Boost(-Linitial.BoostVector());
+        double wp_angle = cos(Lp_boosted.Angle(Lw_boosted.Vect()));
+
+        TLorentzVector Lpion_boosted = Lpion_tmp;
+        TLorentzVector Ldil_boosted = Ldil_tmp;
+        Lpion_boosted.Boost(-missing_omega.BoostVector());
+        Ldil_boosted.Boost(-missing_omega.BoostVector());
+        double piondil_angle = cos(Lpion_boosted.Angle(Ldil_boosted.Vect()));
+
+        TLorentzVector Lpi0g1_boosted = pi0_g1;
+        TLorentzVector Lpi0g2_boosted = pi0_g2;
+        Lpi0g1_boosted.Boost(-missing_pi0.BoostVector());
+        Lpi0g2_boosted.Boost(-missing_pi0.BoostVector());
+        double piongg_angle = cos(Lpi0g1_boosted.Angle(Lpi0g2_boosted.Vect()));
+
+        TLorentzVector Ldil_l1_boosted = dil_l1;
+        TLorentzVector Ldil_l2_boosted = dil_l2;
+        Ldil_l1_boosted.Boost(-missing_dilepton.BoostVector());
+        Ldil_l2_boosted.Boost(-missing_dilepton.BoostVector());
+        double dilee_angle = cos(Ldil_l1_boosted.Angle(Ldil_l2_boosted.Vect()));
+
+        /*
+        TLorentzVector Lproton_tmp_boost = Lproton_tmp.BoostVector(-Linitial);
+        TLorentzVector Lomega_tmp_boost = Lomega_tmp.BoostVector(-Linitial);
+
+        TLorentzVector Ldil_tmp_boost = Ldil_tmp.BoostVector(-missing_omega);
+        TLorentzVector Lpion_tmp_boost = Lpion_tmp.BoostVector(-missing_omega);
+        */
+
         h_mmpFails->Fill(nr_mmpFails,TaggWeight);
         h_kfFails->Fill(nr_kfFails,TaggWeight);
         h_totalFails->Fill(nr_mmpFails+nr_kfFails,TaggWeight);
@@ -871,6 +942,11 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         h_IMmissingP_Fit[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_proton,TaggWeight);
         h_Probability_freeZ[cut_ind-nrCuts_beforeKF]->Fill(best_probability_freeZ,TaggWeight);
         h_Fit_zvert_freeZ[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_Zvert_freeZ,TaggWeight);
+
+        h_wp_BackToBack[cut_ind-nrCuts_beforeKF]->Fill(wp_angle,TaggWeight);
+        h_wpi0dil_BackToBack[cut_ind-nrCuts_beforeKF]->Fill(piondil_angle,TaggWeight);
+        h_dilee_BackToBack[cut_ind-nrCuts_beforeKF]->Fill(dilee_angle,TaggWeight);
+        h_pi0gg_BackToBack[cut_ind-nrCuts_beforeKF]->Fill(piongg_angle,TaggWeight);
 
         //Pulls:
 
@@ -1027,6 +1103,11 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         h_Probability_freeZ[cut_ind-nrCuts_beforeKF]->Fill(best_probability_freeZ,TaggWeight);
         h_Fit_zvert_freeZ[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_Zvert_freeZ,TaggWeight);
 
+        h_wp_BackToBack[cut_ind-nrCuts_beforeKF]->Fill(wp_angle,TaggWeight);
+        h_wpi0dil_BackToBack[cut_ind-nrCuts_beforeKF]->Fill(piondil_angle,TaggWeight);
+        h_dilee_BackToBack[cut_ind-nrCuts_beforeKF]->Fill(dilee_angle,TaggWeight);
+        h_pi0gg_BackToBack[cut_ind-nrCuts_beforeKF]->Fill(piongg_angle,TaggWeight);
+
         //-----------------Filling cluster-hists of charged particles (not protons!)---------------------
 
         if (isfinite(effR_l1)){
@@ -1105,6 +1186,11 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         h_Probability_freeZ[cut_ind-nrCuts_beforeKF]->Fill(best_probability_freeZ,TaggWeight);
         h_Fit_zvert_freeZ[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_Zvert_freeZ,TaggWeight);
 
+        h_wp_BackToBack[cut_ind-nrCuts_beforeKF]->Fill(wp_angle,TaggWeight);
+        h_wpi0dil_BackToBack[cut_ind-nrCuts_beforeKF]->Fill(piondil_angle,TaggWeight);
+        h_dilee_BackToBack[cut_ind-nrCuts_beforeKF]->Fill(dilee_angle,TaggWeight);
+        h_pi0gg_BackToBack[cut_ind-nrCuts_beforeKF]->Fill(piongg_angle,TaggWeight);
+
         //-----------------Filling cluster-hists of charged particles (not protons!)---------------------
 
         if (isfinite(effR_l1)){
@@ -1172,7 +1258,7 @@ void scratch_damaurer_omega_Dalitz::ShowResult()
     }
 
     for (unsigned int i=0; i<(nrCuts_total-1); i++){
-        cout << "Relative amount of events after " << (i+1) << " applied cuts: " << (h_RecData_Stat->GetBinContent((i+1)*steps+1)/h_RecData_Stat->GetBinContent(1)) << endl;
+        cout << "Relative amount of events after " << (i+1) << " applied cuts: " << 100*(h_RecData_Stat->GetBinContent((i+1)*steps+1)/h_RecData_Stat->GetBinContent(1)) << " %" << endl;
         //h_RecData_relStat->SetBinContent((i+1)*steps+1, stat[i+1]/stat[0]);
         h_RecData_relStat->SetBinContent((i+1)*steps+1, (h_RecData_Stat->GetBinContent((i+1)*steps+1)/h_RecData_Stat->GetBinContent(1)));
         h_RecData_relStat->SetBinError((i+1)*steps+1, sqrt(pow((sqrt(h_RecData_Stat->GetBinError((i+1)*steps+1))/h_RecData_Stat->GetBinContent(1)),2)+pow((sqrt(h_RecData_Stat->GetBinError(1))*h_RecData_Stat->GetBinContent((i+1)*steps+1))/(pow(h_RecData_Stat->GetBinContent(1),2)),2)));

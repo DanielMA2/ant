@@ -149,17 +149,22 @@ int main( int argc, char** argv )
         histptr->SetLineColor(*cit);
         //---------------------------------------------------
         //double res = 0;
-        double totArea = 0;            //total area
+        double totArea = 0;
+        double totArea_err = 0; //total area
         double totWidth = 0;           //total width
         for(int i=1;i<=histptr->GetNbinsX();i++){           //loop over hist xBins
             //res += histptr->GetBinContent(i);             //testing if ’res’ & integral(1,Bins) is the same
-            totArea += histptr->GetBinContent(i)*histptr->GetBinWidth(i);         //Applying the formulas
+            totArea += histptr->GetBinContent(i)*histptr->GetBinWidth(i);
+            totArea_err +=  pow((histptr->GetBinError(i)*histptr->GetBinWidth(i)),2);  //Applying the formulas
             totWidth += histptr->GetBinWidth(i);
         }
-        double avgCross = totArea/totWidth;         //calculate average cross section over full energy range
+        double avgCross = totArea/totWidth;
+        totArea_err = sqrt(totArea_err);
+        double avgCross_err = totArea_err/totWidth;
+        //calculate average cross section over full energy range
         //cout << histptr->GetTitle() << " has sum of bin contents: " << res << endl;    //show sum of bin contents
         //cout << histptr->GetTitle() << " has integral: " << histptr->Integral(1,histptr->GetNbinsX()) << " [mub]"<< endl;      //show integral
-        cout << histptr->GetTitle() << " has average cross section: " << avgCross*1000 << " nb" << endl;   //show avg cross section values
+        cout << histptr->GetTitle() << " avg cross section: (" << avgCross*1000 << " +- " << avgCross_err*1000 << ") nb " << endl;   //show avg cross section values
         //----------------------------------------------------
         sumplot << histptr;
         cit.next();

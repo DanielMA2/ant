@@ -72,6 +72,7 @@ protected:
     static const int nrCuts_beforeSel = 2;
     static const int nrCuts_beforeKF = 5;
     static const int nrCuts_KF = nrCuts_total-nrCuts_beforeKF;
+    static const int nrCuts_Sel = nrCuts_total-nrCuts_beforeSel;
 
     static const int nrPartType = 2;
     static const int nrFitVars = 4;
@@ -126,9 +127,9 @@ private:
     TH2D* h_AllCaloEvsVetoE_TAPS[nrCuts_total];
     //TH1D* hist;
 
-    TH1D* h_2g_IM[nrCuts_total-2];
-    TH1D* h_missingP_IM[nrCuts_total-2];
-    TH1D* h_2gee_IM[nrCuts_total-2];
+    TH1D* h_2g_IM[nrCuts_Sel];
+    TH1D* h_missingP_IM[nrCuts_Sel];
+    TH1D* h_2gee_IM[nrCuts_Sel];
 
     //KinFit hists:
     TH1D* h_IM2gee_Fit[nrCuts_KF];
@@ -137,6 +138,11 @@ private:
     TH1D* h_Fit_zvert[nrCuts_KF];
     TH1D* h_fitEbeam[nrCuts_KF];
     TH1D* h_Probability[nrCuts_KF];
+
+    TH1D* h_wp_BackToBack[nrCuts_KF];
+    TH1D* h_wpi0dil_BackToBack[nrCuts_KF];
+    TH1D* h_pi0gg_BackToBack[nrCuts_KF];
+    TH1D* h_dilee_BackToBack[nrCuts_KF];
 
     TH2D* h_cluster_effRvsCaloE[nrCuts_KF];
     TH2D* h_cluster_nCrystalsvsCaloE[nrCuts_KF];
