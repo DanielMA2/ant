@@ -58,6 +58,7 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
     veto_detector = ExpConfig::Setup::GetDetector<expconfig::detector::TAPSVeto>();
 
     const BinSettings statistic_bins((nrCuts_total)*10,0,nrCuts_total);
+    const BinSettings pid_bins((eePID)*10,0,eePID);
     const BinSettings bins_tagger_time(2000, -200, 200);
     const BinSettings bins_nClusters(20);
     const BinSettings bins_nCand(10);
@@ -79,6 +80,7 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
     const BinSettings effR_bins(100, 0,20);
     const BinSettings nCrystal_bins(25);
     const BinSettings cos_bins(100,-1,1);
+    const BinSettings theta_bins(360, 0, 180);
 
     auto hf_RecData_CandStat = new HistogramFactory("hf_RecData_CandStat", HistFac, "");
     auto hf_Tagger = new HistogramFactory("hf_Tagger", HistFac, "");
@@ -108,6 +110,8 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
     auto hf_TimeDiffCorTagg_TAPS_SideCheck = new HistogramFactory(" hf_TimeDiffCorTagg_TAPS_SideCheck", HistFac, "");
 
     auto hf_BackToBack = new HistogramFactory("hf_BackToBack", HistFac, "");
+
+    auto hf_eeChecks = new HistogramFactory("hf_eeChecks", HistFac, "");
 
     // HistFac is a protected member of the base class "Physics"
     // use it to conveniently create histograms (and other ROOT objects) at the right location
@@ -298,10 +302,27 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
                                          cos_bins,  // our binnings
                                          "h_pi0gg_BackToBack_"+cuts_KF[i], true     // ROOT object name, auto-generated if omitted
                                          );
+
         h_wpi0dil_BackToBack[i] = hf_BackToBack->makeTH1D("Pi0 dilepton Back-To-Back check "+cuts_KF[i],     // title
                                                           "cos(#Theta_{cms})", "#",     // xlabel, ylabel
                                                           cos_bins,  // our binnings
                                                           "h_wpi0dil_BackToBack_"+cuts_KF[i], true     // ROOT object name, auto-generated if omitted
+                                                          );
+
+
+        h_eePID[i] = hf_eeChecks->makeTH1D("el/pos PID statistics "+cuts_KF[i],     // title
+                                                          "PID element", "#",     // xlabel, ylabel
+                                                          pid_bins,  // our binnings
+                                                          "h_eePID_"+cuts_KF[i], true     // ROOT object name, auto-generated if omitted
+                                                          );
+
+        h_eePID[i]->GetXaxis()->SetBinLabel(1+1*steps_PID,PIDstat[0].c_str());
+        h_eePID[i]->GetXaxis()->SetBinLabel(1+2*steps_PID,PIDstat[1].c_str());
+
+        h_eeOpeningAngles[i] = hf_eeChecks->makeTH1D("el/pos opening angles "+cuts_KF[i],     // title
+                                                          "#Theta", "#",     // xlabel, ylabel
+                                                          theta_bins,  // our binnings
+                                                          "h_eeOpeningAngles_"+cuts_KF[i], true     // ROOT object name, auto-generated if omitted
                                                           );
 
     }
@@ -858,6 +879,17 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
             bestFitParticles = fitter.GetFitParticles();
         }
 
+        h_mmpFails->Fill(nr_mmpFails,TaggWeight);
+        h_kfFails->Fill(nr_kfFails,TaggWeight);
+        h_totalFails->Fill(nr_mmpFails+nr_kfFails,TaggWeight);
+
+        if(!((nr_mmpFails + nr_kfFails) != nrCombs && (nr_mmpFails_freeZ + nr_kfFails_freeZ) != nrCombs))
+            continue;
+
+        cut_ind++;
+        stat[cut_ind]+=TaggWeight;
+        h_RecData_Stat->Fill(cut_ind, TaggWeight);
+
         TLorentzVector Lproton_tmp = (TLorentzVector)(*protonCombs[bestKFindex].at(0));
         TLorentzVector Lomega_tmp = (TLorentzVector)(*photonCombs[bestKFindex].at(0)+*photonCombs[bestKFindex].at(1)+*photonCombs[bestKFindex].at(2)+*photonCombs[bestKFindex].at(3));
         TLorentzVector Lpion_tmp = (TLorentzVector)(*photonCombs[bestKFindex].at(0)+*photonCombs[bestKFindex].at(1));
@@ -896,24 +928,10 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         Ldil_l2_boosted.Boost(-missing_dilepton.BoostVector());
         double dilee_angle = cos(Ldil_l1_boosted.Angle(Ldil_l2_boosted.Vect()));
 
-        /*
-        TLorentzVector Lproton_tmp_boost = Lproton_tmp.BoostVector(-Linitial);
-        TLorentzVector Lomega_tmp_boost = Lomega_tmp.BoostVector(-Linitial);
-
-        TLorentzVector Ldil_tmp_boost = Ldil_tmp.BoostVector(-missing_omega);
-        TLorentzVector Lpion_tmp_boost = Lpion_tmp.BoostVector(-missing_omega);
-        */
-
-        h_mmpFails->Fill(nr_mmpFails,TaggWeight);
-        h_kfFails->Fill(nr_kfFails,TaggWeight);
-        h_totalFails->Fill(nr_mmpFails+nr_kfFails,TaggWeight);
-
-        if(!((nr_mmpFails + nr_kfFails) != nrCombs && (nr_mmpFails_freeZ + nr_kfFails_freeZ) != nrCombs))
-            continue;
-
-        cut_ind++;
-        stat[cut_ind]+=TaggWeight;
-        h_RecData_Stat->Fill(cut_ind, TaggWeight);
+        double ee_openingAngle = dil_l1.Angle(dil_l2.Vect())*radtodeg;
+        bool eeSamePID = false;
+        if(photonCombs[bestKFindex].at(2)->Candidate->FindVetoCluster()->CentralElement == photonCombs[bestKFindex].at(3)->Candidate->FindVetoCluster()->CentralElement)
+            eeSamePID = true;
 
         for (unsigned int i=0; i<all.size(); i++){
             if(allCanInCB[i]){
@@ -947,6 +965,14 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         h_wpi0dil_BackToBack[cut_ind-nrCuts_beforeKF]->Fill(piondil_angle,TaggWeight);
         h_dilee_BackToBack[cut_ind-nrCuts_beforeKF]->Fill(dilee_angle,TaggWeight);
         h_pi0gg_BackToBack[cut_ind-nrCuts_beforeKF]->Fill(piongg_angle,TaggWeight);
+
+        h_eeOpeningAngles[cut_ind-nrCuts_beforeKF]->Fill(ee_openingAngle,TaggWeight);
+        if(!eeSamePID){
+            h_eePID[cut_ind-nrCuts_beforeKF]->Fill(1,TaggWeight);
+        }
+        else{
+            h_eePID[cut_ind-nrCuts_beforeKF]->Fill(2,TaggWeight);
+        }
 
         //Pulls:
 
@@ -1108,6 +1134,14 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         h_dilee_BackToBack[cut_ind-nrCuts_beforeKF]->Fill(dilee_angle,TaggWeight);
         h_pi0gg_BackToBack[cut_ind-nrCuts_beforeKF]->Fill(piongg_angle,TaggWeight);
 
+        h_eeOpeningAngles[cut_ind-nrCuts_beforeKF]->Fill(ee_openingAngle,TaggWeight);
+        if(!eeSamePID){
+            h_eePID[cut_ind-nrCuts_beforeKF]->Fill(1,TaggWeight);
+        }
+        else{
+            h_eePID[cut_ind-nrCuts_beforeKF]->Fill(2,TaggWeight);
+        }
+
         //-----------------Filling cluster-hists of charged particles (not protons!)---------------------
 
         if (isfinite(effR_l1)){
@@ -1151,7 +1185,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
 
         //-----------------------------------------------------------------------------------
 
-        if(!(bestFitted_Zvert_freeZ < 5))
+        if(!(bestFitted_Zvert_freeZ > -9 && bestFitted_Zvert_freeZ < 6))
             continue;
 
         cut_ind++;
@@ -1190,6 +1224,14 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         h_wpi0dil_BackToBack[cut_ind-nrCuts_beforeKF]->Fill(piondil_angle,TaggWeight);
         h_dilee_BackToBack[cut_ind-nrCuts_beforeKF]->Fill(dilee_angle,TaggWeight);
         h_pi0gg_BackToBack[cut_ind-nrCuts_beforeKF]->Fill(piongg_angle,TaggWeight);
+
+        h_eeOpeningAngles[cut_ind-nrCuts_beforeKF]->Fill(ee_openingAngle,TaggWeight);
+        if(!eeSamePID){
+            h_eePID[cut_ind-nrCuts_beforeKF]->Fill(1,TaggWeight);
+        }
+        else{
+            h_eePID[cut_ind-nrCuts_beforeKF]->Fill(2,TaggWeight);
+        }
 
         //-----------------Filling cluster-hists of charged particles (not protons!)---------------------
 
