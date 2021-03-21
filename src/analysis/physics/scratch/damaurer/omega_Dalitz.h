@@ -81,7 +81,7 @@ protected:
     static const int nrFitVars = 4;
     static const int nrPhotons = 4;
 
-    std::string cuts[nrCuts_total] = {"CUT#0_NoCuts","CUT#1_CBEsum","CUT#2_Sel2Neu3Cha","CUT#3_OmegaEthreshold","CUT#4_IM(2g)_mpi0+-0.4mpi0","CUT#5_mm(p)ANDkf","CUT#6_kinFit_prob_CL1%","CUT#7_FreeZVert<5cm"};
+    std::string cuts[nrCuts_total] = {"CUT#0_NoCuts","CUT#1_CBEsum","CUT#2_Sel2Neu3Cha","CUT#3_OmegaEthreshold","CUT#4_IM(2g)_mpi0+-0.4mpi0","CUT#5_mm(p)ANDkf","CUT#6_kinFit_prob_CL1%","CUT#7_FreeZVert"};
     std::string cuts_KF[nrCuts_KF] = {"CUT#5_mm(p)ANDkf","CUT#6_kinFit_prob_CL1%","CUT#7_FreeZVert"};
 
     std::string PIDstat[eePID-1] = {"Different","Same"};
