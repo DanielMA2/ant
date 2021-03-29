@@ -1386,7 +1386,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
 
         //-----------------------------------------------------------------------------------
 
-        if(!(photonCombs[bestKFindex].at(2)->Candidate->VetoEnergy < 1.2 && photonCombs[bestKFindex].at(3)->Candidate->VetoEnergy < 1.2))
+        if(!((photonCombs[bestKFindex].at(2)->Candidate->VetoEnergy > 0.4 && photonCombs[bestKFindex].at(2)->Candidate->VetoEnergy < 1.2) && (photonCombs[bestKFindex].at(3)->Candidate->VetoEnergy > 0.4 && photonCombs[bestKFindex].at(3)->Candidate->VetoEnergy < 1.2)))
             continue;
 
         cut_ind++;
