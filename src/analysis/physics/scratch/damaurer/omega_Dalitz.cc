@@ -91,8 +91,8 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
     const BinSettings CB_Esum_bins(250,0.,2000.);
     const BinSettings timeDiffCorTaggCB_bins(50, 0,10);
     const BinSettings timeDiffCorTaggTAPS_bins(100, 0,25);
-    const BinSettings effR_bins(100, 0,20);
-    const BinSettings nCrystal_bins(25);
+    const BinSettings effR_bins(100, 0,25);
+    const BinSettings nCrystal_bins(30);
     const BinSettings cos_bins(100,-1,1);
     const BinSettings theta_bins(360, 0, 180);
 
