@@ -26,6 +26,7 @@
 //Include Kinematic fitter
 #include "analysis/utils/fitter/KinFitter.h"
 #include "analysis/utils/Uncertainties.h"
+#include "utils/uncertainties/Interpolated.h"
 #include "analysis/utils/ProtonPhotonCombs.h"
 
 // the physics classes reside in this nested namespace
@@ -58,7 +59,12 @@ protected:
 
     static constexpr auto radtodeg = std_ext::radian_to_degree(1.0);
 
-    utils::UncertaintyModelPtr fit_model;
+    //Distinguish between uncertainty models between MC and exp. data:
+    using model_t = std::shared_ptr<const utils::UncertaintyModels::Interpolated>;
+    model_t fit_model_data;
+    model_t fit_model_mc;
+
+    //utils::UncertaintyModelPtr fit_model;
     utils::KinFitter fitter;
     utils::KinFitter fitter_freeZ;
     utils::ClusterTools clustertools;
@@ -68,7 +74,7 @@ protected:
     std::shared_ptr<expconfig::detector::PID> pid_detector;
     std::shared_ptr<expconfig::detector::TAPSVeto> veto_detector;
 
-    static const int nrCuts_total = 8;
+    static const int nrCuts_total = 9;
     static const int nrCuts_beforeSel = 2;
     static const int nrCuts_beforeKF = 5;
     static const int nrCuts_KF = nrCuts_total-nrCuts_beforeKF;
@@ -81,8 +87,8 @@ protected:
     static const int nrFitVars = 4;
     static const int nrPhotons = 4;
 
-    std::string cuts[nrCuts_total] = {"CUT#0_NoCuts","CUT#1_CBEsum","CUT#2_Sel2Neu3Cha","CUT#3_OmegaEthreshold","CUT#4_IM(2g)_mpi0+-0.4mpi0","CUT#5_mm(p)ANDkf","CUT#6_kinFit_prob_CL1%","CUT#7_FreeZVert"};
-    std::string cuts_KF[nrCuts_KF] = {"CUT#5_mm(p)ANDkf","CUT#6_kinFit_prob_CL1%","CUT#7_FreeZVert"};
+    std::string cuts[nrCuts_total] = {"CUT#0_NoCuts","CUT#1_CBEsum","CUT#2_Sel2Neu3Cha","CUT#3_OmegaEthreshold","CUT#4_IM(2g)_mpi0+-0.4mpi0","CUT#5_mm(p)ANDkf","CUT#6_kinFit_prob_CL1%","CUT#7_FreeZVert","CUT#8_eeDiffPID"};
+    std::string cuts_KF[nrCuts_KF] = {"CUT#5_mm(p)ANDkf","CUT#6_kinFit_prob_CL1%","CUT#7_FreeZVert","CUT#8_eeDiffPID"};
 
     std::string PIDstat[eePID-1] = {"Different","Same"};
 

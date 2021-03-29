@@ -40,11 +40,27 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
     )
     */
 
+    /*
     fit_model(utils::UncertaintyModels::Interpolated::makeAndLoad(
-                           utils::UncertaintyModels::Interpolated::Type_t::MC,
-                           make_shared<utils::UncertaintyModels::FitterSergey>())),
-    fitter(nullptr, opts->Get<bool>("FitZVertex", true))
+                             utils::UncertaintyModels::Interpolated::Type_t::MC,
+                             make_shared<utils::UncertaintyModels::FitterSergey>())),
+    */
 
+    fit_model_data(utils::UncertaintyModels::Interpolated::makeAndLoad(
+                   utils::UncertaintyModels::Interpolated::Type_t::Data,
+                   // use Sergey as starting point
+                   make_shared<utils::UncertaintyModels::FitterSergey>()
+                  )
+          ),
+
+    fit_model_mc(utils::UncertaintyModels::Interpolated::makeAndLoad(
+                 utils::UncertaintyModels::Interpolated::Type_t::MC,
+                 // use Sergey as starting point
+                 make_shared<utils::UncertaintyModels::FitterSergey>()
+                )
+          ),
+
+    fitter(nullptr, opts->Get<bool>("FitZVertex", true))
 
 {
 
@@ -497,11 +513,16 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
 {
     triggersimu.ProcessEvent(event); 
 
-    // set fitter uncertainty models
-    fitter.SetUncertaintyModel(fit_model);
-
     const auto& data = event.Reconstructed();
     const auto& candidates = data.Candidates;
+
+    //set fitter uncertainty model:
+    //fitter.SetUncertaintyModel(fit_model);
+
+    // choose uncertainty depending on Data/MC input
+    const bool is_MC = data.ID.isSet(TID::Flags_t::MC);
+    fitter.SetUncertaintyModel(is_MC ? fit_model_mc : fit_model_data);
+
     h_nClusters->Fill(data.Clusters.size());
     h_nCandidates->Fill(data.Candidates.size());
 
@@ -1555,6 +1576,9 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ShowResult()
 void scratch_damaurer_pw_ppi0g_p3g_kinFit::Finish()
 {
     cout << "please work!" << endl;
+
+    LOG(INFO) << "Fit Model Statistics Data:\n" << *fit_model_data;
+    LOG(INFO) << "Fit Model Statistics MC:\n" << *fit_model_mc;
 /*
     int max_particles_detected = h_ALL_PolarAngles->GetEntries();
     int Photons_max_detected = h_3gPolarAngles->GetEntries();
@@ -1575,8 +1599,7 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::Finish()
     cout << "Integrated amount of found clusters in total: " << h_nClusters->Integral() << endl;
     cout << "Detection efficiency: " << max_particles_detected/max_particles << endl;
     cout << "Max number of detected photons: " << Photons_max_detected << endl;
-*/
-    /*
+
     int max_particles_detected = h_PolarAngles->GetEntries();
     int Photons_max_detected = h_PhotonPolarAngles->GetEntries();
     int Protons_max_detected = h_ProtonPolarAngles->GetEntries();

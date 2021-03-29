@@ -14,6 +14,7 @@
 //Include Kinematic fitter
 #include "analysis/utils/fitter/KinFitter.h"
 #include "analysis/utils/Uncertainties.h"
+#include "utils/uncertainties/Interpolated.h"
 #include "analysis/utils/ProtonPhotonCombs.h"
 
 // handle ROOT's TTree
@@ -61,7 +62,13 @@ protected:
 
     static APLCON::Fit_Settings_t MakeFitSettings(unsigned);
     static constexpr auto radtodeg = std_ext::radian_to_degree(1.0);
-    utils::UncertaintyModelPtr fit_model;
+
+    //Distinguish between uncertainty models between MC and exp. data:
+    using model_t = std::shared_ptr<const utils::UncertaintyModels::Interpolated>;
+    model_t fit_model_data;
+    model_t fit_model_mc;
+
+    //utils::UncertaintyModelPtr fit_model;
     utils::KinFitter fitter;
 
     //-- Histograms
