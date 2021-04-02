@@ -102,6 +102,7 @@ private:
     TH2D* h_doublyDCSlab_gp_wp[nrCuts_Sel];
 
     TH1D* h_wp_BackToBack[nrCuts_Sel];
+    TH2D* h_Proton_PIDEvsTime[nrCuts_Sel];
 
     TH2D* h_Proton_CaloEvsVetoE_CB[nrCuts_Sel];
     TH2D* h_Proton_CaloEvsVetoE_TAPS[nrCuts_Sel];

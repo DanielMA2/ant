@@ -74,7 +74,7 @@ protected:
     std::shared_ptr<expconfig::detector::PID> pid_detector;
     std::shared_ptr<expconfig::detector::TAPSVeto> veto_detector;
 
-    static const int nrCuts_total = 10;
+    static const int nrCuts_total = 11;
     static const int nrCuts_beforeSel = 2;
     static const int nrCuts_beforeKF = 5;
     static const int nrCuts_KF = nrCuts_total-nrCuts_beforeKF;
@@ -87,8 +87,8 @@ protected:
     static const int nrFitVars = 4;
     static const int nrPhotons = 4;
 
-    std::string cuts[nrCuts_total] = {"CUT#0_NoCuts","CUT#1_CBEsum","CUT#2_Sel2Neu3Cha","CUT#3_OmegaEthreshold","CUT#4_IM(2g)_mpi0+-0.4mpi0","CUT#5_mm(p)ANDkf","CUT#6_kinFit_prob_CL1%","CUT#7_FreeZVert","CUT#8_eeDiffPID","CUT#9_eeVetoE<1.2GeV"};
-    std::string cuts_KF[nrCuts_KF] = {"CUT#5_mm(p)ANDkf","CUT#6_kinFit_prob_CL1%","CUT#7_FreeZVert","CUT#8_eeDiffPID","CUT#9_eeVetoE<1.2GeV"};
+    std::string cuts[nrCuts_total] = {"CUT#0_NoCuts","CUT#1_CBEsum","CUT#2_Sel2Neu3Cha","CUT#3_OmegaEthreshold","CUT#4_IM(2g)_mpi0+-0.4mpi0","CUT#5_mm(p)ANDkf","CUT#6_kinFit_prob_CL1%","CUT#7_FreeZVert","CUT#8_eeDiffPID","CUT#9_effR","CUT#10_nCrystals"};
+    std::string cuts_KF[nrCuts_KF] = {"CUT#5_mm(p)ANDkf","CUT#6_kinFit_prob_CL1%","CUT#7_FreeZVert","CUT#8_eeDiffPID","CUT#9_effR","CUT#10_nCrystals"};
 
     std::string PIDstat[eePID-1] = {"Different","Same"};
 
@@ -146,6 +146,8 @@ private:
     TH1D* h_IM2gee_Fit[nrCuts_KF];
     TH1D* h_IM2g_Fit[nrCuts_KF];
     TH1D* h_IMmissingP_Fit[nrCuts_KF];
+    TH1D* h_IMeeFit[nrCuts_KF];
+    TH1D* h_IMee[nrCuts_KF];
     TH1D* h_Fit_zvert[nrCuts_KF];
     TH1D* h_fitEbeam[nrCuts_KF];
     TH1D* h_Probability[nrCuts_KF];
@@ -157,6 +159,7 @@ private:
 
     TH1D* h_eeOpeningAngles[nrCuts_KF];
     TH1D* h_eePID[nrCuts_KF];
+    TH2D* h_eePIDelementNumbers[nrCuts_KF];
 
     TH2D* h_cluster_effRvsCaloE[nrCuts_KF];
     TH2D* h_cluster_nCrystalsvsCaloE[nrCuts_KF];
@@ -166,12 +169,26 @@ private:
     TH2D* h_Proton_CaloEvsVetoE_CB[nrCuts_KF];
     TH2D* h_Proton_CaloEvsVetoE_TAPS[nrCuts_KF];
 
+    TH2D* h_NoProton_PIDEvsTime[nrCuts_KF];
+    TH2D* h_Proton_PIDEvsTime[nrCuts_KF];
+
     TH1D *h_Proton_TimeDiffCorTaggCB[nrCuts_KF];
     TH1D *h_Proton_TimeDiffCorTaggTAPS[nrCuts_KF];
     TH1D *h_NoProton_TimeDiffCorTaggCB[nrCuts_KF];
     TH1D *h_NoProton_TimeDiffCorTaggTAPS[nrCuts_KF];
     TH1D *h_Photon_TimeDiffCorTaggCB[nrCuts_KF];
     TH1D *h_Photon_TimeDiffCorTaggTAPS[nrCuts_KF];
+
+    TH2D *h_Proton_EvsThetaCB[nrCuts_KF];
+    TH2D *h_Proton_EvsThetaTAPS[nrCuts_KF];
+    TH2D *h_NoProton_EvsThetaCB[nrCuts_KF];
+    TH2D *h_NoProton_EvsThetaTAPS[nrCuts_KF];
+    TH2D *h_Photon_EvsThetaCB[nrCuts_KF];
+    TH2D *h_Photon_EvsThetaTAPS[nrCuts_KF];
+
+    TH2D *h_Proton_EvsPhi[nrCuts_KF];
+    TH2D *h_NoProton_EvsPhi[nrCuts_KF];
+    TH2D *h_Photon_EvsPhi[nrCuts_KF];
 
     TH1D *h_PartPulls_CB[nrPartType][nrFitVars];
     TH1D *h_PartPulls_TAPS[nrPartType][nrFitVars];

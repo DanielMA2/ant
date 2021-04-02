@@ -71,8 +71,8 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
     const BinSettings timeDiffCorTaggCB_bins(200, -5,10);
     const BinSettings timeDiffCorTaggTAPS_bins(200, -5,20);
 
-    const BinSettings Veto_Energy_bins(500, 0, 10);
-    const BinSettings Calo_Energy_bins(500, 0, 1100);
+    const BinSettings Veto_Energy_bins(500, 0, 12);
+    const BinSettings Calo_Energy_bins(500, 0, 1200);
     const BinSettings initialBeamE_bins(200,0, 1600);
     const BinSettings cos_bins(100,-1,1);
     const BinSettings statistic_bins((nrCuts_total)*10,0,nrCuts_total);
@@ -80,15 +80,14 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
 
     const BinSettings phi_bins(720, -180, 180);
     const BinSettings theta_bins(360, 0, 180);
-    const BinSettings theta_bins_CB(140, 19, 160);
-    const BinSettings theta_bins_TAPS(25, 0, 25);
+    const BinSettings PIDtime_bins(241,-60.5,60.5);
 
     const BinSettings Im_proton_bins(200, 0, 1800);
     const BinSettings Im_omega_bins(200, 0, 1800);
     const BinSettings Im_pi0_bins(200, 0, 900);
 
-    const BinSettings Ekin_neu_bins(200, 0, 1600);
-    const BinSettings Ekin_cha_bins(200, 0, 1000);
+    //const BinSettings Ekin_neu_bins(200, 0, 1600);
+    //const BinSettings Ekin_cha_bins(200, 0, 1000);
 
     const BinSettings E_photon_bins(200, 0, 1600);
     const BinSettings E_proton_bins(200, 900, 2000);
@@ -147,6 +146,8 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
     auto hf_CaloEvsVetoE_CB_SideCheck = new HistogramFactory("hf_CaloEvsVetoE_CB_SideCheck", HistFac, "");
     auto hf_CaloEvsVetoE_TAPS_SideCheck = new HistogramFactory("hf_CaloEvsVetoE_TAPS_SideCheck", HistFac, "");
 
+    auto hf_PIDEvsTime = new HistogramFactory("hf_PIDEvsTime", HistFac, "");
+
     for (unsigned int i=0; i<nrCuts_total; i++){
         /*
         stringstream ss;
@@ -168,25 +169,25 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
 
         h_neuEkinVSTheta[i] = hf_EvsTheta->makeTH2D("Photons Ekin vs Theta "+cuts[i], //title
                                                 "#Theta [deg]","E_kin [MeV]",  // xlabel, ylabel
-                                                theta_bins, Ekin_neu_bins,    // our binnings
+                                                theta_bins, Calo_Energy_bins,    // our binnings
                                                 "h_neuEkinVSTheta_"+cuts[i], true    // ROOT object name, auto-generated if omitted
                                                 );
 
         h_neuEkinVSPhi[i] = hf_EvsPhi->makeTH2D("Photons Ekin vs Phi "+cuts[i], //title
                                             "#Phi [deg]","E_kin [MeV]",  // xlabel, ylabel
-                                            phi_bins, Ekin_neu_bins,    // our binnings
+                                            phi_bins, Calo_Energy_bins,    // our binnings
                                             "h_neuEkinVSPhi_"+cuts[i], true    // ROOT object name, auto-generated if omitted
                                             );
 
         h_chaEkinVSTheta[i] = hf_EvsTheta->makeTH2D("Charged Ekin vs Theta "+cuts[i], //title
                                                   "#Theta [deg]","E_kin [MeV]",  // xlabel, ylabel
-                                                  theta_bins, Ekin_cha_bins,    // our binnings
+                                                  theta_bins, Calo_Energy_bins,    // our binnings
                                                   "h_chaEkinVSTheta_"+cuts[i], true    // ROOT object name, auto-generated if omitted
                                                   );
 
         h_chaEkinVSPhi[i] = hf_EvsPhi->makeTH2D("Charged Ekin vs Phi "+cuts[i], //title
                                               "#Phi [deg]","E_kin [MeV]",  // xlabel, ylabel
-                                              phi_bins, Ekin_cha_bins,    // our binnings
+                                              phi_bins, Calo_Energy_bins,    // our binnings
                                               "h_chaEkinVSPhi_"+cuts[i], true    // ROOT object name, auto-generated if omitted
                                               );
 
@@ -272,6 +273,12 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
                                                                             cos_bins, sqrt_S_bins,    // our binnings
                                                                             "h_doublyDCScm_gp_wp_"+cuts[i+nrCuts_beforeSel], true    // ROOT object name, auto-generated if omitted
                                                                             );
+
+        h_Proton_PIDEvsTime[i] = hf_PIDEvsTime->makeTH2D("Protons: PID energy vs time "+cuts[i+nrCuts_beforeSel],     // title
+                                                                          "PID time [ns]", "PID E [MeV]",  // xlabel, ylabel
+                                                                          PIDtime_bins,BinSettings(200,0.,20),    // our binnings
+                                                                          "h_Proton_PIDEvsTime_"+cuts[i+nrCuts_beforeSel], true    // ROOT object name, auto-generated if omitted
+                                                                          );
 
         h_Proton_CaloEvsVetoE_CB[i] = hf_CaloEvsVetoE_CB_SideCheck->makeTH2D("Protons: Deposited calo vs veto energies in CB "+cuts[i+nrCuts_beforeSel],     // title
                                          "Calo E [MeV]", "Veto E [MeV]",  // xlabel, ylabel
@@ -375,13 +382,13 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
 
     h_3gPolarAnglesCB = hf_OnlyAngles->makeTH1D("Rec. Photons polarangles only in CB",     // title
                                              "#Theta [deg]", "#",     // xlabel, ylabel
-                                             theta_bins_CB,  // our binnings
+                                             theta_bins,  // our binnings
                                              "h_3gPolarAnglesCB", true     // ROOT object name, auto-generated if omitted
                                              );
 
     h_3gPolarAnglesTAPS = hf_OnlyAngles->makeTH1D("Rec. Photons polarangles only in TAPS",     // title
                                              "#Theta [deg]", "#",     // xlabel, ylabel
-                                             theta_bins_TAPS,  // our binnings
+                                             theta_bins,  // our binnings
                                              "h_3gPolarAnglesTAPS", true     // ROOT object name, auto-generated if omitted
                                              );
 
@@ -393,13 +400,13 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
 
     h_3g_EvTheta_CB = hf_wpi0g_EvsTheta->makeTH2D("Photon energy vs theta only in CB", //title
                                        "Theta [deg]","E [MeV]",  // xlabel, ylabel
-                                       theta_bins_CB, E_photon_bins,    // our binnings
+                                       theta_bins, E_photon_bins,    // our binnings
                                        "h_3g_EvTheta_CB", true    // ROOT object name, auto-generated if omitted
                                        );
 
     h_3g_EvTheta_TAPS = hf_wpi0g_EvsTheta->makeTH2D("Photon energy vs theta only in TAPS", //title
                                        "Theta [deg]","E [MeV]",  // xlabel, ylabel
-                                       theta_bins_TAPS, E_photon_bins,    // our binnings
+                                       theta_bins, E_photon_bins,    // our binnings
                                        "h_3g_EvTheta_TAPS", true    // ROOT object name, auto-generated if omitted
                                        );
 
@@ -453,7 +460,7 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
 
         h_Theta_dev_CB[i] = hf_CombCBKF->makeTH2D(Form("CB: Theta deviation of rec. vs fitted %s",fitPartName[i].c_str()), //title
                                             "#Theta_{rec} [deg]","#Theta_{fit}-#Theta_{rec} [deg]", // xlabel, ylabel
-                                            theta_bins_CB, defTheta_bins,    // our binnings
+                                            theta_bins, defTheta_bins,    // our binnings
                                             "h_Theta_dev_CB_"+fitPartName[i], true    // ROOT object name, auto-generated if omitted
                                             );
 
@@ -471,7 +478,7 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
 
         h_Theta_dev_TAPS[i] = hf_CombTAPSKF->makeTH2D(Form("TAPS: Theta deviation of rec. vs fitted %s",fitPartName[i].c_str()), //title
                                             "#Theta_{rec} [deg]","#Theta_{fit}-#Theta_{rec} [deg]", // xlabel, ylabel
-                                            theta_bins_TAPS, defTheta_bins,    // our binnings
+                                            theta_bins, defTheta_bins,    // our binnings
                                             "h_Theta_dev_TAPS_"+fitPartName[i], true    // ROOT object name, auto-generated if omitted
                                             );
 
@@ -537,8 +544,12 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
 
     vector<bool> chaCanInCB;
     vector<bool> chaCanInTAPS;
+    vector<bool> chaCanInPID;
     vector<bool> neuCanInCB;
     vector<bool> neuCanInTAPS;
+    vector<bool> protonCanInCB;
+    vector<bool> protonCanInTAPS;
+    vector<bool> protonCanInPID;
 
     vector<double> neuCanCluSize;
     vector<double> neuCanCaloE;
@@ -552,6 +563,12 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
     vector<double> chaCanTime;
     vector<double> chaThe;
     vector<double> chaPhi;
+    vector<double> protonCanCluSize;
+    vector<double> protonCanCaloE;
+    vector<double> protonCanVetoE;
+    vector<double> protonCanTime;
+    vector<double> protonThe;
+    vector<double> protonPhi;
 
     for(const auto& cand : candidates.get_iter()) {
         //h_VetoEnergies->Fill(cand->VetoEnergy);
@@ -602,9 +619,44 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
             else{
                 chaCanInTAPS.push_back(false);
             }
+
+            if(cand->FindVetoCluster()->DetectorType == Detector_t::Type_t::PID){
+                chaCanInPID.push_back(true);
+            }
+            else{
+                chaCanInPID.push_back(false);
+            }
+
             if(cand->Theta*radtodeg < 50){
+
+                if(cand->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+                    protonCanInCB.push_back(true);
+                }
+                else{
+                    protonCanInCB.push_back(false);
+                }
+                if(cand->FindCaloCluster()->DetectorType == Detector_t::Type_t::TAPS){
+                    protonCanInTAPS.push_back(true);
+                }
+                else{
+                    protonCanInTAPS.push_back(false);
+                }
+
+                if(cand->FindVetoCluster()->DetectorType == Detector_t::Type_t::PID){
+                    protonCanInPID.push_back(true);
+                }
+                else{
+                    protonCanInPID.push_back(false);
+                }
+
                 protonCand.emplace_back(cand);
                 protons.emplace_back(std::make_shared<TParticle>(ParticleTypeDatabase::Proton, cand));
+                protonThe.push_back(cand->Theta*radtodeg);
+                protonPhi.push_back(cand->Phi*radtodeg);
+                protonCanCluSize.push_back(cand->ClusterSize);
+                protonCanCaloE.push_back(cand->CaloEnergy);
+                protonCanVetoE.push_back(cand->VetoEnergy);
+                protonCanTime.push_back(cand->Time);
             }
         }
 
@@ -814,18 +866,18 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
                 h_neuTimeDiffCorTaggTAPS[cut_ind]->Fill(neuCanTime[i]-corTaggTime,weight);
             }
         }
-        for (unsigned int i=0; i<charged.size(); i++){
-            h_chaEkinVSPhi[cut_ind]->Fill(chaPhi[i],chaCanCaloE[i],weight);
-            h_chaEkinVSTheta[cut_ind]->Fill(chaThe[i],chaCanCaloE[i],weight);
-            if(chaCanInCB[i]){
-                h_AllVetoE_CB[cut_ind]->Fill(chaCanVetoE[i],weight);
-                h_AllCaloEvsVetoE_CB[cut_ind]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
-                h_chaTimeDiffCorTaggCB[cut_ind]->Fill(chaCanTime[i]-corTaggTime,weight);
+        for (unsigned int i=0; i<protons.size(); i++){
+            h_chaEkinVSPhi[cut_ind]->Fill(protonPhi[i],protonCanCaloE[i],weight);
+            h_chaEkinVSTheta[cut_ind]->Fill(protonThe[i],protonCanCaloE[i],weight);
+            if(protonCanInCB[i]){
+                h_AllVetoE_CB[cut_ind]->Fill(protonCanVetoE[i],weight);
+                h_AllCaloEvsVetoE_CB[cut_ind]->Fill(protonCanCaloE[i],protonCanVetoE[i],weight);
+                h_chaTimeDiffCorTaggCB[cut_ind]->Fill(protonCanTime[i]-corTaggTime,weight);
             }
-            if(chaCanInTAPS[i]){
-                h_AllVetoE_TAPS[cut_ind]->Fill(chaCanVetoE[i],weight);
-                h_AllCaloEvsVetoE_TAPS[cut_ind]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
-                h_chaTimeDiffCorTaggTAPS[cut_ind]->Fill(chaCanTime[i]-corTaggTime,weight);
+            if(protonCanInTAPS[i]){
+                h_AllVetoE_TAPS[cut_ind]->Fill(protonCanVetoE[i],weight);
+                h_AllCaloEvsVetoE_TAPS[cut_ind]->Fill(protonCanCaloE[i],protonCanVetoE[i],weight);
+                h_chaTimeDiffCorTaggTAPS[cut_ind]->Fill(protonCanTime[i]-corTaggTime,weight);
             }
         }
 
@@ -834,6 +886,9 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
         }
         if(proton_toFit->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::TAPS){
             h_Proton_CaloEvsVetoE_TAPS[cut_ind-nrCuts_beforeSel]->Fill(proton_toFit->Candidate->CaloEnergy,proton_toFit->Candidate->VetoEnergy,weight);
+        }
+        if(proton_toFit->Candidate->FindVetoCluster()->DetectorType == Detector_t::Type_t::PID){
+            h_Proton_PIDEvsTime[cut_ind-nrCuts_beforeSel]->Fill(proton_toFit->Candidate->FindVetoCluster()->Time,proton_toFit->Candidate->FindVetoCluster()->Energy,weight);
         }
 
         //if(!(LmissingProton.M() > (mpFit-1.5*sigmaMissingP) && LmissingProton.M() < (mpFit+1.5*sigmaMissingP)))
@@ -871,18 +926,18 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
                 h_neuTimeDiffCorTaggTAPS[cut_ind]->Fill(neuCanTime[i]-corTaggTime,weight);
             }
         }
-        for (unsigned int i=0; i<charged.size(); i++){
-            h_chaEkinVSPhi[cut_ind]->Fill(chaPhi[i],chaCanCaloE[i],weight);
-            h_chaEkinVSTheta[cut_ind]->Fill(chaThe[i],chaCanCaloE[i],weight);
-            if(chaCanInCB[i]){
-                h_AllVetoE_CB[cut_ind]->Fill(chaCanVetoE[i],weight);
-                h_AllCaloEvsVetoE_CB[cut_ind]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
-                h_chaTimeDiffCorTaggCB[cut_ind]->Fill(chaCanTime[i]-corTaggTime,weight);
+        for (unsigned int i=0; i<protons.size(); i++){
+            h_chaEkinVSPhi[cut_ind]->Fill(protonPhi[i],protonCanCaloE[i],weight);
+            h_chaEkinVSTheta[cut_ind]->Fill(protonThe[i],protonCanCaloE[i],weight);
+            if(protonCanInCB[i]){
+                h_AllVetoE_CB[cut_ind]->Fill(protonCanVetoE[i],weight);
+                h_AllCaloEvsVetoE_CB[cut_ind]->Fill(protonCanCaloE[i],protonCanVetoE[i],weight);
+                h_chaTimeDiffCorTaggCB[cut_ind]->Fill(protonCanTime[i]-corTaggTime,weight);
             }
-            if(chaCanInTAPS[i]){
-                h_AllVetoE_TAPS[cut_ind]->Fill(chaCanVetoE[i],weight);
-                h_AllCaloEvsVetoE_TAPS[cut_ind]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
-                h_chaTimeDiffCorTaggTAPS[cut_ind]->Fill(chaCanTime[i]-corTaggTime,weight);
+            if(protonCanInTAPS[i]){
+                h_AllVetoE_TAPS[cut_ind]->Fill(protonCanVetoE[i],weight);
+                h_AllCaloEvsVetoE_TAPS[cut_ind]->Fill(protonCanCaloE[i],protonCanVetoE[i],weight);
+                h_chaTimeDiffCorTaggTAPS[cut_ind]->Fill(protonCanTime[i]-corTaggTime,weight);
             }
         }
 
@@ -891,6 +946,9 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
         }
         if(proton_toFit->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::TAPS){
             h_Proton_CaloEvsVetoE_TAPS[cut_ind-nrCuts_beforeSel]->Fill(proton_toFit->Candidate->CaloEnergy,proton_toFit->Candidate->VetoEnergy,weight);
+        }
+        if(proton_toFit->Candidate->FindVetoCluster()->DetectorType == Detector_t::Type_t::PID){
+            h_Proton_PIDEvsTime[cut_ind-nrCuts_beforeSel]->Fill(proton_toFit->Candidate->FindVetoCluster()->Time,proton_toFit->Candidate->FindVetoCluster()->Energy,weight);
         }
 
         if(!(InitialPhotonVec.E()>=Omega_Ethreshold))
@@ -927,18 +985,18 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
                 h_neuTimeDiffCorTaggTAPS[cut_ind]->Fill(neuCanTime[i]-corTaggTime,weight);
             }
         }
-        for (unsigned int i=0; i<charged.size(); i++){
-            h_chaEkinVSPhi[cut_ind]->Fill(chaPhi[i],chaCanCaloE[i],weight);
-            h_chaEkinVSTheta[cut_ind]->Fill(chaThe[i],chaCanCaloE[i],weight);
-            if(chaCanInCB[i]){
-                h_AllVetoE_CB[cut_ind]->Fill(chaCanVetoE[i],weight);
-                h_AllCaloEvsVetoE_CB[cut_ind]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
-                h_chaTimeDiffCorTaggCB[cut_ind]->Fill(chaCanTime[i]-corTaggTime,weight);
+        for (unsigned int i=0; i<protons.size(); i++){
+            h_chaEkinVSPhi[cut_ind]->Fill(protonPhi[i],protonCanCaloE[i],weight);
+            h_chaEkinVSTheta[cut_ind]->Fill(protonThe[i],protonCanCaloE[i],weight);
+            if(protonCanInCB[i]){
+                h_AllVetoE_CB[cut_ind]->Fill(protonCanVetoE[i],weight);
+                h_AllCaloEvsVetoE_CB[cut_ind]->Fill(protonCanCaloE[i],protonCanVetoE[i],weight);
+                h_chaTimeDiffCorTaggCB[cut_ind]->Fill(protonCanTime[i]-corTaggTime,weight);
             }
-            if(chaCanInTAPS[i]){
-                h_AllVetoE_TAPS[cut_ind]->Fill(chaCanVetoE[i],weight);
-                h_AllCaloEvsVetoE_TAPS[cut_ind]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
-                h_chaTimeDiffCorTaggTAPS[cut_ind]->Fill(chaCanTime[i]-corTaggTime,weight);
+            if(protonCanInTAPS[i]){
+                h_AllVetoE_TAPS[cut_ind]->Fill(protonCanVetoE[i],weight);
+                h_AllCaloEvsVetoE_TAPS[cut_ind]->Fill(protonCanCaloE[i],protonCanVetoE[i],weight);
+                h_chaTimeDiffCorTaggTAPS[cut_ind]->Fill(protonCanTime[i]-corTaggTime,weight);
             }
         }
 
@@ -947,6 +1005,9 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
         }
         if(proton_toFit->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::TAPS){
             h_Proton_CaloEvsVetoE_TAPS[cut_ind-nrCuts_beforeSel]->Fill(proton_toFit->Candidate->CaloEnergy,proton_toFit->Candidate->VetoEnergy,weight);
+        }
+        if(proton_toFit->Candidate->FindVetoCluster()->DetectorType == Detector_t::Type_t::PID){
+            h_Proton_PIDEvsTime[cut_ind-nrCuts_beforeSel]->Fill(proton_toFit->Candidate->FindVetoCluster()->Time,proton_toFit->Candidate->FindVetoCluster()->Energy,weight);
         }
 
         //LorentzBoost-Stuff with opening angle selections:
@@ -1076,21 +1137,21 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
                 h_neuTimeDiffCorTaggTAPS[cut_ind]->Fill(neuCanTime[i]-corTaggTime,weight);
             }
         }
-        for (unsigned int i=0; i<charged.size(); i++){
-            h_chaEkinVSPhi[cut_ind]->Fill(chaPhi[i],chaCanCaloE[i],weight);
-            h_chaEkinVSTheta[cut_ind]->Fill(chaThe[i],chaCanCaloE[i],weight);
-            if(chaCanInCB[i]){
-                h_AllVetoE_CB[cut_ind]->Fill(chaCanVetoE[i],weight);
-                h_AllCaloEvsVetoE_CB[cut_ind]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
-                h_chaTimeDiffCorTaggCB[cut_ind]->Fill(chaCanTime[i]-corTaggTime,weight);
+
+        for (unsigned int i=0; i<protons.size(); i++){
+            h_chaEkinVSPhi[cut_ind]->Fill(protonPhi[i],protonCanCaloE[i],weight);
+            h_chaEkinVSTheta[cut_ind]->Fill(protonThe[i],protonCanCaloE[i],weight);
+            if(protonCanInCB[i]){
+                h_AllVetoE_CB[cut_ind]->Fill(protonCanVetoE[i],weight);
+                h_AllCaloEvsVetoE_CB[cut_ind]->Fill(protonCanCaloE[i],protonCanVetoE[i],weight);
+                h_chaTimeDiffCorTaggCB[cut_ind]->Fill(protonCanTime[i]-corTaggTime,weight);
             }
-            if(chaCanInTAPS[i]){
-                h_AllVetoE_TAPS[cut_ind]->Fill(chaCanVetoE[i],weight);
-                h_AllCaloEvsVetoE_TAPS[cut_ind]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
-                h_chaTimeDiffCorTaggTAPS[cut_ind]->Fill(chaCanTime[i]-corTaggTime,weight);
+            if(protonCanInTAPS[i]){
+                h_AllVetoE_TAPS[cut_ind]->Fill(protonCanVetoE[i],weight);
+                h_AllCaloEvsVetoE_TAPS[cut_ind]->Fill(protonCanCaloE[i],protonCanVetoE[i],weight);
+                h_chaTimeDiffCorTaggTAPS[cut_ind]->Fill(protonCanTime[i]-corTaggTime,weight);
             }
         }
-
 
         if(proton_toFit->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
             h_Proton_CaloEvsVetoE_CB[cut_ind-nrCuts_beforeSel]->Fill(proton_toFit->Candidate->CaloEnergy,proton_toFit->Candidate->VetoEnergy,weight);
@@ -1098,7 +1159,9 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
         if(proton_toFit->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::TAPS){
             h_Proton_CaloEvsVetoE_TAPS[cut_ind-nrCuts_beforeSel]->Fill(proton_toFit->Candidate->CaloEnergy,proton_toFit->Candidate->VetoEnergy,weight);
         }
-
+        if(proton_toFit->Candidate->FindVetoCluster()->DetectorType == Detector_t::Type_t::PID){
+            h_Proton_PIDEvsTime[cut_ind-nrCuts_beforeSel]->Fill(proton_toFit->Candidate->FindVetoCluster()->Time,proton_toFit->Candidate->FindVetoCluster()->Energy,weight);
+        }
 
         /*
         if(!(charged[0]->VetoEnergy>0.9))
@@ -1281,18 +1344,18 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
                 h_neuTimeDiffCorTaggTAPS[cut_ind]->Fill(neuCanTime[i]-corTaggTime,weight);
             }
         }
-        for (unsigned int i=0; i<charged.size(); i++){
-            h_chaEkinVSPhi[cut_ind]->Fill(chaPhi[i],chaCanCaloE[i],weight);
-            h_chaEkinVSTheta[cut_ind]->Fill(chaThe[i],chaCanCaloE[i],weight);
-            if(chaCanInCB[i]){
-                h_AllVetoE_CB[cut_ind]->Fill(chaCanVetoE[i],weight);
-                h_AllCaloEvsVetoE_CB[cut_ind]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
-                h_chaTimeDiffCorTaggCB[cut_ind]->Fill(chaCanTime[i]-corTaggTime,weight);
+        for (unsigned int i=0; i<protons.size(); i++){
+            h_chaEkinVSPhi[cut_ind]->Fill(protonPhi[i],protonCanCaloE[i],weight);
+            h_chaEkinVSTheta[cut_ind]->Fill(protonThe[i],protonCanCaloE[i],weight);
+            if(protonCanInCB[i]){
+                h_AllVetoE_CB[cut_ind]->Fill(protonCanVetoE[i],weight);
+                h_AllCaloEvsVetoE_CB[cut_ind]->Fill(protonCanCaloE[i],protonCanVetoE[i],weight);
+                h_chaTimeDiffCorTaggCB[cut_ind]->Fill(protonCanTime[i]-corTaggTime,weight);
             }
-            if(chaCanInTAPS[i]){
-                h_AllVetoE_TAPS[cut_ind]->Fill(chaCanVetoE[i],weight);
-                h_AllCaloEvsVetoE_TAPS[cut_ind]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
-                h_chaTimeDiffCorTaggTAPS[cut_ind]->Fill(chaCanTime[i]-corTaggTime,weight);
+            if(protonCanInTAPS[i]){
+                h_AllVetoE_TAPS[cut_ind]->Fill(protonCanVetoE[i],weight);
+                h_AllCaloEvsVetoE_TAPS[cut_ind]->Fill(protonCanCaloE[i],protonCanVetoE[i],weight);
+                h_chaTimeDiffCorTaggTAPS[cut_ind]->Fill(protonCanTime[i]-corTaggTime,weight);
             }
         }
 
@@ -1301,6 +1364,9 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
         }
         if(proton_toFit->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::TAPS){
             h_Proton_CaloEvsVetoE_TAPS[cut_ind-nrCuts_beforeSel]->Fill(proton_toFit->Candidate->CaloEnergy,proton_toFit->Candidate->VetoEnergy,weight);
+        }
+        if(proton_toFit->Candidate->FindVetoCluster()->DetectorType == Detector_t::Type_t::PID){
+            h_Proton_PIDEvsTime[cut_ind-nrCuts_beforeSel]->Fill(proton_toFit->Candidate->FindVetoCluster()->Time,proton_toFit->Candidate->FindVetoCluster()->Energy,weight);
         }
 
         //Filling the tree for further analysis
