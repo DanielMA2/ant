@@ -1635,13 +1635,18 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         Double_t x1_effR = 75;
         Double_t y1_effR = 10;
         Double_t x2_effR = 650;
-        Double_t y2_effR = 6.6;
+        Double_t y2_effR = 6.7;
         Double_t shift_effR = -0.5;
 
         Double_t m_effR = (y2_effR-y1_effR)/(x2_effR-x1_effR);
         Double_t b_effR = y2_effR-(y2_effR-y1_effR)/(x2_effR-x1_effR)*x2_effR;
 
-        if((isfinite(effR_l1) && clusterEl1 > x1_effR && clusterEl1 < x2_effR && effR_l1 > (m_effR*clusterEl1+b_effR+shift_effR)) || (isfinite(effR_l2) && clusterEl2 > x1_effR && clusterEl2 < x2_effR && effR_l2 > (m_effR*clusterEl2+b_effR+shift_effR)))
+        /*
+        if((isfinite(effR_l1) && clusterEl1 > 80 && clusterEl1 < 580 && effR_l1 > (m_effR*clusterEl1+b_effR+shift_effR)) || (isfinite(effR_l2) && clusterEl2 > x1_effR && clusterEl2 < x2_effR && effR_l2 > (m_effR*clusterEl2+b_effR+shift_effR)))
+            continue;
+        */
+
+        if((isfinite(effR_l1) && clusterEl1 > 80 && clusterEl1 < 800 && effR_l1 > 7.5) || (isfinite(effR_l2) && clusterEl2 > 80 && clusterEl2 < 800 && effR_l2 > 7.5))
             continue;
 
         cut_ind++;
@@ -1767,7 +1772,6 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
 
         //-----------------------------------------------------------------------------------
 
-        /*
         Double_t x1_nCryst_first = 75;
         Double_t y1_nCryst_first = 1;
         Double_t x2_nCryst_first = 600;
@@ -1786,11 +1790,13 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         Double_t m_nCryst_second = (y2_nCryst_second-y1_nCryst_second)/(x2_nCryst_second-x1_nCryst_second);
         Double_t b_nCryst_second = y2_nCryst_second-(y2_nCryst_second-y1_nCryst_second)/(x2_nCryst_second-x1_nCryst_second)*x2_nCryst_second;
 
-        if((isfinite(nCrystals_l1) && clusterEl1 > x1_nCryst_first && clusterEl1 < 950 && nCrystals_l1 <= (m_nCryst_first*clusterEl1+b_nCryst_first+shift_nCryst_first)) || (isfinite(nCrystals_l2) && clusterEl2 > x1_nCryst_first && clusterEl2 < 950 && nCrystals_l2 <= (m_nCryst_first*clusterEl2+b_nCryst_first+shift_nCryst_first)))
+        if((isfinite(nCrystals_l1) && clusterEl1 > x1_nCryst_first && clusterEl1 < 900 && nCrystals_l1 <= (m_nCryst_first*clusterEl1+b_nCryst_first+shift_nCryst_first)) || (isfinite(nCrystals_l2) && clusterEl2 > x1_nCryst_first && clusterEl2 < 950 && nCrystals_l2 <= (m_nCryst_first*clusterEl2+b_nCryst_first+shift_nCryst_first)))
             continue;
 
+        /*
         if((isfinite(nCrystals_l1) && nCrystals_l1 >= (m_nCryst_second*clusterEl1+b_nCryst_second+shift_nCryst_second)) || (isfinite(nCrystals_l2) && nCrystals_l2 >= (m_nCryst_second*clusterEl2+b_nCryst_second+shift_nCryst_second)))
             continue;
+        */
 
         if((isfinite(nCrystals_l1) && nCrystals_l1 > 21) || (isfinite(nCrystals_l2) && nCrystals_l2 > 21))
             continue;
@@ -1915,7 +1921,6 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
                 h_NoProton_EvsThetaTAPS[cut_ind-nrCuts_beforeKF]->Fill((photonCombs[bestKFindex].at(i+2)->Candidate->Theta)*radtodeg,photonCombs[bestKFindex].at(i+2)->Candidate->CaloEnergy,TaggWeight);
             }
         }
-        */
 
         //-----------------------------------------------------------------------------------
 
