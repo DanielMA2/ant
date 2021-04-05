@@ -1796,10 +1796,10 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         /*
         if((isfinite(nCrystals_l1) && nCrystals_l1 >= (m_nCryst_second*clusterEl1+b_nCryst_second+shift_nCryst_second)) || (isfinite(nCrystals_l2) && nCrystals_l2 >= (m_nCryst_second*clusterEl2+b_nCryst_second+shift_nCryst_second)))
             continue;
-        */
 
         if((isfinite(nCrystals_l1) && nCrystals_l1 > 21) || (isfinite(nCrystals_l2) && nCrystals_l2 > 21))
             continue;
+        */
 
         cut_ind++;
         stat[cut_ind]+=TaggWeight;
