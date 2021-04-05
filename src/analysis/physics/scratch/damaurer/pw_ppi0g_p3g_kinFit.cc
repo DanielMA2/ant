@@ -75,7 +75,7 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
     const BinSettings Calo_Energy_bins(500, 0, 1200);
     const BinSettings initialBeamE_bins(200,0, 1600);
     const BinSettings cos_bins(100,-1,1);
-    const BinSettings statistic_bins((nrCuts_total)*10,0,nrCuts_total);
+    const BinSettings statistic_bins(number_of_bins,0,nrCuts_total);
     const BinSettings sqrt_S_bins(100,s_square_min,s_square_max);
 
     const BinSettings phi_bins(720, -180, 180);

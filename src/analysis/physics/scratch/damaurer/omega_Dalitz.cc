@@ -71,7 +71,7 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
     pid_detector = ExpConfig::Setup::GetDetector<expconfig::detector::PID>();
     veto_detector = ExpConfig::Setup::GetDetector<expconfig::detector::TAPSVeto>();
 
-    const BinSettings statistic_bins((nrCuts_total)*10,0,nrCuts_total);
+    const BinSettings statistic_bins(number_of_bins,0,nrCuts_total);
     const BinSettings pid_bins((eePID)*10,0,eePID);
     const BinSettings bins_tagger_time(2000, -200, 200);
     const BinSettings bins_nClusters(20);
@@ -86,7 +86,7 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
     const BinSettings zVertFree_bins(50,-20,20);
     const BinSettings Im_pi0_bins(200, 0, 1000);
     const BinSettings Im_proton_bins(200, 0, 1800);
-    const BinSettings Im_omega_bins(200, 0, 1800);
+    const BinSettings Im_omega_bins(200, 0, 1200);
     const BinSettings IM_ee_bins(200, 0, 800);
     const BinSettings kf_prob_bins(1000,0.,1.);
     const BinSettings CB_Esum_bins(250,0.,2000.);
@@ -1635,7 +1635,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         Double_t x1_effR = 75;
         Double_t y1_effR = 10;
         Double_t x2_effR = 650;
-        Double_t y2_effR = 6.5;
+        Double_t y2_effR = 6.6;
         Double_t shift_effR = -0.5;
 
         Double_t m_effR = (y2_effR-y1_effR)/(x2_effR-x1_effR);
@@ -1767,6 +1767,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
 
         //-----------------------------------------------------------------------------------
 
+        /*
         Double_t x1_nCryst_first = 75;
         Double_t y1_nCryst_first = 1;
         Double_t x2_nCryst_first = 600;
@@ -1914,6 +1915,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
                 h_NoProton_EvsThetaTAPS[cut_ind-nrCuts_beforeKF]->Fill((photonCombs[bestKFindex].at(i+2)->Candidate->Theta)*radtodeg,photonCombs[bestKFindex].at(i+2)->Candidate->CaloEnergy,TaggWeight);
             }
         }
+        */
 
         //-----------------------------------------------------------------------------------
 

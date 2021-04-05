@@ -194,7 +194,7 @@ private:
 
     int lower_edge = 0;
     int upper_edge = nrCuts_total;
-    int number_of_bins = nrCuts_total*10;
+    int number_of_bins = nrCuts_total*20;
     int steps = (int)(number_of_bins/(upper_edge-lower_edge));
 
     double_t energyGamma_min = 1105;

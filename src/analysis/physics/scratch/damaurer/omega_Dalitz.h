@@ -74,7 +74,7 @@ protected:
     std::shared_ptr<expconfig::detector::PID> pid_detector;
     std::shared_ptr<expconfig::detector::TAPSVeto> veto_detector;
 
-    static const int nrCuts_total = 11;
+    static const int nrCuts_total = 10;
     static const int nrCuts_beforeSel = 2;
     static const int nrCuts_beforeKF = 5;
     static const int nrCuts_KF = nrCuts_total-nrCuts_beforeKF;
@@ -87,8 +87,8 @@ protected:
     static const int nrFitVars = 4;
     static const int nrPhotons = 4;
 
-    std::string cuts[nrCuts_total] = {"CUT#0_NoCuts","CUT#1_CBEsum","CUT#2_Sel2Neu3Cha","CUT#3_OmegaEthreshold","CUT#4_IM(2g)_mpi0+-0.4mpi0","CUT#5_mm(p)ANDkf","CUT#6_kinFit_prob_CL1%","CUT#7_FreeZVert","CUT#8_eeDiffPID","CUT#9_effR","CUT#10_nCrystals"};
-    std::string cuts_KF[nrCuts_KF] = {"CUT#5_mm(p)ANDkf","CUT#6_kinFit_prob_CL1%","CUT#7_FreeZVert","CUT#8_eeDiffPID","CUT#9_effR","CUT#10_nCrystals"};
+    std::string cuts[nrCuts_total] = {"CUT#0_NoCuts","CUT#1_CBEsum","CUT#2_Sel2Neu3Cha","CUT#3_OmegaEthreshold","CUT#4_IM(2g)_mpi0+-0.4mpi0","CUT#5_mm(p)ANDkf","CUT#6_kinFit_prob_CL1%","CUT#7_FreeZVert","CUT#8_eeDiffPID","CUT#9_effR"};
+    std::string cuts_KF[nrCuts_KF] = {"CUT#5_mm(p)ANDkf","CUT#6_kinFit_prob_CL1%","CUT#7_FreeZVert","CUT#8_eeDiffPID","CUT#9_effR"};
 
     std::string PIDstat[eePID-1] = {"Different","Same"};
 
@@ -104,7 +104,7 @@ protected:
 
     int lower_edge = 0;
     int upper_edge = nrCuts_total;
-    int number_of_bins = nrCuts_total*10;
+    int number_of_bins = nrCuts_total*20;
     int steps = (int)(number_of_bins/(upper_edge-lower_edge));
 
     static const int neu_nrSel = 2;
