@@ -1387,7 +1387,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
 
         //-----------------------------------------------------------------------------------
 
-        if(!(bestFitted_Zvert_freeZ > -11 && bestFitted_Zvert_freeZ < 5))
+        if(!(bestFitted_Zvert_freeZ > -10 && bestFitted_Zvert_freeZ < 5))
             continue;
 
         cut_ind++;
