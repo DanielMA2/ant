@@ -104,7 +104,7 @@ protected:
 
     int lower_edge = 0;
     int upper_edge = nrCuts_total;
-    int number_of_bins = nrCuts_total*20;
+    int number_of_bins = nrCuts_total*15;
     int steps = (int)(number_of_bins/(upper_edge-lower_edge));
 
     static const int neu_nrSel = 2;
@@ -116,6 +116,8 @@ protected:
 
     long double Omega_Ethreshold = (mw*mw+2*mw*mp)/(2*mp);
     static const int nrCombs = 3;
+
+    Double_t bestprob_cutval = 0.02;
 
 private:
 

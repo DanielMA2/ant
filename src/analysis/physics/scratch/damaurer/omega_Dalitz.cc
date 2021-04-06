@@ -72,7 +72,7 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
     veto_detector = ExpConfig::Setup::GetDetector<expconfig::detector::TAPSVeto>();
 
     const BinSettings statistic_bins(number_of_bins,0,nrCuts_total);
-    const BinSettings pid_bins((eePID)*10,0,eePID);
+    const BinSettings pid_bins((eePID)*20,0,eePID);
     const BinSettings bins_tagger_time(2000, -200, 200);
     const BinSettings bins_nClusters(20);
     const BinSettings bins_nCand(10);
@@ -670,14 +670,17 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
 
     double best_probability_freeZ;
     double bestFitted_Zvert_freeZ;
+    double bestFitted_Iterations_freeZ;
+
+    /*
     double bestFitted_BeamE_freeZ;
     double bestFitted_mm_proton_freeZ;
     double bestFitted_mm_2gee_freeZ;
     double bestFitted_mm_2g_freeZ;
     double bestFitted_mm_2e_freeZ;
-    double bestFitted_Iterations_freeZ;
     double best_mm_proton_freeZ;
     double best_mm_2gee_freeZ;
+    */
 
     int nr_mmpFails_freeZ;
     int nr_kfFails_freeZ;
@@ -867,13 +870,16 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
 
         best_probability_freeZ = std_ext::NaN;
         bestFitted_Zvert_freeZ = std_ext::NaN;
+        bestFitted_Iterations_freeZ = std_ext::NaN;
+
+        /*
         bestFitted_BeamE_freeZ = std_ext::NaN;
         bestFitted_mm_proton_freeZ = std_ext::NaN;
         bestFitted_mm_2gee_freeZ = std_ext::NaN;
         bestFitted_mm_2g_freeZ = std_ext::NaN;
-        bestFitted_Iterations_freeZ = std_ext::NaN;
         best_mm_proton_freeZ = std_ext::NaN;
         best_mm_2gee_freeZ = std_ext::NaN;
+        */
 
         std::vector<utils::Fitter::FitParticle> bestFitParticles_freeZ;
         bestFitParticles_freeZ.clear();
@@ -908,18 +914,21 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
             bestFitted_proton_freeZ = fitter_freeZ.GetFittedProton();
             bestFitted_photons_freeZ = fitter_freeZ.GetFittedPhotons();
             bestFitted_Zvert_freeZ = fitter_freeZ.GetFittedZVertex();
-            bestFitted_BeamE_freeZ = fitter_freeZ.GetFittedBeamE();
             bestFitted_Iterations_freeZ = fitresult_freeZ.NIterations;
 
+            bestFitParticles_freeZ.clear();
+            bestFitParticles_freeZ = fitter_freeZ.GetFitParticles();
+
+            /*
+            bestFitted_BeamE_freeZ = fitter_freeZ.GetFittedBeamE();
             best_mm_proton_freeZ = mm_proton;
             best_mm_2gee_freeZ = L4g.M();
 
             bestFitted_mm_2gee_freeZ = ((TLorentzVector)(*bestFitted_photons_freeZ.at(0) + *bestFitted_photons_freeZ.at(1) + *bestFitted_photons_freeZ.at(2) + *bestFitted_photons_freeZ.at(3))).M();
             bestFitted_mm_2g_freeZ = ((TLorentzVector)(*bestFitted_photons_freeZ.at(0) + *bestFitted_photons_freeZ.at(1))).M();
             bestFitted_mm_proton_freeZ = ((TLorentzVector)(LorentzVec({0, 0, bestFitted_BeamE_freeZ}, bestFitted_BeamE_freeZ) + LorentzVec({0,0,0}, ParticleTypeDatabase::Proton.Mass()))-(TLorentzVector)(*bestFitted_photons_freeZ.at(0) + *bestFitted_photons_freeZ.at(1) + *bestFitted_photons_freeZ.at(2) + *bestFitted_photons_freeZ.at(3))).M();
+            */
 
-            bestFitParticles_freeZ.clear();
-            bestFitParticles_freeZ = fitter_freeZ.GetFitParticles();
         }
 
         /*
@@ -1253,7 +1262,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
 
         //----------------------------------------------------------------------------------------
 
-        if(!(best_probability > 0.01 && best_probability_freeZ > 0.01))
+        if(!(best_probability > bestprob_cutval && best_probability_freeZ > bestprob_cutval))
             continue;
 
         cut_ind++;
@@ -1378,7 +1387,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
 
         //-----------------------------------------------------------------------------------
 
-        if(!(bestFitted_Zvert_freeZ > -10 && bestFitted_Zvert_freeZ < 5))
+        if(!(bestFitted_Zvert_freeZ > -11 && bestFitted_Zvert_freeZ < 5))
             continue;
 
         cut_ind++;
@@ -1632,6 +1641,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         Double_t clusterEl1 = photonCombs[bestKFindex].at(2)->Candidate->FindCaloCluster()->Energy;
         Double_t clusterEl2 = photonCombs[bestKFindex].at(3)->Candidate->FindCaloCluster()->Energy;
 
+        /*
         Double_t x1_effR = 75;
         Double_t y1_effR = 10;
         Double_t x2_effR = 650;
@@ -1641,12 +1651,11 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         Double_t m_effR = (y2_effR-y1_effR)/(x2_effR-x1_effR);
         Double_t b_effR = y2_effR-(y2_effR-y1_effR)/(x2_effR-x1_effR)*x2_effR;
 
-        /*
         if((isfinite(effR_l1) && clusterEl1 > 80 && clusterEl1 < 580 && effR_l1 > (m_effR*clusterEl1+b_effR+shift_effR)) || (isfinite(effR_l2) && clusterEl2 > x1_effR && clusterEl2 < x2_effR && effR_l2 > (m_effR*clusterEl2+b_effR+shift_effR)))
             continue;
         */
 
-        if((isfinite(effR_l1) && clusterEl1 > 80 && clusterEl1 < 800 && effR_l1 > 7.5) || (isfinite(effR_l2) && clusterEl2 > 80 && clusterEl2 < 800 && effR_l2 > 7.5))
+        if((isfinite(effR_l1) && clusterEl1 > 80 && clusterEl1 < 700 && effR_l1 > 7) || (isfinite(effR_l2) && clusterEl2 > 80 && clusterEl2 < 700 && effR_l2 > 7))
             continue;
 
         cut_ind++;
@@ -1772,15 +1781,16 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
 
         //-----------------------------------------------------------------------------------
 
-        Double_t x1_nCryst_first = 75;
+        Double_t x1_nCryst_first = 80;
         Double_t y1_nCryst_first = 1;
-        Double_t x2_nCryst_first = 600;
-        Double_t y2_nCryst_first = 10;
+        Double_t x2_nCryst_first = 700;
+        Double_t y2_nCryst_first = 11;
         Double_t shift_nCryst_first = 0;
 
         Double_t m_nCryst_first = (y2_nCryst_first-y1_nCryst_first)/(x2_nCryst_first-x1_nCryst_first);
         Double_t b_nCryst_first = y2_nCryst_first-(y2_nCryst_first-y1_nCryst_first)/(x2_nCryst_first-x1_nCryst_first)*x2_nCryst_first;
 
+        /*
         Double_t x1_nCryst_second = 0;
         Double_t y1_nCryst_second = 7;
         Double_t x2_nCryst_second = 300;
@@ -1790,16 +1800,16 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         Double_t m_nCryst_second = (y2_nCryst_second-y1_nCryst_second)/(x2_nCryst_second-x1_nCryst_second);
         Double_t b_nCryst_second = y2_nCryst_second-(y2_nCryst_second-y1_nCryst_second)/(x2_nCryst_second-x1_nCryst_second)*x2_nCryst_second;
 
-        if((isfinite(nCrystals_l1) && clusterEl1 > x1_nCryst_first && clusterEl1 < 900 && nCrystals_l1 <= (m_nCryst_first*clusterEl1+b_nCryst_first+shift_nCryst_first)) || (isfinite(nCrystals_l2) && clusterEl2 > x1_nCryst_first && clusterEl2 < 950 && nCrystals_l2 <= (m_nCryst_first*clusterEl2+b_nCryst_first+shift_nCryst_first)))
-            continue;
-
-        /*
         if((isfinite(nCrystals_l1) && nCrystals_l1 >= (m_nCryst_second*clusterEl1+b_nCryst_second+shift_nCryst_second)) || (isfinite(nCrystals_l2) && nCrystals_l2 >= (m_nCryst_second*clusterEl2+b_nCryst_second+shift_nCryst_second)))
             continue;
 
-        if((isfinite(nCrystals_l1) && nCrystals_l1 > 21) || (isfinite(nCrystals_l2) && nCrystals_l2 > 21))
-            continue;
         */
+
+        if((isfinite(nCrystals_l1) && nCrystals_l1 >= 20) || (isfinite(nCrystals_l2) && nCrystals_l2 >= 20))
+            continue;
+
+        if((isfinite(nCrystals_l1) && clusterEl1 > 50 && clusterEl1 < 700 && nCrystals_l1 <= (m_nCryst_first*clusterEl1+b_nCryst_first+shift_nCryst_first)) || (isfinite(nCrystals_l2) && clusterEl2 > 50 && clusterEl2 < 700 && nCrystals_l2 <= (m_nCryst_first*clusterEl2+b_nCryst_first+shift_nCryst_first)))
+            continue;
 
         cut_ind++;
         stat[cut_ind]+=TaggWeight;

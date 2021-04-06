@@ -83,8 +83,8 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
     const BinSettings PIDtime_bins(241,-60.5,60.5);
 
     const BinSettings Im_proton_bins(200, 0, 1800);
-    const BinSettings Im_omega_bins(200, 0, 1800);
-    const BinSettings Im_pi0_bins(200, 0, 900);
+    const BinSettings Im_omega_bins(120, 0, 1200);
+    const BinSettings Im_pi0_bins(200, 0, 1000);
 
     //const BinSettings Ekin_neu_bins(200, 0, 1600);
     //const BinSettings Ekin_cha_bins(200, 0, 1000);
@@ -125,9 +125,10 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
     auto hf_Extras = new HistogramFactory("hf_Extras", HistFac, "");
 
     auto hf_Tagger = new HistogramFactory("hf_Tagger", HistFac, "");
-    auto hf_OnlyEnergy = new HistogramFactory("All_the_candidate_energies", HistFac, "");
-    auto hf_OnlyAngles = new HistogramFactory("All_the_candidate_angles", HistFac, "");
     auto hf_wpi0g_EvsTheta = new HistogramFactory("hf_wpi0g_EvsTheta", HistFac, "");
+
+    //auto hf_OnlyEnergy = new HistogramFactory("All_the_candidate_energies", HistFac, "");
+    //auto hf_OnlyAngles = new HistogramFactory("All_the_candidate_angles", HistFac, "");
     //auto hf_extras = new HistogramFactory("Some_additional_extra_hists", HistFac, "");
 
     //KinFit histfactories:
@@ -337,15 +338,46 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
                                     time_bins,  // our binnings
                                     "h_TaggerTime"     // ROOT object name, auto-generated if omitted
                                     );
+
+    h_nClusters = hf_Tagger->makeTH1D("Number of Clusters", "nClusters", "#", BinSettings(15), "h_nClusters");
+    h_nCandidates = hf_Tagger->makeTH1D("Number of Candidates", "nCandidates", "#", BinSettings(10), "h_nCandidates");
+
+    h_p_EvTheta = hf_wpi0g_EvsTheta->makeTH2D("Rec. proton energy vs theta", //title
+                                                 "Theta [deg]","E [MeV]",  // xlabel, ylabel
+                                                 theta_bins, E_proton_bins,    // our binnings
+                                                 "h_p_EvTheta", true    // ROOT object name, auto-generated if omitted
+                                                 );
+
+    h_w_EvTheta = hf_wpi0g_EvsTheta->makeTH2D("Rec. omega meson energy vs theta", //title
+                                                 "Theta [deg]","E [MeV]",  // xlabel, ylabel
+                                                 theta_bins, E_omega_bins,    // our binnings
+                                                 "h_w_EvTheta", true    // ROOT object name, auto-generated if omitted
+                                                 );
+
+    h_wg_EvTheta = hf_wpi0g_EvsTheta->makeTH2D("Rec. omega decay-photon energy vs theta", //title
+                                       "Theta [deg]","E [MeV]",  // xlabel, ylabel
+                                       theta_bins, E_photon_bins,    // our binnings
+                                       "h_wg_EvTheta", true    // ROOT object name, auto-generated if omitted
+                                       );
+
+    h_wpi0_EvTheta = hf_wpi0g_EvsTheta->makeTH2D("Rec. Pi0 energy vs theta", //title
+                                        "Theta [deg]","E [MeV]", // xlabel, ylabel
+                                        theta_bins, E_pi0_bins,    // our binnings
+                                        "h_wpi0_EvTheta", true    // ROOT object name, auto-generated if omitted
+                                        );
+
+    h_wpi02g_EvTheta = hf_wpi0g_EvsTheta->makeTH2D("Rec. Pi0 decay-photons energy vs theta", //title
+                                        "Theta [deg]","E [MeV]", // xlabel, ylabel
+                                        theta_bins, E_pi0_bins,    // our binnings
+                                        "h_wpi02g_EvTheta", true    // ROOT object name, auto-generated if omitted
+                                        );
     
+    /*
     h_InitialBeamE = hf_OnlyEnergy->makeTH1D("Photon beam - Energy distribution",     // title
                                    "E [GeV]", "#",     // xlabel, ylabel
                                    initialBeamE_bins,  // our binnings
                                    "h_InitialBeamE"     // ROOT object name, auto-generated if omitted
                                    );
-
-    h_nClusters = hf_Tagger->makeTH1D("Number of Clusters", "nClusters", "#", BinSettings(15), "h_nClusters");
-    h_nCandidates = hf_Tagger->makeTH1D("Number of Candidates", "nCandidates", "#", BinSettings(10), "h_nCandidates");
 
     h_VetoEnergies = hf_Tagger->makeTH1D("Veto Energies", "E [MeV]", "#", Veto_Energy_bins, "h_VetoEnergies");
 
@@ -409,44 +441,15 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
                                        theta_bins, E_photon_bins,    // our binnings
                                        "h_3g_EvTheta_TAPS", true    // ROOT object name, auto-generated if omitted
                                        );
-
-    h_p_EvTheta = hf_wpi0g_EvsTheta->makeTH2D("Rec. proton energy vs theta", //title
-                                                 "Theta [deg]","E [MeV]",  // xlabel, ylabel
-                                                 theta_bins, E_proton_bins,    // our binnings
-                                                 "h_p_EvTheta", true    // ROOT object name, auto-generated if omitted
-                                                 );
-
-    h_w_EvTheta = hf_wpi0g_EvsTheta->makeTH2D("Rec. omega meson energy vs theta", //title
-                                                 "Theta [deg]","E [MeV]",  // xlabel, ylabel
-                                                 theta_bins, E_omega_bins,    // our binnings
-                                                 "h_w_EvTheta", true    // ROOT object name, auto-generated if omitted
-                                                 );
-
-    h_wg_EvTheta = hf_wpi0g_EvsTheta->makeTH2D("Rec. omega decay-photon energy vs theta", //title
-                                       "Theta [deg]","E [MeV]",  // xlabel, ylabel
-                                       theta_bins, E_photon_bins,    // our binnings
-                                       "h_wg_EvTheta", true    // ROOT object name, auto-generated if omitted
-                                       );
-
-    h_wpi0_EvTheta = hf_wpi0g_EvsTheta->makeTH2D("Rec. Pi0 energy vs theta", //title
-                                        "Theta [deg]","E [MeV]", // xlabel, ylabel
-                                        theta_bins, E_pi0_bins,    // our binnings
-                                        "h_wpi0_EvTheta", true    // ROOT object name, auto-generated if omitted
-                                        );
-
-    h_wpi02g_EvTheta = hf_wpi0g_EvsTheta->makeTH2D("Rec. Pi0 decay-photons energy vs theta", //title
-                                        "Theta [deg]","E [MeV]", // xlabel, ylabel
-                                        theta_bins, E_pi0_bins,    // our binnings
-                                        "h_wpi02g_EvTheta", true    // ROOT object name, auto-generated if omitted
-                                        );
+    */
 
     //KinFit-overview:
     //h_Steps = hf_OverviewKF->makeTH1D("Steps","","",BinSettings(10),"h_Steps");
     for (unsigned int i=0; i<nrCutsKF; i++){
         h_Probability[i] = hf_OverviewKF->makeTH1D(Form("Fit probability %s",cutsKF[i].c_str()),"P(#chi^{2})","#",BinSettings(1000,0.,1.),Form("h_Probability_%s",cutsKF[i].c_str()),true);
         h_Fit_zvert[i] = hf_OverviewKF->makeTH1D(Form("Fitted z-vertex %s",cutsKF[i].c_str()),"z [cm]","#",BinSettings(50,-15,15),Form("h_Fit_zvert_%s",cutsKF[i].c_str()),true);
-        h_fitEbeam[i] = hf_OverviewKF->makeTH1D(Form("Fitted beam energy %s",cutsKF[i].c_str()),"E [MeV]","#",BinSettings(1600,0.,1600.),Form("h_fitEbeam_%s",cutsKF[i].c_str()),true);
-        h_IM3g_Fit[i] = hf_invmassKF->makeTH1D(Form("Fitted photons invariant mass %s",cutsKF[i].c_str()),"Im(3g_fit) [MeV]","#",BinSettings(1200,0.,1200.),Form("h_IM3g_Fit_%s",cutsKF[i].c_str()),true);
+        h_fitEbeam[i] = hf_OverviewKF->makeTH1D(Form("Fitted beam energy %s",cutsKF[i].c_str()),"E [MeV]","#",initialBeamE_bins,Form("h_fitEbeam_%s",cutsKF[i].c_str()),true);
+        h_IM3g_Fit[i] = hf_invmassKF->makeTH1D(Form("Fitted photons invariant mass %s",cutsKF[i].c_str()),"Im(3g_fit) [MeV]","#",Im_omega_bins,Form("h_IM3g_Fit_%s",cutsKF[i].c_str()),true);
         h_IM2gPi0_Fit[i] = hf_invmassKF->makeTH1D(Form("IM(2gPi0) for fitted photons %s",cutsKF[i].c_str()),"IM(2gPi0) [MeV]", "#",Im_pi0_bins,Form("h_IM2gPi0_Fit_%s",cutsKF[i].c_str()), true);
     }
 
@@ -1187,15 +1190,6 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
 
         */
 
-        h_p_EvTheta->Fill(Lp.Theta()*radtodeg,Lp.E(),weight);
-        h_w_EvTheta->Fill(Lw.Theta()*radtodeg,Lw.E(),weight);
-        h_wg_EvTheta->Fill(wg.Theta()*radtodeg,wg.E(),weight);
-        h_wpi0_EvTheta->Fill(wpi0.Theta()*radtodeg,wpi0.E(),weight);
-
-        for(int i=0; i<nr_pi0g;i++){
-            h_wpi02g_EvTheta->Fill(wpi0g[i].Theta()*radtodeg,wpi0g[i].E(),weight);
-        }
-
         //weight_res += weight;
 
 
@@ -1367,6 +1361,15 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
         }
         if(proton_toFit->Candidate->FindVetoCluster()->DetectorType == Detector_t::Type_t::PID){
             h_Proton_PIDEvsTime[cut_ind-nrCuts_beforeSel]->Fill(proton_toFit->Candidate->FindVetoCluster()->Time,proton_toFit->Candidate->FindVetoCluster()->Energy,weight);
+        }
+
+        h_p_EvTheta->Fill(Lp.Theta()*radtodeg,Lp.E(),weight);
+        h_w_EvTheta->Fill(Lw.Theta()*radtodeg,Lw.E(),weight);
+        h_wg_EvTheta->Fill(wg.Theta()*radtodeg,wg.E(),weight);
+        h_wpi0_EvTheta->Fill(wpi0.Theta()*radtodeg,wpi0.E(),weight);
+
+        for(int i=0; i<nr_pi0g;i++){
+            h_wpi02g_EvTheta->Fill(wpi0g[i].Theta()*radtodeg,wpi0g[i].E(),weight);
         }
 
         //Filling the tree for further analysis
