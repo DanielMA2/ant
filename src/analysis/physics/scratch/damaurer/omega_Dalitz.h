@@ -81,14 +81,14 @@ protected:
     static const int nrCuts_Sel = nrCuts_total-nrCuts_beforeSel;
 
     static const int eePID = 3;
-    static const int steps_PID = 10;
+    static const int steps_PID = 20;
 
     static const int nrPartType = 2;
     static const int nrFitVars = 4;
     static const int nrPhotons = 4;
 
-    std::string cuts[nrCuts_total] = {"CUT#0_NoCuts","CUT#1_CBEsum","CUT#2_Sel2Neu3Cha","CUT#3_OmegaEthreshold","CUT#4_IM(2g)_mpi0+-0.4mpi0","CUT#5_mm(p)ANDkf","CUT#6_kinFit_prob_CL1%","CUT#7_FreeZVert","CUT#8_eeDiffPID","CUT#9_effR","CUT#10_nCrystals"};
-    std::string cuts_KF[nrCuts_KF] = {"CUT#5_mm(p)ANDkf","CUT#6_kinFit_prob_CL1%","CUT#7_FreeZVert","CUT#8_eeDiffPID","CUT#9_effR","CUT#10_nCrystals"};
+    std::string cuts[nrCuts_total] = {"CUT#0_NoCuts","CUT#1_CBEsum","CUT#2_Sel2Neu3Cha","CUT#3_OmegaEthreshold","CUT#4_IM(2g)_mpi0+-0.4mpi0","CUT#5_mm(p)ANDkf","CUT#6_kinFit_prob_CL2%","CUT#7_FreeZVert","CUT#8_effR","CUT#9_nCrystals","CUT#10_leptonband"};
+    std::string cuts_KF[nrCuts_KF] = {"CUT#5_mm(p)ANDkf","CUT#6_kinFit_prob_CL2%","CUT#7_FreeZVert","CUT#8_effR","CUT#9_nCrystals","CUT#10_leptonband"};
 
     std::string PIDstat[eePID-1] = {"Different","Same"};
 
@@ -118,6 +118,8 @@ protected:
     static const int nrCombs = 3;
 
     Double_t bestprob_cutval = 0.02;
+    Double_t lepton_VetoE_UPPERthreshold = 1.5;
+    Double_t lepton_VetoE_LOWERthreshold = 0.4;
 
 private:
 
@@ -146,9 +148,17 @@ private:
 
     //KinFit hists:
     TH1D* h_IM2gee_Fit[nrCuts_KF];
+    TH1D* h_IM2gee_Fit_samePID[nrCuts_KF];
+    TH1D* h_IM2gee_Fit_diffPID[nrCuts_KF];
     TH1D* h_IM2g_Fit[nrCuts_KF];
+    TH1D* h_IM2g_Fit_samePID[nrCuts_KF];
+    TH1D* h_IM2g_Fit_diffPID[nrCuts_KF];
     TH1D* h_IMmissingP_Fit[nrCuts_KF];
+    TH1D* h_IMmissingP_Fit_samePID[nrCuts_KF];
+    TH1D* h_IMmissingP_Fit_diffPID[nrCuts_KF];
     TH1D* h_IMeeFit[nrCuts_KF];
+    TH1D* h_IMeeFit_samePID[nrCuts_KF];
+    TH1D* h_IMeeFit_diffPID[nrCuts_KF];
     TH1D* h_IMee[nrCuts_KF];
     TH1D* h_Fit_zvert[nrCuts_KF];
     TH1D* h_fitEbeam[nrCuts_KF];
