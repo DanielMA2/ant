@@ -118,7 +118,7 @@ protected:
     static const int nrCombs = 3;
 
     Double_t bestprob_cutval = 0.02;
-    Double_t lepton_VetoE_UPPERthreshold = 1.5;
+    Double_t lepton_VetoE_UPPERthreshold = 1.2;
     Double_t lepton_VetoE_LOWERthreshold = 0.4;
 
 private:

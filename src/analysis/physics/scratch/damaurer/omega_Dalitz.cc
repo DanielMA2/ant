@@ -1586,9 +1586,22 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         Double_t m_effR = (y2_effR-y1_effR)/(x2_effR-x1_effR);
         Double_t b_effR = y2_effR-(y2_effR-y1_effR)/(x2_effR-x1_effR)*x2_effR;
 
-        if((isfinite(effR_l1) && clusterEl1 > 80 && clusterEl1 < 950 && effR_l1 >= (m_effR*clusterEl1+b_effR+shift_effR)) || (isfinite(effR_l2) && clusterEl2 > 80 && clusterEl2 < 950 && effR_l2 >= (m_effR*clusterEl2+b_effR+shift_effR)))
+        if((isfinite(effR_l1) && clusterEl1 > 75 && clusterEl1 < 950 && effR_l1 >= (m_effR*clusterEl1+b_effR+shift_effR)) || (isfinite(effR_l2) && clusterEl2 > 75 && clusterEl2 < 950 && effR_l2 >= (m_effR*clusterEl2+b_effR+shift_effR)))
             continue;
 
+        Double_t x1_effR2 = 75;
+        Double_t y1_effR2 = 1;
+        Double_t x2_effR2 = 950;
+        Double_t y2_effR2 = 3.5;
+        Double_t shift_effR2 = 0.5;
+
+        Double_t m_effR2 = (y2_effR2-y1_effR2)/(x2_effR2-x1_effR2);
+        Double_t b_effR2 = y2_effR2-(y2_effR2-y1_effR2)/(x2_effR2-x1_effR2)*x2_effR2;
+
+        if((isfinite(effR_l1) && clusterEl1 > 75 && clusterEl1 < 950 && effR_l1 <= (m_effR2*clusterEl1+b_effR2+shift_effR2)) || (isfinite(effR_l2) && clusterEl2 > 75 && clusterEl2 < 950 && effR_l2 <= (m_effR2*clusterEl2+b_effR2+shift_effR2)))
+            continue;
+
+        //box cut for testing stuff:
         /*
         if((isfinite(effR_l1) && clusterEl1 > 80 && clusterEl1 < 700 && effR_l1 > 7) || (isfinite(effR_l2) && clusterEl2 > 80 && clusterEl2 < 700 && effR_l2 > 7))
             continue;
@@ -1738,25 +1751,22 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         Double_t m_nCryst_first = (y2_nCryst_first-y1_nCryst_first)/(x2_nCryst_first-x1_nCryst_first);
         Double_t b_nCryst_first = y2_nCryst_first-(y2_nCryst_first-y1_nCryst_first)/(x2_nCryst_first-x1_nCryst_first)*x2_nCryst_first;
 
-        /*
+        if((isfinite(nCrystals_l1) && clusterEl1 < 900 && nCrystals_l1 <= (m_nCryst_first*clusterEl1+b_nCryst_first+shift_nCryst_first)) || (isfinite(nCrystals_l2) && clusterEl2 < 900 && nCrystals_l2 <= (m_nCryst_first*clusterEl2+b_nCryst_first+shift_nCryst_first)))
+            continue;
+
         Double_t x1_nCryst_second = 0;
-        Double_t y1_nCryst_second = 7;
-        Double_t x2_nCryst_second = 300;
-        Double_t y2_nCryst_second = 14;
-        Double_t shift_nCryst_second = -1;
+        Double_t y1_nCryst_second = 9;
+        Double_t x2_nCryst_second = 600;
+        Double_t y2_nCryst_second = 19;
+        Double_t shift_nCryst_second = 0;
 
         Double_t m_nCryst_second = (y2_nCryst_second-y1_nCryst_second)/(x2_nCryst_second-x1_nCryst_second);
         Double_t b_nCryst_second = y2_nCryst_second-(y2_nCryst_second-y1_nCryst_second)/(x2_nCryst_second-x1_nCryst_second)*x2_nCryst_second;
 
-        if((isfinite(nCrystals_l1) && nCrystals_l1 >= (m_nCryst_second*clusterEl1+b_nCryst_second+shift_nCryst_second)) || (isfinite(nCrystals_l2) && nCrystals_l2 >= (m_nCryst_second*clusterEl2+b_nCryst_second+shift_nCryst_second)))
+        if((isfinite(nCrystals_l1) && clusterEl1 < 600 && nCrystals_l1 >= (m_nCryst_second*clusterEl1+b_nCryst_second+shift_nCryst_second)) || (isfinite(nCrystals_l2) && clusterEl2 < 600 && nCrystals_l2 >= (m_nCryst_second*clusterEl2+b_nCryst_second+shift_nCryst_second)))
             continue;
 
-        */
-
-        if((isfinite(nCrystals_l1) && nCrystals_l1 >= 20) || (isfinite(nCrystals_l2) && nCrystals_l2 >= 20))
-            continue;
-
-        if((isfinite(nCrystals_l1) && clusterEl1 > 50 && clusterEl1 < 950 && nCrystals_l1 <= (m_nCryst_first*clusterEl1+b_nCryst_first+shift_nCryst_first)) || (isfinite(nCrystals_l2) && clusterEl2 > 50 && clusterEl2 < 950 && nCrystals_l2 <= (m_nCryst_first*clusterEl2+b_nCryst_first+shift_nCryst_first)))
+        if((isfinite(nCrystals_l1) && clusterEl1 >= 600 && nCrystals_l1 >= 19) || (isfinite(nCrystals_l2) && clusterEl2 >= 600 && nCrystals_l2 >= 19))
             continue;
 
         cut_ind++;
