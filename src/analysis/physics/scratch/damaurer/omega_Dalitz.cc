@@ -1745,7 +1745,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         Double_t x1_nCryst_first = 80;
         Double_t y1_nCryst_first = 1;
         Double_t x2_nCryst_first = 700;
-        Double_t y2_nCryst_first = 10.5;
+        Double_t y2_nCryst_first = 11;
         Double_t shift_nCryst_first = 0;
 
         Double_t m_nCryst_first = (y2_nCryst_first-y1_nCryst_first)/(x2_nCryst_first-x1_nCryst_first);
@@ -1758,16 +1758,18 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         Double_t y1_nCryst_second = 9;
         Double_t x2_nCryst_second = 600;
         Double_t y2_nCryst_second = 19;
-        Double_t shift_nCryst_second = 0;
+        Double_t shift_nCryst_second = -0.5;
 
         Double_t m_nCryst_second = (y2_nCryst_second-y1_nCryst_second)/(x2_nCryst_second-x1_nCryst_second);
         Double_t b_nCryst_second = y2_nCryst_second-(y2_nCryst_second-y1_nCryst_second)/(x2_nCryst_second-x1_nCryst_second)*x2_nCryst_second;
 
-        if((isfinite(nCrystals_l1) && clusterEl1 < 600 && nCrystals_l1 >= (m_nCryst_second*clusterEl1+b_nCryst_second+shift_nCryst_second)) || (isfinite(nCrystals_l2) && clusterEl2 < 600 && nCrystals_l2 >= (m_nCryst_second*clusterEl2+b_nCryst_second+shift_nCryst_second)))
+        if((isfinite(nCrystals_l1) && clusterEl1 < 650 && nCrystals_l1 >= (m_nCryst_second*clusterEl1+b_nCryst_second+shift_nCryst_second)) || (isfinite(nCrystals_l2) && clusterEl2 < 650 && nCrystals_l2 >= (m_nCryst_second*clusterEl2+b_nCryst_second+shift_nCryst_second)))
             continue;
 
+        /*
         if((isfinite(nCrystals_l1) && clusterEl1 >= 600 && nCrystals_l1 >= 19) || (isfinite(nCrystals_l2) && clusterEl2 >= 600 && nCrystals_l2 >= 19))
             continue;
+        */
 
         cut_ind++;
         stat[cut_ind]+=TaggWeight;
@@ -1904,8 +1906,25 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
 
         //-----------------------------------------------------------------------------------
 
+
+        //cut around lepton band in CB
+        if(photonCombs[bestKFindex].at(2)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB && (photonCombs[bestKFindex].at(2)->Candidate->VetoEnergy < lepton_VetoE_LOWERthreshold_CB || photonCombs[bestKFindex].at(2)->Candidate->VetoEnergy > lepton_VetoE_UPPERthreshold_CB))
+            continue;
+
+        if(photonCombs[bestKFindex].at(3)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB && (photonCombs[bestKFindex].at(3)->Candidate->VetoEnergy < lepton_VetoE_LOWERthreshold_CB || photonCombs[bestKFindex].at(3)->Candidate->VetoEnergy > lepton_VetoE_UPPERthreshold_CB))
+            continue;
+
+        //cut around lepton band in TAPS
+        if(photonCombs[bestKFindex].at(2)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::TAPS && (photonCombs[bestKFindex].at(2)->Candidate->VetoEnergy < lepton_VetoE_LOWERthreshold_TAPS || photonCombs[bestKFindex].at(2)->Candidate->VetoEnergy > lepton_VetoE_UPPERthreshold_TAPS))
+            continue;
+
+        if(photonCombs[bestKFindex].at(3)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::TAPS && (photonCombs[bestKFindex].at(3)->Candidate->VetoEnergy < lepton_VetoE_LOWERthreshold_TAPS || photonCombs[bestKFindex].at(3)->Candidate->VetoEnergy > lepton_VetoE_UPPERthreshold_TAPS))
+            continue;
+
+        /*
         if(!(photonCombs[bestKFindex].at(2)->Candidate->VetoEnergy > lepton_VetoE_LOWERthreshold && photonCombs[bestKFindex].at(2)->Candidate->VetoEnergy < lepton_VetoE_UPPERthreshold && photonCombs[bestKFindex].at(3)->Candidate->VetoEnergy > lepton_VetoE_LOWERthreshold && photonCombs[bestKFindex].at(3)->Candidate->VetoEnergy < lepton_VetoE_UPPERthreshold))
             continue;
+        */
 
         cut_ind++;
         stat[cut_ind]+=TaggWeight;
