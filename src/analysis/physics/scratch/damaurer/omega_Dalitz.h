@@ -74,7 +74,7 @@ protected:
     std::shared_ptr<expconfig::detector::PID> pid_detector;
     std::shared_ptr<expconfig::detector::TAPSVeto> veto_detector;
 
-    static const int nrCuts_total = 11;
+    static const int nrCuts_total = 12;
     static const int nrCuts_beforeSel = 2;
     static const int nrCuts_beforeKF = 5;
     static const int nrCuts_KF = nrCuts_total-nrCuts_beforeKF;
@@ -87,8 +87,8 @@ protected:
     static const int nrFitVars = 4;
     static const int nrPhotons = 4;
 
-    std::string cuts[nrCuts_total] = {"CUT#0_NoCuts","CUT#1_CBEsum","CUT#2_Sel2Neu3Cha","CUT#3_OmegaEthreshold","CUT#4_IM(2g)_mpi0+-0.4mpi0","CUT#5_mm(p)ANDkf","CUT#6_kinFit_prob_CL2%","CUT#7_FreeZVert","CUT#8_effR","CUT#9_nCrystals","CUT#10_leptonband"};
-    std::string cuts_KF[nrCuts_KF] = {"CUT#5_mm(p)ANDkf","CUT#6_kinFit_prob_CL2%","CUT#7_FreeZVert","CUT#8_effR","CUT#9_nCrystals","CUT#10_leptonband"};
+    std::string cuts[nrCuts_total] = {"CUT#0_NoCuts","CUT#1_CBEsum","CUT#2_Sel2Neu3Cha","CUT#3_OmegaEthreshold","CUT#4_IM(2g)_mpi0+-0.4mpi0","CUT#5_mm(p)ANDkf","CUT#6_kinFit_prob_CL2%","CUT#7_FreeZVert","CUT#8_effR","CUT#9_nCrystals","CUT#10_elCaloEthreshold","CUT#11_leptonband"};
+    std::string cuts_KF[nrCuts_KF] = {"CUT#5_mm(p)ANDkf","CUT#6_kinFit_prob_CL2%","CUT#7_FreeZVert","CUT#8_effR","CUT#9_nCrystals","CUT#10_elCaloEthreshold","CUT#11_leptonband"};
 
     std::string PIDstat[eePID-1] = {"Different","Same"};
 
@@ -119,13 +119,16 @@ protected:
 
     Double_t bestprob_cutval = 0.02;
 
-    Double_t lepton_VetoE_UPPERthreshold = 1.2;
+    double photonCaloEthreshhold = 60;
+    double leptonCaloEthreshhold = 60;
+
+    Double_t lepton_VetoE_UPPERthreshold = 1.6;
     Double_t lepton_VetoE_LOWERthreshold = 0.4;
 
-    Double_t lepton_VetoE_UPPERthreshold_CB = 1.2;
+    Double_t lepton_VetoE_UPPERthreshold_CB = 1.6;
     Double_t lepton_VetoE_LOWERthreshold_CB = 0.4;
 
-    Double_t lepton_VetoE_UPPERthreshold_TAPS = 1.2;
+    Double_t lepton_VetoE_UPPERthreshold_TAPS = 1.6;
     Double_t lepton_VetoE_LOWERthreshold_TAPS = 0.4;
 
 
@@ -198,6 +201,9 @@ private:
     TH1D *h_NoProton_TimeDiffCorTaggTAPS[nrCuts_KF];
     TH1D *h_Photon_TimeDiffCorTaggCB[nrCuts_KF];
     TH1D *h_Photon_TimeDiffCorTaggTAPS[nrCuts_KF];
+
+    TH1D* h_Photon_CaloE[nrCuts_KF];
+    TH1D* h_NoProton_CaloE[nrCuts_KF];
 
     TH2D *h_Proton_EvsThetaCB[nrCuts_KF];
     TH2D *h_Proton_EvsThetaTAPS[nrCuts_KF];

@@ -73,10 +73,10 @@ protected:
 
     //-- Histograms
 
-    static const int nrCuts_total = 7;
+    static const int nrCuts_total = 8;
     static const int nrCuts_beforeSel = 2;
     static const int nrCuts_beforePi0 = 4;
-    static const int nrCuts_beforeKF = 5;
+    static const int nrCuts_beforeKF = 6;
 
     static const int nrCuts_pi0 = nrCuts_total-nrCuts_beforePi0;
     static const int nrCuts_Sel = nrCuts_total-nrCuts_beforeSel;
@@ -110,10 +110,14 @@ private:
     TH2D* h_AllCaloEvsVetoE_CB[nrCuts_total];
     TH2D* h_AllCaloEvsVetoE_TAPS[nrCuts_total];
 
+    TH1D* h_neuCaloE[nrCuts_total];
+    TH1D* h_chaCaloE[nrCuts_total];
     TH1D* h_AllVetoE_CB[nrCuts_total];
     TH1D* h_AllVetoE_TAPS[nrCuts_total];
-    TH2D* h_neuEkinVSTheta[nrCuts_total];
-    TH2D* h_chaEkinVSTheta[nrCuts_total];
+    TH2D* h_neuEkinVSThetaCB[nrCuts_total];
+    TH2D* h_neuEkinVSThetaTAPS[nrCuts_total];
+    TH2D* h_chaEkinVSThetaCB[nrCuts_total];
+    TH2D* h_chaEkinVSThetaTAPS[nrCuts_total];
     TH2D* h_neuEkinVSPhi[nrCuts_total];
     TH2D* h_chaEkinVSPhi[nrCuts_total];
 
@@ -125,6 +129,7 @@ private:
     TH1D* h_2gPi0_IM[nrCuts_pi0];
     TH1D* h_wpi0g_BackToBack[nrCuts_pi0];
     TH1D* h_pi0gg_BackToBack[nrCuts_pi0];
+    TH2D* h_EpivsIM3g[nrCuts_pi0];
 
     //TH1D* h_pi0g_BackToBack[nrCuts_BackToBack];
 
@@ -180,7 +185,7 @@ private:
     PromptRandom::Switch promptrandom;
     utils::TriggerSimulation triggersimu;
 
-    std::string cuts[nrCuts_total] = {"CUT#0_NoCuts", "CUT#1_CBEsum", "CUT#2_Sel3Neu1Cha", "CUT#3_ImMissingParticle_+-2sigma_mp", "CUT#4_OmegaEthreshold", "CUT#5_SelMinM(2neu-mpi0)_+-2sigma_mpi0", "CUT#6_kinFit_prob_CL1%"};
+    std::string cuts[nrCuts_total] = {"CUT#0_NoCuts", "CUT#1_CBEsum", "CUT#2_Sel3Neu1Cha", "CUT#3_ImMissingParticle_+-2sigma_mp", "CUT#4_OmegaEthreshold", "CUT#5_SelMinM(2neu-mpi0)_+-2sigma_mpi0", "CUT#6_neuCaloEthreshold", "CUT#7_kinFit_prob_CL1%"};
     std::string cutsKF[nrCutsKF] = {"after_kinFit","after_1%CL_CUT"};
     std::string fitPartName[nrPartType] ={"protons" , "photons"};
     std::string fitvarnameCB[nrFitVars] = {"invEk","theta","phi","R"};
@@ -188,6 +193,7 @@ private:
 
     double max_particles = 1000000;
     double vetoEthreshold = 0.2;
+    double neuCaloEthreshhold = 60;
     long double mpi0 = 134.9766;
     long double mp = 938.2720813;
     long double mw = 782.65;
