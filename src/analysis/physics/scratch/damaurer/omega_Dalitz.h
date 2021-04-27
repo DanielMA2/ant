@@ -77,6 +77,7 @@ protected:
     static const int nrCuts_total = 12;
     static const int nrCuts_beforeSel = 2;
     static const int nrCuts_beforeKF = 5;
+
     static const int nrCuts_KF = nrCuts_total-nrCuts_beforeKF;
     static const int nrCuts_Sel = nrCuts_total-nrCuts_beforeSel;
 
@@ -131,6 +132,12 @@ protected:
     Double_t lepton_VetoE_UPPERthreshold_TAPS = 1.6;
     Double_t lepton_VetoE_LOWERthreshold_TAPS = 0.4;
 
+    Double_t lowerIMeeThreshold = 0;
+    Double_t upperIMeeThreshold = 700;
+
+    static const int nrIMpi0ee_hists = 14;
+
+    Double_t IMeeSteps = (upperIMeeThreshold-lowerIMeeThreshold)/nrIMpi0ee_hists;
 
 private:
 
@@ -139,8 +146,6 @@ private:
 
     TH1D* h_TaggerTime;
     TH1D* h_nClusters;   
-    TH1D* h_nCandidates;
-    TH2D* h_nNeuChaCandidates;
     TH1D* h_mmpFails;
     TH1D* h_kfFails;
     TH1D* h_totalFails;
@@ -151,6 +156,10 @@ private:
     TH1D* h_CBEsum[nrCuts_total];
     TH2D* h_AllCaloEvsVetoE_CB[nrCuts_total];
     TH2D* h_AllCaloEvsVetoE_TAPS[nrCuts_total];
+
+    TH1D* h_nCandidates[nrCuts_total];
+    TH2D* h_nNeuChaCandidates[nrCuts_total];
+
     //TH1D* hist;
 
     TH1D* h_2g_IM[nrCuts_Sel];
@@ -161,6 +170,11 @@ private:
     TH1D* h_IM2gee_Fit[nrCuts_KF];
     TH1D* h_IM2gee_Fit_samePID[nrCuts_KF];
     TH1D* h_IM2gee_Fit_diffPID[nrCuts_KF];
+
+    TH1D* h_IM2gee_Fit_TFF[nrCuts_KF][nrIMpi0ee_hists];
+    TH1D* h_IM2gee_Fit_TFFsamePID[nrCuts_KF][nrIMpi0ee_hists];
+    TH1D* h_IM2gee_Fit_TFFdiffPID[nrCuts_KF][nrIMpi0ee_hists];
+
     TH1D* h_IM2g_Fit[nrCuts_KF];
     TH1D* h_IM2g_Fit_samePID[nrCuts_KF];
     TH1D* h_IM2g_Fit_diffPID[nrCuts_KF];
@@ -171,6 +185,8 @@ private:
     TH1D* h_IMeeFit_samePID[nrCuts_KF];
     TH1D* h_IMeeFit_diffPID[nrCuts_KF];
     TH1D* h_IMee[nrCuts_KF];
+    TH1D* h_IMee_samePID[nrCuts_KF];
+    TH1D* h_IMee_diffPID[nrCuts_KF];
     TH1D* h_Fit_zvert[nrCuts_KF];
     TH1D* h_fitEbeam[nrCuts_KF];
     TH1D* h_Probability[nrCuts_KF];
@@ -181,8 +197,15 @@ private:
     TH1D* h_dilee_BackToBack[nrCuts_KF];
 
     TH1D* h_eeOpeningAngles[nrCuts_KF];
+    TH1D* h_ggOpeningAngles[nrCuts_KF];
     TH1D* h_eePID[nrCuts_KF];
     TH2D* h_eePIDelementNumbers[nrCuts_KF];
+
+    /*
+    TH1D* h_eeCBPhiDiff[nrCuts_KF];
+    TH1D* h_eeCBPhiDiff_samePID[nrCuts_KF];
+    TH1D* h_eeCBPhiDiff_diffPID[nrCuts_KF];
+    */
 
     TH2D* h_cluster_effRvsCaloE[nrCuts_KF];
     TH2D* h_cluster_nCrystalsvsCaloE[nrCuts_KF];

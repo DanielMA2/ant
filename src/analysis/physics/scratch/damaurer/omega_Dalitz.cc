@@ -76,7 +76,7 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
     const BinSettings bins_tagger_time(2000, -200, 200);
     const BinSettings bins_nClusters(20);
     const BinSettings bins_nCand(10);
-    const BinSettings bins_nNeuCand(6);
+    const BinSettings bins_nNeuCand(8);
     const BinSettings bins_nChaCand(6);
     const BinSettings bins_kfFails(5);
     const BinSettings bins_Veto_Energy(500, 0, 12);
@@ -130,12 +130,18 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
     auto hf_BackToBack = new HistogramFactory("hf_BackToBack", HistFac, "");
 
     auto hf_eeChecks = new HistogramFactory("hf_eeChecks", HistFac, "");
+    auto hf_openingAngles = new HistogramFactory("hf_openingAngles", HistFac, "");
     auto hf_PIDEvsTime = new HistogramFactory("hf_PIDEvsTime", HistFac, "");
     auto hf_EvsThetaCB = new HistogramFactory("hf_EvsThetaCB", HistFac, "");
     auto hf_EvsThetaTAPS = new HistogramFactory("hf_EvsThetaTAPS", HistFac, "");
     auto hf_EvsPhi = new HistogramFactory("hf_EvsPhi", HistFac, "");
     auto hf_PID_stuff = new HistogramFactory("hf_PID_stuff", HistFac, "");
     auto hf_elClusterE = new HistogramFactory("hf_elClusterE", HistFac, "");
+
+    auto hf_IM2gee_Fit_TFF = new HistogramFactory("hf_IM2gee_Fit_TFF", HistFac, "");
+    auto hf_IM2gee_Fit_TFFsamePID = new HistogramFactory("hf_IM2gee_Fit_TFFsamePID", HistFac, "");
+    auto hf_IM2gee_Fit_TFFdiffPID = new HistogramFactory("hf_IM2gee_Fit_TFFdiffPID", HistFac, "");
+    //auto hf_eeCBPhiDiff = new HistogramFactory("hf_eeCBPhiDiff", HistFac, "");
 
     // HistFac is a protected member of the base class "Physics"
     // use it to conveniently create histograms (and other ROOT objects) at the right location
@@ -151,9 +157,6 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
                                     bins_tagger_time,  // our binnings
                                     "h_TaggerTime", true     // ROOT object name, auto-generated if omitted
                                     );
-
-    h_nCandidates = hf_Candidates->makeTH1D("Number of candidates", "nCandidates", "#", bins_nCand, "h_nCandidates", true);
-    h_nNeuChaCandidates = hf_Candidates->makeTH2D("Number of charged vs neutral candidates", "nChaCand", "nNeuCand", bins_nChaCand, bins_nNeuCand, "h_nNeuChaCandidates", true);
 
     h_RecData_Stat = hf_RecData_CandStat->makeTH1D("Amount of events after cuts:",     // title
                                      "Cuts", "#",     // xlabel, ylabel
@@ -201,6 +204,9 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
                                                          "h_beamE_"+cuts[i], true     // ROOT object name, auto-generated if omitted
                                                          );
 
+    h_nCandidates[i] = hf_Candidates->makeTH1D("Number of candidates "+cuts[i], "nCandidates", "#", bins_nCand, "h_nCandidates_"+cuts[i], true);
+    h_nNeuChaCandidates[i] = hf_Candidates->makeTH2D("Number of charged vs neutral candidates "+cuts[i], "nChaCand", "nNeuCand", bins_nChaCand, bins_nNeuCand, "h_nNeuChaCandidates_"+cuts[i], true);
+
     }
 
     for (unsigned int i=0; i<(nrCuts_total-nrCuts_beforeSel); i++){
@@ -226,6 +232,9 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
     }
 
     for (unsigned int i=0; i<nrCuts_KF; i++){
+
+        //-------------------KinFit basic stuff--------------------------------------
+
         h_Probability[i] = hf_OverviewKF->makeTH1D(Form("Fit probability %s",cuts_KF[i].c_str()),"P(#chi^{2})","#",kf_prob_bins,Form("h_Probability_%s",cuts_KF[i].c_str()),true);
         h_Fit_zvert[i] = hf_OverviewKF->makeTH1D(Form("Fitted z-vertex %s",cuts_KF[i].c_str()),"z [cm]","#",zVert_bins,Form("h_Fit_zvert_%s",cuts_KF[i].c_str()),true);
         h_fitEbeam[i] = hf_OverviewKF->makeTH1D(Form("Fitted beam energy %s",cuts_KF[i].c_str()),"E [MeV]","#",BeamE_bins,Form("h_fitEbeam_%s",cuts_KF[i].c_str()),true);
@@ -235,7 +244,7 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
         h_Probability_freeZ[i] = hf_OverviewKF_freeZ->makeTH1D(Form("Free Z Kinfitter probability %s",cuts_KF[i].c_str()),"P(#chi^{2})","#",kf_prob_bins,Form("h_Probability_freeZ_%s",cuts_KF[i].c_str()),true);
         h_Fit_zvert_freeZ[i] = hf_OverviewKF_freeZ->makeTH1D(Form("Fitted unconstrained z-vertex %s",cuts_KF[i].c_str()),"z [cm]","#",zVertFree_bins,Form("h_Fit_zvert_unconstrained_%s",cuts_KF[i].c_str()), true);
 
-        //-------------------PID stuff--------------------------------------:
+        //-------------------PID stuff--------------------------------------
 
         h_IMmissingP_Fit_samePID[i] = hf_PID_stuff->makeTH1D(Form("Fitted mm(p) with ee same PID %s",cuts_KF[i].c_str()),"mm(fitted_p) [MeV]","#",Im_proton_bins,Form("h_IMmissingP_Fit_samePID_%s",cuts_KF[i].c_str()),true);
         h_IM2gee_Fit_samePID[i] = hf_PID_stuff->makeTH1D(Form("Fitted 2gee invariant mass with ee same PID %s",cuts_KF[i].c_str()),"Im(fitted_2gee) [MeV]","#",Im_omega_bins,Form("h_IM2gee_Fit_samePID_%s",cuts_KF[i].c_str()),true);
@@ -243,6 +252,26 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
         h_IMmissingP_Fit_diffPID[i] = hf_PID_stuff->makeTH1D(Form("Fitted mm(p) with ee diff PID %s",cuts_KF[i].c_str()),"mm(fitted_p) [MeV]","#",Im_proton_bins,Form("h_IMmissingP_Fit_diffPID_%s",cuts_KF[i].c_str()),true);
         h_IM2gee_Fit_diffPID[i] = hf_PID_stuff->makeTH1D(Form("Fitted 2gee invariant mass with ee diff PID %s",cuts_KF[i].c_str()),"Im(fitted_2gee) [MeV]","#",Im_omega_bins,Form("h_IM2gee_Fit_diffPID_%s",cuts_KF[i].c_str()),true);
         h_IM2g_Fit_diffPID[i] = hf_PID_stuff->makeTH1D(Form("Fitted 2g invariant mass with ee diff PID %s",cuts_KF[i].c_str()),"Im(fitted_2g) [MeV]", "#",Im_pi0_bins,Form("h_IM2g_Fit_diffPID_%s",cuts_KF[i].c_str()), true);
+
+        //-------------------Form factor extraction stuff--------------------------------------
+
+        for(unsigned int j=0; j<nrIMpi0ee_hists; j++){
+
+            int lowerIM2gee = (int)j*IMeeSteps;
+            int upperIM2gee = (int)(j+1)*IMeeSteps;
+
+            stringstream ssLowerIM2gee;
+            ssLowerIM2gee << lowerIM2gee;
+            string myStringLowerIM2gee = ssLowerIM2gee.str();
+
+            stringstream ssUpperIM2gee;
+            ssUpperIM2gee << upperIM2gee;
+            string myStringUpperIM2gee = ssUpperIM2gee.str();
+
+            h_IM2gee_Fit_TFF[i][j] = hf_IM2gee_Fit_TFF->makeTH1D(Form("Fitted IM(2gee) for IM(ee) in {%s,%s} MeV %s",myStringLowerIM2gee.c_str(),myStringUpperIM2gee.c_str(),cuts_KF[i].c_str()),"Im(fitted_2gee) [MeV]","#",Im_omega_bins,Form("h_IM2gee_Fit_TFF_IMee_%s_%s_MeV_%s",myStringLowerIM2gee.c_str(),myStringUpperIM2gee.c_str(),cuts_KF[i].c_str()),true);
+            h_IM2gee_Fit_TFFsamePID[i][j] = hf_IM2gee_Fit_TFFsamePID->makeTH1D(Form("Fitted IM(2gee) for IM(ee samePID) in {%s,%s} MeV %s",myStringLowerIM2gee.c_str(),myStringUpperIM2gee.c_str(),cuts_KF[i].c_str()),"Im(fitted_2gee) [MeV]","#",Im_omega_bins,Form("h_IM2gee_Fit_TFF_IMee_samePID_%s_%s_MeV_%s",myStringLowerIM2gee.c_str(),myStringUpperIM2gee.c_str(),cuts_KF[i].c_str()),true);
+            h_IM2gee_Fit_TFFdiffPID[i][j] = hf_IM2gee_Fit_TFFdiffPID->makeTH1D(Form("Fitted IM(2gee) for IM(ee diffPID) in {%s,%s} MeV %s",myStringLowerIM2gee.c_str(),myStringUpperIM2gee.c_str(),cuts_KF[i].c_str()),"Im(fitted_2gee) [MeV]","#",Im_omega_bins,Form("h_IM2gee_Fit_TFF_IMee_diffPID_%s_%s_MeV_%s",myStringLowerIM2gee.c_str(),myStringUpperIM2gee.c_str(),cuts_KF[i].c_str()),true);
+        }
 
         //-------------------------------------------------------------------
 
@@ -403,6 +432,18 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
                                                              "h_IMee_"+cuts_KF[i], true     // ROOT object name, auto-generated if omitted
                                                              );
 
+        h_IMee_samePID[i] = hf_PID_stuff->makeTH1D("IM(ee) with ee same PID "+cuts_KF[i],     // title
+                                                             "IM(ee) [MeV]", "#",     // xlabel, ylabel
+                                                             IM_ee_bins,  // our binnings
+                                                             "h_IMee_samePID_"+cuts_KF[i], true     // ROOT object name, auto-generated if omitted
+                                                             );
+
+        h_IMee_diffPID[i] = hf_PID_stuff->makeTH1D("IM(ee) with ee diff PID "+cuts_KF[i],     // title
+                                                             "IM(ee) [MeV]", "#",     // xlabel, ylabel
+                                                             IM_ee_bins,  // our binnings
+                                                             "h_IMee_diffPID_"+cuts_KF[i], true     // ROOT object name, auto-generated if omitted
+                                                             );
+
         h_IMeeFit[i] = hf_eeChecks->makeTH1D("IM(fitted_ee) "+cuts_KF[i],     // title
                                                              "IM(fitted_ee) [MeV]", "#",     // xlabel, ylabel
                                                              IM_ee_bins,  // our binnings
@@ -461,10 +502,16 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
                                          "h_eePIDelementNumbers_"+cuts_KF[i], true    // ROOT object name, auto-generated if omitted
                                          );
 
-        h_eeOpeningAngles[i] = hf_eeChecks->makeTH1D("el/pos opening angles "+cuts_KF[i],     // title
+        h_eeOpeningAngles[i] = hf_openingAngles->makeTH1D("el/pos opening angles "+cuts_KF[i],     // title
                                                           "#Theta [deg]", "#",     // xlabel, ylabel
                                                           theta_bins,  // our binnings
                                                           "h_eeOpeningAngles_"+cuts_KF[i], true     // ROOT object name, auto-generated if omitted
+                                                          );
+
+        h_ggOpeningAngles[i] = hf_openingAngles->makeTH1D("photons opening angles "+cuts_KF[i],     // title
+                                                          "#Theta [deg]", "#",     // xlabel, ylabel
+                                                          theta_bins,  // our binnings
+                                                          "h_ggOpeningAngles_"+cuts_KF[i], true     // ROOT object name, auto-generated if omitted
                                                           );
 
     }
@@ -756,9 +803,6 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         TLorentzVector Linitial = (TLorentzVector)(InitialPhotonVec+InitialProtonVec);
 
         h_TaggerTime->Fill(taggerhit.Time, TaggWeight);
-        h_nCandidates->Fill(candidates.size(), TaggWeight);
-
-        h_nNeuChaCandidates->Fill(charged.size(), neutral.size(), TaggWeight);
 
         for (unsigned int i=0; i<all.size(); i++){
             if(allCanInCB[i]){
@@ -770,6 +814,9 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
                 h_AllVetoE_TAPS[cut_ind]->Fill(allCanVetoE[i],TaggWeight);
             }
         }
+
+        h_nCandidates[cut_ind]->Fill(candidates.size(), TaggWeight);
+        h_nNeuChaCandidates[cut_ind]->Fill(charged.size(), neutral.size(), TaggWeight);
 
         h_CBEsum[cut_ind]->Fill(triggersimu.GetCBEnergySum(),TaggWeight);
         h_beamE[cut_ind]->Fill(InitialPhotonVec.E(),TaggWeight);
@@ -782,10 +829,6 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         h_RecData_Stat->Fill(cut_ind, TaggWeight);
 
         h_TaggerTime->Fill(taggerhit.Time, TaggWeight);
-        h_nCandidates->Fill(candidates.size(), TaggWeight);
-
-        h_nNeuChaCandidates->Fill(charged.size(), neutral.size(), TaggWeight);
-
 
         for (unsigned int i=0; i<all.size(); i++){
             if(allCanInCB[i]){
@@ -798,6 +841,8 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
             }
         }
 
+        h_nCandidates[cut_ind]->Fill(candidates.size(), TaggWeight);
+        h_nNeuChaCandidates[cut_ind]->Fill(charged.size(), neutral.size(), TaggWeight);
 
         h_CBEsum[cut_ind]->Fill(triggersimu.GetCBEnergySum(),TaggWeight);
         h_beamE[cut_ind]->Fill(InitialPhotonVec.E(),TaggWeight);
@@ -819,6 +864,9 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
                 h_AllVetoE_TAPS[cut_ind]->Fill(allCanVetoE[i],TaggWeight);
             }
         }
+
+        h_nCandidates[cut_ind]->Fill(candidates.size(), TaggWeight);
+        h_nNeuChaCandidates[cut_ind]->Fill(charged.size(), neutral.size(), TaggWeight);
 
         h_CBEsum[cut_ind]->Fill(triggersimu.GetCBEnergySum(),TaggWeight);
         h_beamE[cut_ind]->Fill(InitialPhotonVec.E(),TaggWeight);
@@ -851,6 +899,9 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
             }
         }
 
+        h_nCandidates[cut_ind]->Fill(candidates.size(), TaggWeight);
+        h_nNeuChaCandidates[cut_ind]->Fill(charged.size(), neutral.size(), TaggWeight);
+
         h_CBEsum[cut_ind]->Fill(triggersimu.GetCBEnergySum(),TaggWeight);
         h_beamE[cut_ind]->Fill(InitialPhotonVec.E(),TaggWeight);
 
@@ -878,6 +929,9 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
                 h_AllVetoE_TAPS[cut_ind]->Fill(allCanVetoE[i],TaggWeight);
             }
         }
+
+        h_nCandidates[cut_ind]->Fill(candidates.size(), TaggWeight);
+        h_nNeuChaCandidates[cut_ind]->Fill(charged.size(), neutral.size(), TaggWeight);
 
         h_CBEsum[cut_ind]->Fill(triggersimu.GetCBEnergySum(),TaggWeight);
         h_beamE[cut_ind]->Fill(InitialPhotonVec.E(),TaggWeight);
@@ -1088,6 +1142,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         double dilee_angle = cos(Ldil_l1_boosted.Angle(Ldil_l2_boosted.Vect()));
 
         double ee_openingAngle = dil_l1.Angle(dil_l2.Vect())*radtodeg;
+        double gg_openingAngle = pi0_g1.Angle(pi0_g2.Vect())*radtodeg;
 
         bool eeInPID = false;
         bool eeSamePID = false;
@@ -1114,6 +1169,9 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
             }
         }
 
+        h_nCandidates[cut_ind]->Fill(candidates.size(), TaggWeight);
+        h_nNeuChaCandidates[cut_ind]->Fill(charged.size(), neutral.size(), TaggWeight);
+
         h_CBEsum[cut_ind]->Fill(triggersimu.GetCBEnergySum(),TaggWeight);
         h_beamE[cut_ind]->Fill(InitialPhotonVec.E(),TaggWeight);
 
@@ -1137,6 +1195,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         h_pi0gg_BackToBack[cut_ind-nrCuts_beforeKF]->Fill(piongg_angle,TaggWeight);
 
         h_eeOpeningAngles[cut_ind-nrCuts_beforeKF]->Fill(ee_openingAngle,TaggWeight);
+        h_ggOpeningAngles[cut_ind-nrCuts_beforeKF]->Fill(gg_openingAngle,TaggWeight);
 
         //PID stuff:
 
@@ -1150,6 +1209,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
             h_IM2g_Fit_samePID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2g,TaggWeight);
             h_IMmissingP_Fit_samePID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_proton,TaggWeight);
             h_IMeeFit_samePID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2e,TaggWeight);
+            h_IMee_samePID[cut_ind-nrCuts_beforeKF]->Fill((dil_l1+dil_l2).M(),TaggWeight);
 
         }
         else{
@@ -1158,8 +1218,8 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
             h_IM2g_Fit_diffPID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2g,TaggWeight);
             h_IMmissingP_Fit_diffPID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_proton,TaggWeight);
             h_IMeeFit_diffPID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2e,TaggWeight);
+            h_IMee_diffPID[cut_ind-nrCuts_beforeKF]->Fill((dil_l1+dil_l2).M(),TaggWeight);
         }
-
 
         //PID E vs time:
 
@@ -1311,6 +1371,18 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
             }
         }
 
+        for(unsigned int i=0; i<nrIMpi0ee_hists; i++){
+            if((dil_l1+dil_l2).M()>=i*IMeeSteps && (dil_l1+dil_l2).M()<(i+1)*IMeeSteps){
+                h_IM2gee_Fit_TFF[cut_ind-nrCuts_beforeKF][i]->Fill(bestFitted_mm_2gee,TaggWeight);
+                if(eeSamePID){
+                    h_IM2gee_Fit_TFFsamePID[cut_ind-nrCuts_beforeKF][i]->Fill(bestFitted_mm_2gee,TaggWeight);
+                }
+                else{
+                    h_IM2gee_Fit_TFFdiffPID[cut_ind-nrCuts_beforeKF][i]->Fill(bestFitted_mm_2gee,TaggWeight);
+                }
+            }
+        }
+
         //----------------------------------------------------------------------------------------
 
         if(!(best_probability > bestprob_cutval && best_probability_freeZ > bestprob_cutval))
@@ -1330,6 +1402,9 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
                 h_AllVetoE_TAPS[cut_ind]->Fill(allCanVetoE[i],TaggWeight);
             }
         }
+
+        h_nCandidates[cut_ind]->Fill(candidates.size(), TaggWeight);
+        h_nNeuChaCandidates[cut_ind]->Fill(charged.size(), neutral.size(), TaggWeight);
 
         h_CBEsum[cut_ind]->Fill(triggersimu.GetCBEnergySum(),TaggWeight);
         h_beamE[cut_ind]->Fill(InitialPhotonVec.E(),TaggWeight);
@@ -1354,6 +1429,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         h_pi0gg_BackToBack[cut_ind-nrCuts_beforeKF]->Fill(piongg_angle,TaggWeight);
 
         h_eeOpeningAngles[cut_ind-nrCuts_beforeKF]->Fill(ee_openingAngle,TaggWeight);
+        h_ggOpeningAngles[cut_ind-nrCuts_beforeKF]->Fill(gg_openingAngle,TaggWeight);
 
         //PID stuff:
 
@@ -1367,6 +1443,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
             h_IM2g_Fit_samePID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2g,TaggWeight);
             h_IMmissingP_Fit_samePID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_proton,TaggWeight);
             h_IMeeFit_samePID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2e,TaggWeight);
+            h_IMee_samePID[cut_ind-nrCuts_beforeKF]->Fill((dil_l1+dil_l2).M(),TaggWeight);
 
         }
         else{
@@ -1375,6 +1452,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
             h_IM2g_Fit_diffPID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2g,TaggWeight);
             h_IMmissingP_Fit_diffPID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_proton,TaggWeight);
             h_IMeeFit_diffPID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2e,TaggWeight);
+            h_IMee_diffPID[cut_ind-nrCuts_beforeKF]->Fill((dil_l1+dil_l2).M(),TaggWeight);
         }
 
         //PID E vs time:
@@ -1450,6 +1528,18 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
             }
         }
 
+        for(unsigned int i=0; i<nrIMpi0ee_hists; i++){
+            if((dil_l1+dil_l2).M()>=i*IMeeSteps && (dil_l1+dil_l2).M()<(i+1)*IMeeSteps){
+                h_IM2gee_Fit_TFF[cut_ind-nrCuts_beforeKF][i]->Fill(bestFitted_mm_2gee,TaggWeight);
+                if(eeSamePID){
+                    h_IM2gee_Fit_TFFsamePID[cut_ind-nrCuts_beforeKF][i]->Fill(bestFitted_mm_2gee,TaggWeight);
+                }
+                else{
+                    h_IM2gee_Fit_TFFdiffPID[cut_ind-nrCuts_beforeKF][i]->Fill(bestFitted_mm_2gee,TaggWeight);
+                }
+            }
+        }
+
         //-----------------------------------------------------------------------------------
 
         if(!(bestFitted_Zvert_freeZ > -10 && bestFitted_Zvert_freeZ < 5))
@@ -1469,6 +1559,9 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
                 h_AllVetoE_TAPS[cut_ind]->Fill(allCanVetoE[i],TaggWeight);
             }
         }
+
+        h_nCandidates[cut_ind]->Fill(candidates.size(), TaggWeight);
+        h_nNeuChaCandidates[cut_ind]->Fill(charged.size(), neutral.size(), TaggWeight);
 
         h_CBEsum[cut_ind]->Fill(triggersimu.GetCBEnergySum(),TaggWeight);
         h_beamE[cut_ind]->Fill(InitialPhotonVec.E(),TaggWeight);
@@ -1493,6 +1586,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         h_pi0gg_BackToBack[cut_ind-nrCuts_beforeKF]->Fill(piongg_angle,TaggWeight);
 
         h_eeOpeningAngles[cut_ind-nrCuts_beforeKF]->Fill(ee_openingAngle,TaggWeight);
+        h_ggOpeningAngles[cut_ind-nrCuts_beforeKF]->Fill(gg_openingAngle,TaggWeight);
 
         //PID stuff:
 
@@ -1506,6 +1600,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
             h_IM2g_Fit_samePID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2g,TaggWeight);
             h_IMmissingP_Fit_samePID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_proton,TaggWeight);
             h_IMeeFit_samePID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2e,TaggWeight);
+            h_IMee_samePID[cut_ind-nrCuts_beforeKF]->Fill((dil_l1+dil_l2).M(),TaggWeight);
 
         }
         else{
@@ -1514,8 +1609,8 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
             h_IM2g_Fit_diffPID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2g,TaggWeight);
             h_IMmissingP_Fit_diffPID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_proton,TaggWeight);
             h_IMeeFit_diffPID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2e,TaggWeight);
+            h_IMee_diffPID[cut_ind-nrCuts_beforeKF]->Fill((dil_l1+dil_l2).M(),TaggWeight);
         }
-
 
         //PID E vs time:
 
@@ -1587,6 +1682,18 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
                 h_NoProton_CaloEvsVetoE_TAPS[cut_ind-nrCuts_beforeKF]->Fill(photonCombs[bestKFindex].at(i+2)->Candidate->CaloEnergy,photonCombs[bestKFindex].at(i+2)->Candidate->VetoEnergy,TaggWeight);
                 h_NoProton_TimeDiffCorTaggTAPS[cut_ind-nrCuts_beforeKF]->Fill((photonCombs[bestKFindex].at(i+2)->Candidate->Time)-cortagtime,TaggWeight);
                 h_NoProton_EvsThetaTAPS[cut_ind-nrCuts_beforeKF]->Fill((photonCombs[bestKFindex].at(i+2)->Candidate->Theta)*radtodeg,photonCombs[bestKFindex].at(i+2)->Candidate->CaloEnergy,TaggWeight);
+            }
+        }
+
+        for(unsigned int i=0; i<nrIMpi0ee_hists; i++){
+            if((dil_l1+dil_l2).M()>=i*IMeeSteps && (dil_l1+dil_l2).M()<(i+1)*IMeeSteps){
+                h_IM2gee_Fit_TFF[cut_ind-nrCuts_beforeKF][i]->Fill(bestFitted_mm_2gee,TaggWeight);
+                if(eeSamePID){
+                    h_IM2gee_Fit_TFFsamePID[cut_ind-nrCuts_beforeKF][i]->Fill(bestFitted_mm_2gee,TaggWeight);
+                }
+                else{
+                    h_IM2gee_Fit_TFFdiffPID[cut_ind-nrCuts_beforeKF][i]->Fill(bestFitted_mm_2gee,TaggWeight);
+                }
             }
         }
 
@@ -1640,6 +1747,9 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
             }
         }
 
+        h_nCandidates[cut_ind]->Fill(candidates.size(), TaggWeight);
+        h_nNeuChaCandidates[cut_ind]->Fill(charged.size(), neutral.size(), TaggWeight);
+
         h_CBEsum[cut_ind]->Fill(triggersimu.GetCBEnergySum(),TaggWeight);
         h_beamE[cut_ind]->Fill(InitialPhotonVec.E(),TaggWeight);
 
@@ -1663,6 +1773,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         h_pi0gg_BackToBack[cut_ind-nrCuts_beforeKF]->Fill(piongg_angle,TaggWeight);
 
         h_eeOpeningAngles[cut_ind-nrCuts_beforeKF]->Fill(ee_openingAngle,TaggWeight);
+        h_ggOpeningAngles[cut_ind-nrCuts_beforeKF]->Fill(gg_openingAngle,TaggWeight);
 
         //PID stuff:
 
@@ -1676,6 +1787,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
             h_IM2g_Fit_samePID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2g,TaggWeight);
             h_IMmissingP_Fit_samePID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_proton,TaggWeight);
             h_IMeeFit_samePID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2e,TaggWeight);
+            h_IMee_samePID[cut_ind-nrCuts_beforeKF]->Fill((dil_l1+dil_l2).M(),TaggWeight);
 
         }
         else{
@@ -1684,6 +1796,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
             h_IM2g_Fit_diffPID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2g,TaggWeight);
             h_IMmissingP_Fit_diffPID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_proton,TaggWeight);
             h_IMeeFit_diffPID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2e,TaggWeight);
+            h_IMee_diffPID[cut_ind-nrCuts_beforeKF]->Fill((dil_l1+dil_l2).M(),TaggWeight);
         }
 
         //PID E vs time:
@@ -1760,6 +1873,18 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
             }
         }
 
+        for(unsigned int i=0; i<nrIMpi0ee_hists; i++){
+            if((dil_l1+dil_l2).M()>=i*IMeeSteps && (dil_l1+dil_l2).M()<(i+1)*IMeeSteps){
+                h_IM2gee_Fit_TFF[cut_ind-nrCuts_beforeKF][i]->Fill(bestFitted_mm_2gee,TaggWeight);
+                if(eeSamePID){
+                    h_IM2gee_Fit_TFFsamePID[cut_ind-nrCuts_beforeKF][i]->Fill(bestFitted_mm_2gee,TaggWeight);
+                }
+                else{
+                    h_IM2gee_Fit_TFFdiffPID[cut_ind-nrCuts_beforeKF][i]->Fill(bestFitted_mm_2gee,TaggWeight);
+                }
+            }
+        }
+
         //-----------------------------------------------------------------------------------
 
         Double_t x1_nCryst_first = 80;
@@ -1778,7 +1903,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         Double_t y1_nCryst_second = 9;
         Double_t x2_nCryst_second = 600;
         Double_t y2_nCryst_second = 19;
-        Double_t shift_nCryst_second = -0.5;
+        Double_t shift_nCryst_second = -1;
 
         Double_t m_nCryst_second = (y2_nCryst_second-y1_nCryst_second)/(x2_nCryst_second-x1_nCryst_second);
         Double_t b_nCryst_second = y2_nCryst_second-(y2_nCryst_second-y1_nCryst_second)/(x2_nCryst_second-x1_nCryst_second)*x2_nCryst_second;
@@ -1806,6 +1931,9 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
             }
         }
 
+        h_nCandidates[cut_ind]->Fill(candidates.size(), TaggWeight);
+        h_nNeuChaCandidates[cut_ind]->Fill(charged.size(), neutral.size(), TaggWeight);
+
         h_CBEsum[cut_ind]->Fill(triggersimu.GetCBEnergySum(),TaggWeight);
         h_beamE[cut_ind]->Fill(InitialPhotonVec.E(),TaggWeight);
 
@@ -1829,6 +1957,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         h_pi0gg_BackToBack[cut_ind-nrCuts_beforeKF]->Fill(piongg_angle,TaggWeight);
 
         h_eeOpeningAngles[cut_ind-nrCuts_beforeKF]->Fill(ee_openingAngle,TaggWeight);
+        h_ggOpeningAngles[cut_ind-nrCuts_beforeKF]->Fill(gg_openingAngle,TaggWeight);
 
         //PID stuff:
 
@@ -1842,6 +1971,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
             h_IM2g_Fit_samePID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2g,TaggWeight);
             h_IMmissingP_Fit_samePID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_proton,TaggWeight);
             h_IMeeFit_samePID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2e,TaggWeight);
+            h_IMee_samePID[cut_ind-nrCuts_beforeKF]->Fill((dil_l1+dil_l2).M(),TaggWeight);
 
         }
         else{
@@ -1850,6 +1980,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
             h_IM2g_Fit_diffPID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2g,TaggWeight);
             h_IMmissingP_Fit_diffPID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_proton,TaggWeight);
             h_IMeeFit_diffPID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2e,TaggWeight);
+            h_IMee_diffPID[cut_ind-nrCuts_beforeKF]->Fill((dil_l1+dil_l2).M(),TaggWeight);
         }
 
         //PID E vs time:
@@ -1923,6 +2054,18 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
                 h_NoProton_CaloEvsVetoE_TAPS[cut_ind-nrCuts_beforeKF]->Fill(photonCombs[bestKFindex].at(i+2)->Candidate->CaloEnergy,photonCombs[bestKFindex].at(i+2)->Candidate->VetoEnergy,TaggWeight);
                 h_NoProton_TimeDiffCorTaggTAPS[cut_ind-nrCuts_beforeKF]->Fill((photonCombs[bestKFindex].at(i+2)->Candidate->Time)-cortagtime,TaggWeight);
                 h_NoProton_EvsThetaTAPS[cut_ind-nrCuts_beforeKF]->Fill((photonCombs[bestKFindex].at(i+2)->Candidate->Theta)*radtodeg,photonCombs[bestKFindex].at(i+2)->Candidate->CaloEnergy,TaggWeight);
+            }
+        }
+
+        for(unsigned int i=0; i<nrIMpi0ee_hists; i++){
+            if((dil_l1+dil_l2).M()>=i*IMeeSteps && (dil_l1+dil_l2).M()<(i+1)*IMeeSteps){
+                h_IM2gee_Fit_TFF[cut_ind-nrCuts_beforeKF][i]->Fill(bestFitted_mm_2gee,TaggWeight);
+                if(eeSamePID){
+                    h_IM2gee_Fit_TFFsamePID[cut_ind-nrCuts_beforeKF][i]->Fill(bestFitted_mm_2gee,TaggWeight);
+                }
+                else{
+                    h_IM2gee_Fit_TFFdiffPID[cut_ind-nrCuts_beforeKF][i]->Fill(bestFitted_mm_2gee,TaggWeight);
+                }
             }
         }
 
@@ -1950,6 +2093,9 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
             }
         }
 
+        h_nCandidates[cut_ind]->Fill(candidates.size(), TaggWeight);
+        h_nNeuChaCandidates[cut_ind]->Fill(charged.size(), neutral.size(), TaggWeight);
+
         h_CBEsum[cut_ind]->Fill(triggersimu.GetCBEnergySum(),TaggWeight);
         h_beamE[cut_ind]->Fill(InitialPhotonVec.E(),TaggWeight);
 
@@ -1973,6 +2119,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         h_pi0gg_BackToBack[cut_ind-nrCuts_beforeKF]->Fill(piongg_angle,TaggWeight);
 
         h_eeOpeningAngles[cut_ind-nrCuts_beforeKF]->Fill(ee_openingAngle,TaggWeight);
+        h_ggOpeningAngles[cut_ind-nrCuts_beforeKF]->Fill(gg_openingAngle,TaggWeight);
 
         //PID stuff:
 
@@ -1986,6 +2133,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
             h_IM2g_Fit_samePID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2g,TaggWeight);
             h_IMmissingP_Fit_samePID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_proton,TaggWeight);
             h_IMeeFit_samePID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2e,TaggWeight);
+            h_IMee_samePID[cut_ind-nrCuts_beforeKF]->Fill((dil_l1+dil_l2).M(),TaggWeight);
 
         }
         else{
@@ -1994,6 +2142,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
             h_IM2g_Fit_diffPID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2g,TaggWeight);
             h_IMmissingP_Fit_diffPID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_proton,TaggWeight);
             h_IMeeFit_diffPID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2e,TaggWeight);
+            h_IMee_diffPID[cut_ind-nrCuts_beforeKF]->Fill((dil_l1+dil_l2).M(),TaggWeight);
         }
 
         //PID E vs time:
@@ -2067,6 +2216,18 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
                 h_NoProton_CaloEvsVetoE_TAPS[cut_ind-nrCuts_beforeKF]->Fill(photonCombs[bestKFindex].at(i+2)->Candidate->CaloEnergy,photonCombs[bestKFindex].at(i+2)->Candidate->VetoEnergy,TaggWeight);
                 h_NoProton_TimeDiffCorTaggTAPS[cut_ind-nrCuts_beforeKF]->Fill((photonCombs[bestKFindex].at(i+2)->Candidate->Time)-cortagtime,TaggWeight);
                 h_NoProton_EvsThetaTAPS[cut_ind-nrCuts_beforeKF]->Fill((photonCombs[bestKFindex].at(i+2)->Candidate->Theta)*radtodeg,photonCombs[bestKFindex].at(i+2)->Candidate->CaloEnergy,TaggWeight);
+            }
+        }
+
+        for(unsigned int i=0; i<nrIMpi0ee_hists; i++){
+            if((dil_l1+dil_l2).M()>=i*IMeeSteps && (dil_l1+dil_l2).M()<(i+1)*IMeeSteps){
+                h_IM2gee_Fit_TFF[cut_ind-nrCuts_beforeKF][i]->Fill(bestFitted_mm_2gee,TaggWeight);
+                if(eeSamePID){
+                    h_IM2gee_Fit_TFFsamePID[cut_ind-nrCuts_beforeKF][i]->Fill(bestFitted_mm_2gee,TaggWeight);
+                }
+                else{
+                    h_IM2gee_Fit_TFFdiffPID[cut_ind-nrCuts_beforeKF][i]->Fill(bestFitted_mm_2gee,TaggWeight);
+                }
             }
         }
 
@@ -2106,6 +2267,9 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
             }
         }
 
+        h_nCandidates[cut_ind]->Fill(candidates.size(), TaggWeight);
+        h_nNeuChaCandidates[cut_ind]->Fill(charged.size(), neutral.size(), TaggWeight);
+
         h_CBEsum[cut_ind]->Fill(triggersimu.GetCBEnergySum(),TaggWeight);
         h_beamE[cut_ind]->Fill(InitialPhotonVec.E(),TaggWeight);
 
@@ -2129,6 +2293,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         h_pi0gg_BackToBack[cut_ind-nrCuts_beforeKF]->Fill(piongg_angle,TaggWeight);
 
         h_eeOpeningAngles[cut_ind-nrCuts_beforeKF]->Fill(ee_openingAngle,TaggWeight);
+        h_ggOpeningAngles[cut_ind-nrCuts_beforeKF]->Fill(gg_openingAngle,TaggWeight);
 
         //PID stuff:
 
@@ -2142,6 +2307,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
             h_IM2g_Fit_samePID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2g,TaggWeight);
             h_IMmissingP_Fit_samePID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_proton,TaggWeight);
             h_IMeeFit_samePID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2e,TaggWeight);
+            h_IMee_samePID[cut_ind-nrCuts_beforeKF]->Fill((dil_l1+dil_l2).M(),TaggWeight);
 
         }
         else{
@@ -2150,6 +2316,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
             h_IM2g_Fit_diffPID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2g,TaggWeight);
             h_IMmissingP_Fit_diffPID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_proton,TaggWeight);
             h_IMeeFit_diffPID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2e,TaggWeight);
+            h_IMee_diffPID[cut_ind-nrCuts_beforeKF]->Fill((dil_l1+dil_l2).M(),TaggWeight);
         }
 
         //PID E vs time:
@@ -2223,6 +2390,18 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
                 h_NoProton_CaloEvsVetoE_TAPS[cut_ind-nrCuts_beforeKF]->Fill(photonCombs[bestKFindex].at(i+2)->Candidate->CaloEnergy,photonCombs[bestKFindex].at(i+2)->Candidate->VetoEnergy,TaggWeight);
                 h_NoProton_TimeDiffCorTaggTAPS[cut_ind-nrCuts_beforeKF]->Fill((photonCombs[bestKFindex].at(i+2)->Candidate->Time)-cortagtime,TaggWeight);
                 h_NoProton_EvsThetaTAPS[cut_ind-nrCuts_beforeKF]->Fill((photonCombs[bestKFindex].at(i+2)->Candidate->Theta)*radtodeg,photonCombs[bestKFindex].at(i+2)->Candidate->CaloEnergy,TaggWeight);
+            }
+        }
+
+        for(unsigned int i=0; i<nrIMpi0ee_hists; i++){
+            if((dil_l1+dil_l2).M()>=i*IMeeSteps && (dil_l1+dil_l2).M()<(i+1)*IMeeSteps){
+                h_IM2gee_Fit_TFF[cut_ind-nrCuts_beforeKF][i]->Fill(bestFitted_mm_2gee,TaggWeight);
+                if(eeSamePID){
+                    h_IM2gee_Fit_TFFsamePID[cut_ind-nrCuts_beforeKF][i]->Fill(bestFitted_mm_2gee,TaggWeight);
+                }
+                else{
+                    h_IM2gee_Fit_TFFdiffPID[cut_ind-nrCuts_beforeKF][i]->Fill(bestFitted_mm_2gee,TaggWeight);
+                }
             }
         }
 
