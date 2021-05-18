@@ -410,7 +410,7 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
                                                     );
 
         h_Proton_CaloEvsT_CB[i] = hf_EvsT_CB->makeTH2D("Proton: Calo energy vs time in CB "+cuts[i],     // title
-                                                             "Calo E [MeV]","t_{TAPS} [ns]",     // xlabel, ylabel
+                                                             "Calo E [MeV]","t_{CB} [ns]",     // xlabel, ylabel
                                                              bins_Calo_Energy,PIDtime_bins,  // our binnings
                                                              "h_Proton_CaloEvsT_CB_"+cuts[i], true     // ROOT object name, auto-generated if omitted
                                                              );
@@ -422,7 +422,7 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
                                                              );
 
         h_NoProton_CaloEvsT_CB[i] = hf_EvsT_CB->makeTH2D("Leptons: Calo energy vs time in CB "+cuts[i],     // title
-                                                             "Calo E [MeV]","t_{TAPS} [ns]",     // xlabel, ylabel
+                                                             "Calo E [MeV]","t_{CB} [ns]",     // xlabel, ylabel
                                                              bins_Calo_Energy,PIDtime_bins,  // our binnings
                                                              "h_NoProton_CaloEvsT_CB_"+cuts[i], true     // ROOT object name, auto-generated if omitted
                                                              );
@@ -434,7 +434,7 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
                                                              );
 
         h_Photon_CaloEvsT_CB[i] = hf_EvsT_CB->makeTH2D("Photons: Calo energy vs time in CB "+cuts[i],     // title
-                                                             "Calo E [MeV]","t_{TAPS} [ns]",     // xlabel, ylabel
+                                                             "Calo E [MeV]","t_{CB} [ns]",     // xlabel, ylabel
                                                              bins_Calo_Energy,PIDtime_bins,  // our binnings
                                                              "h_Photon_CaloEvsT_CB_"+cuts[i], true     // ROOT object name, auto-generated if omitted
                                                              );

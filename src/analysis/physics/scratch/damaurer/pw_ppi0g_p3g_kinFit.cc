@@ -317,7 +317,7 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
                                                              );
 
         h_neuEvsT_CB[i] = hf_EvsT_CB->makeTH2D("Neutrals: Calo energy vs time in CB "+cuts[i],     // title
-                                                             "Calo E [MeV]","t_{TAPS} [ns]",     // xlabel, ylabel
+                                                             "Calo E [MeV]","t_{CB} [ns]",     // xlabel, ylabel
                                                              Calo_Energy_bins,PIDtime_bins,  // our binnings
                                                              "h_neuEvsT_CB_"+cuts[i], true     // ROOT object name, auto-generated if omitted
                                                              );
@@ -329,7 +329,7 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
                                                              );
 
         h_chaEvsT_CB[i] = hf_EvsT_CB->makeTH2D("Charged: Calo energy vs time in CB "+cuts[i],     // title
-                                                             "Calo E [MeV]","t_{TAPS} [ns]",     // xlabel, ylabel
+                                                             "Calo E [MeV]","t_{CB} [ns]",     // xlabel, ylabel
                                                              Calo_Energy_bins,PIDtime_bins,  // our binnings
                                                              "h_chaEvsT_CB_"+cuts[i], true     // ROOT object name, auto-generated if omitted
                                                              );
