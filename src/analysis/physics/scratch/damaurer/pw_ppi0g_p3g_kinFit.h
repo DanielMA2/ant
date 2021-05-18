@@ -129,10 +129,10 @@ private:
     TH2D* h_neuEkinVSPhi[nrCuts_total];
     TH2D* h_chaEkinVSPhi[nrCuts_total];
 
-    TH1D* h_neuTimeDiffCorTaggCB[nrCuts_total];
-    TH1D* h_neuTimeDiffCorTaggTAPS[nrCuts_total];
-    TH1D* h_chaTimeDiffCorTaggCB[nrCuts_total];
-    TH1D* h_chaTimeDiffCorTaggTAPS[nrCuts_total];
+    TH2D* h_neuEvsT_CB[nrCuts_total];
+    TH2D* h_neuEvsT_TAPS[nrCuts_total];
+    TH2D* h_chaEvsT_CB[nrCuts_total];
+    TH2D* h_chaEvsT_TAPS[nrCuts_total];
 
     TH1D* h_nCandidates[nrCuts_total];
     TH2D* h_nNeuChaCandidates[nrCuts_total];

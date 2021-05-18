@@ -68,8 +68,8 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
     taps = make_shared<expconfig::detector::TAPS_2013_11>(false, false, false);
 
     const BinSettings time_bins(200, 0,10);
-    const BinSettings timeDiffCorTaggCB_bins(200, -5,10);
-    const BinSettings timeDiffCorTaggTAPS_bins(200, -5,20);
+    //const BinSettings timeDiffCorTaggCB_bins(200, -5,10);
+    //const BinSettings timeDiffCorTaggTAPS_bins(200, -5,20);
 
     const BinSettings Veto_Energy_bins(500, 0, 12);
     const BinSettings Calo_Energy_bins(500, 0, 1200);
@@ -80,7 +80,7 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
 
     const BinSettings phi_bins(720, -180, 180);
     const BinSettings theta_bins(360, 0, 180);
-    const BinSettings PIDtime_bins(241,-60.5,60.5);  
+    const BinSettings PIDtime_bins(482,-60.5,60.5);
 
     const BinSettings Im_proton_bins(200, 0, 1500);
     const BinSettings Im_omega_bins(200, 0, 1200);
@@ -122,8 +122,8 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
     auto hf_CrossSection = new HistogramFactory("hf_CrossSection", HistFac, "");
     auto hf_CaloEvsVetoE = new HistogramFactory("hf_CaloEvsVetoE", HistFac, "");
     auto hf_RecData_CandStat = new HistogramFactory("hf_RecData_CandStat", HistFac, "");
-    auto hf_TimeDiffCorTaggCB = new HistogramFactory("hf_TimeDiffCorTaggCB", HistFac, "");
-    auto hf_TimeDiffCorTaggTAPS = new HistogramFactory("hf_TimeDiffCorTaggTAPS", HistFac, "");
+    auto hf_EvsT_CB = new HistogramFactory("hf_EvsT_CB", HistFac, "");
+    auto hf_EvsT_TAPS = new HistogramFactory("hf_EvsT_TAPS", HistFac, "");
     auto hf_Extras = new HistogramFactory("hf_Extras", HistFac, "");
 
     auto hf_Tagger = new HistogramFactory("hf_Tagger", HistFac, "");
@@ -316,28 +316,28 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
                                                              "h_beamE_"+cuts[i], true     // ROOT object name, auto-generated if omitted
                                                              );
 
-        h_neuTimeDiffCorTaggCB[i] = hf_TimeDiffCorTaggCB->makeTH1D("Neutrals time diff to cor tagg-time in CB "+cuts[i],     // title
-                                                             "t_{CB}-t_{Tagger} [ns]", "#",     // xlabel, ylabel
-                                                             timeDiffCorTaggCB_bins,  // our binnings
-                                                             "h_neuTimeDiffCorTaggCB_"+cuts[i], true     // ROOT object name, auto-generated if omitted
+        h_neuEvsT_CB[i] = hf_EvsT_CB->makeTH2D("Neutrals: Calo energy vs time in CB "+cuts[i],     // title
+                                                             "Calo E [MeV]","t_{TAPS} [ns]",     // xlabel, ylabel
+                                                             Calo_Energy_bins,PIDtime_bins,  // our binnings
+                                                             "h_neuEvsT_CB_"+cuts[i], true     // ROOT object name, auto-generated if omitted
                                                              );
 
-        h_neuTimeDiffCorTaggTAPS[i] = hf_TimeDiffCorTaggTAPS->makeTH1D("Neutrals time diff to cor tagg-time in TAPS "+cuts[i],     // title
-                                                             "t_{TAPS}-t_{Tagger} [ns]", "#",     // xlabel, ylabel
-                                                             timeDiffCorTaggTAPS_bins,  // our binnings
-                                                             "h_neuTimeDiffCorTaggTAPS_"+cuts[i], true     // ROOT object name, auto-generated if omitted
+        h_neuEvsT_TAPS[i] = hf_EvsT_TAPS->makeTH2D("Neutrals: Calo energy vs time in TAPS "+cuts[i],     // title
+                                                             "Calo E [MeV]","t_{TAPS} [ns]",     // xlabel, ylabel
+                                                             Calo_Energy_bins,PIDtime_bins,  // our binnings
+                                                             "h_neuEvsT_TAPS_"+cuts[i], true     // ROOT object name, auto-generated if omitted
                                                              );
 
-        h_chaTimeDiffCorTaggCB[i] = hf_TimeDiffCorTaggCB->makeTH1D("Charged time diff to cor tagg-time in CB "+cuts[i],     // title
-                                                             "(t_{CB}-t_{Tagger}) [ns]", "#",     // xlabel, ylabel
-                                                             timeDiffCorTaggCB_bins,  // our binnings
-                                                             "h_chaTimeDiffCorTaggCB_"+cuts[i], true     // ROOT object name, auto-generated if omitted
+        h_chaEvsT_CB[i] = hf_EvsT_CB->makeTH2D("Charged: Calo energy vs time in CB "+cuts[i],     // title
+                                                             "Calo E [MeV]","t_{TAPS} [ns]",     // xlabel, ylabel
+                                                             Calo_Energy_bins,PIDtime_bins,  // our binnings
+                                                             "h_chaEvsT_CB_"+cuts[i], true     // ROOT object name, auto-generated if omitted
                                                              );
 
-        h_chaTimeDiffCorTaggTAPS[i] = hf_TimeDiffCorTaggTAPS->makeTH1D("Charged time diff to cor tagg-time in TAPS "+cuts[i],     // title
-                                                             "t_{TAPS}-t_{Tagger} [ns]", "#",     // xlabel, ylabel
-                                                             timeDiffCorTaggTAPS_bins,  // our binnings
-                                                             "h_chaTimeDiffCorTaggTAPS_"+cuts[i], true     // ROOT object name, auto-generated if omitted
+        h_chaEvsT_TAPS[i] = hf_EvsT_TAPS->makeTH2D("Charged: Calo energy vs time in TAPS "+cuts[i],     // title
+                                                             "Calo E [MeV]","t_{TAPS} [ns]",     // xlabel, ylabel
+                                                             Calo_Energy_bins,PIDtime_bins,  // our binnings
+                                                             "h_chaEvsT_TAPS_"+cuts[i], true     // ROOT object name, auto-generated if omitted
                                                              );
 
         h_AllVetoE_CB[i] = hf_VetoE->makeTH1D("Deposited veto energies in CB "+cuts[i],     // title
@@ -826,13 +826,13 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
                 h_AllVetoE_CB[cut_ind]->Fill(neuCanVetoE[i],weight);
                 h_AllCaloEvsVetoE_CB[cut_ind]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
                 h_neuEkinVSThetaCB[cut_ind]->Fill(neuThe[i],neuCanCaloE[i],weight);
-                h_neuTimeDiffCorTaggCB[cut_ind]->Fill(neuCanTime[i]-corTaggTime,weight);
+                h_neuEvsT_CB[cut_ind]->Fill(neuCanCaloE[i],neuCanTime[i],weight);
             }
             if(neuCanInTAPS[i]){
                 h_AllVetoE_TAPS[cut_ind]->Fill(neuCanVetoE[i],weight);
                 h_AllCaloEvsVetoE_TAPS[cut_ind]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
                 h_neuEkinVSThetaTAPS[cut_ind]->Fill(neuThe[i],neuCanCaloE[i],weight);
-                h_neuTimeDiffCorTaggTAPS[cut_ind]->Fill(neuCanTime[i]-corTaggTime,weight);
+                h_neuEvsT_TAPS[cut_ind]->Fill(neuCanCaloE[i],neuCanTime[i],weight);
             }
         }
         for (unsigned int i=0; i<charged.size(); i++){
@@ -842,13 +842,13 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
                 h_AllVetoE_CB[cut_ind]->Fill(chaCanVetoE[i],weight);
                 h_AllCaloEvsVetoE_CB[cut_ind]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
                 h_chaEkinVSThetaCB[cut_ind]->Fill(chaThe[i],chaCanCaloE[i],weight);
-                h_chaTimeDiffCorTaggCB[cut_ind]->Fill(chaCanTime[i]-corTaggTime,weight);
+                h_chaEvsT_CB[cut_ind]->Fill(chaCanCaloE[i],chaCanTime[i],weight);
             }
             if(chaCanInTAPS[i]){
                 h_AllVetoE_TAPS[cut_ind]->Fill(chaCanVetoE[i],weight);
                 h_AllCaloEvsVetoE_TAPS[cut_ind]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
                 h_chaEkinVSThetaTAPS[cut_ind]->Fill(chaThe[i],chaCanCaloE[i],weight);
-                h_chaTimeDiffCorTaggTAPS[cut_ind]->Fill(chaCanTime[i]-corTaggTime,weight);
+                h_chaEvsT_TAPS[cut_ind]->Fill(chaCanCaloE[i],chaCanTime[i],weight);
             }
         }
 
@@ -873,13 +873,13 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
                 h_AllVetoE_CB[cut_ind]->Fill(neuCanVetoE[i],weight);
                 h_AllCaloEvsVetoE_CB[cut_ind]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
                 h_neuEkinVSThetaCB[cut_ind]->Fill(neuThe[i],neuCanCaloE[i],weight);
-                h_neuTimeDiffCorTaggCB[cut_ind]->Fill(neuCanTime[i]-corTaggTime,weight);
+                h_neuEvsT_CB[cut_ind]->Fill(neuCanCaloE[i],neuCanTime[i],weight);
             }
             if(neuCanInTAPS[i]){
                 h_AllVetoE_TAPS[cut_ind]->Fill(neuCanVetoE[i],weight);
                 h_AllCaloEvsVetoE_TAPS[cut_ind]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
                 h_neuEkinVSThetaTAPS[cut_ind]->Fill(neuThe[i],neuCanCaloE[i],weight);
-                h_neuTimeDiffCorTaggTAPS[cut_ind]->Fill(neuCanTime[i]-corTaggTime,weight);
+                h_neuEvsT_TAPS[cut_ind]->Fill(neuCanCaloE[i],neuCanTime[i],weight);
             }
         }
         for (unsigned int i=0; i<charged.size(); i++){
@@ -889,13 +889,13 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
                 h_AllVetoE_CB[cut_ind]->Fill(chaCanVetoE[i],weight);
                 h_AllCaloEvsVetoE_CB[cut_ind]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
                 h_chaEkinVSThetaCB[cut_ind]->Fill(chaThe[i],chaCanCaloE[i],weight);
-                h_chaTimeDiffCorTaggCB[cut_ind]->Fill(chaCanTime[i]-corTaggTime,weight);
+                h_chaEvsT_CB[cut_ind]->Fill(chaCanCaloE[i],chaCanTime[i],weight);
             }
             if(chaCanInTAPS[i]){
                 h_AllVetoE_TAPS[cut_ind]->Fill(chaCanVetoE[i],weight);
                 h_AllCaloEvsVetoE_TAPS[cut_ind]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
                 h_chaEkinVSThetaTAPS[cut_ind]->Fill(chaThe[i],chaCanCaloE[i],weight);
-                h_chaTimeDiffCorTaggTAPS[cut_ind]->Fill(chaCanTime[i]-corTaggTime,weight);
+                h_chaEvsT_TAPS[cut_ind]->Fill(chaCanCaloE[i],chaCanTime[i],weight);
             }
         }
 
@@ -1032,29 +1032,29 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
                 h_AllVetoE_CB[cut_ind]->Fill(neuCanVetoE[i],weight);
                 h_AllCaloEvsVetoE_CB[cut_ind]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
                 h_neuEkinVSThetaCB[cut_ind]->Fill(neuThe[i],neuCanCaloE[i],weight);
-                h_neuTimeDiffCorTaggCB[cut_ind]->Fill(neuCanTime[i]-corTaggTime,weight);
+                h_neuEvsT_CB[cut_ind]->Fill(neuCanCaloE[i],neuCanTime[i],weight);
             }
             if(neuCanInTAPS[i]){
                 h_AllVetoE_TAPS[cut_ind]->Fill(neuCanVetoE[i],weight);
                 h_AllCaloEvsVetoE_TAPS[cut_ind]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
                 h_neuEkinVSThetaTAPS[cut_ind]->Fill(neuThe[i],neuCanCaloE[i],weight);
-                h_neuTimeDiffCorTaggTAPS[cut_ind]->Fill(neuCanTime[i]-corTaggTime,weight);
+                h_neuEvsT_TAPS[cut_ind]->Fill(neuCanCaloE[i],neuCanTime[i],weight);
             }
         }
-        for (unsigned int i=0; i<protons.size(); i++){
+        for (unsigned int i=0; i<charged.size(); i++){
             h_chaEkinVSPhi[cut_ind]->Fill(chaPhi[i],chaCanCaloE[i],weight);
             h_chaCaloE[cut_ind]->Fill(chaCanCaloE[i],weight);
             if(chaCanInCB[i]){
                 h_AllVetoE_CB[cut_ind]->Fill(chaCanVetoE[i],weight);
                 h_AllCaloEvsVetoE_CB[cut_ind]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
                 h_chaEkinVSThetaCB[cut_ind]->Fill(chaThe[i],chaCanCaloE[i],weight);
-                h_chaTimeDiffCorTaggCB[cut_ind]->Fill(chaCanTime[i]-corTaggTime,weight);
+                h_chaEvsT_CB[cut_ind]->Fill(chaCanCaloE[i],chaCanTime[i],weight);
             }
             if(chaCanInTAPS[i]){
                 h_AllVetoE_TAPS[cut_ind]->Fill(chaCanVetoE[i],weight);
                 h_AllCaloEvsVetoE_TAPS[cut_ind]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
                 h_chaEkinVSThetaTAPS[cut_ind]->Fill(chaThe[i],chaCanCaloE[i],weight);
-                h_chaTimeDiffCorTaggTAPS[cut_ind]->Fill(chaCanTime[i]-corTaggTime,weight);
+                h_chaEvsT_TAPS[cut_ind]->Fill(chaCanCaloE[i],chaCanTime[i],weight);
             }
         }
 
@@ -1111,29 +1111,29 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
                 h_AllVetoE_CB[cut_ind]->Fill(neuCanVetoE[i],weight);
                 h_AllCaloEvsVetoE_CB[cut_ind]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
                 h_neuEkinVSThetaCB[cut_ind]->Fill(neuThe[i],neuCanCaloE[i],weight);
-                h_neuTimeDiffCorTaggCB[cut_ind]->Fill(neuCanTime[i]-corTaggTime,weight);
+                h_neuEvsT_CB[cut_ind]->Fill(neuCanCaloE[i],neuCanTime[i],weight);
             }
             if(neuCanInTAPS[i]){
                 h_AllVetoE_TAPS[cut_ind]->Fill(neuCanVetoE[i],weight);
                 h_AllCaloEvsVetoE_TAPS[cut_ind]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
                 h_neuEkinVSThetaTAPS[cut_ind]->Fill(neuThe[i],neuCanCaloE[i],weight);
-                h_neuTimeDiffCorTaggTAPS[cut_ind]->Fill(neuCanTime[i]-corTaggTime,weight);
+                h_neuEvsT_TAPS[cut_ind]->Fill(neuCanCaloE[i],neuCanTime[i],weight);
             }
         }
-        for (unsigned int i=0; i<protons.size(); i++){
+        for (unsigned int i=0; i<charged.size(); i++){
             h_chaEkinVSPhi[cut_ind]->Fill(chaPhi[i],chaCanCaloE[i],weight);
             h_chaCaloE[cut_ind]->Fill(chaCanCaloE[i],weight);
             if(chaCanInCB[i]){
                 h_AllVetoE_CB[cut_ind]->Fill(chaCanVetoE[i],weight);
                 h_AllCaloEvsVetoE_CB[cut_ind]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
                 h_chaEkinVSThetaCB[cut_ind]->Fill(chaThe[i],chaCanCaloE[i],weight);
-                h_chaTimeDiffCorTaggCB[cut_ind]->Fill(chaCanTime[i]-corTaggTime,weight);
+                h_chaEvsT_CB[cut_ind]->Fill(chaCanCaloE[i],chaCanTime[i],weight);
             }
             if(chaCanInTAPS[i]){
                 h_AllVetoE_TAPS[cut_ind]->Fill(chaCanVetoE[i],weight);
                 h_AllCaloEvsVetoE_TAPS[cut_ind]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
                 h_chaEkinVSThetaTAPS[cut_ind]->Fill(chaThe[i],chaCanCaloE[i],weight);
-                h_chaTimeDiffCorTaggTAPS[cut_ind]->Fill(chaCanTime[i]-corTaggTime,weight);
+                h_chaEvsT_TAPS[cut_ind]->Fill(chaCanCaloE[i],chaCanTime[i],weight);
             }
         }
 
@@ -1189,29 +1189,29 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
                 h_AllVetoE_CB[cut_ind]->Fill(neuCanVetoE[i],weight);
                 h_AllCaloEvsVetoE_CB[cut_ind]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
                 h_neuEkinVSThetaCB[cut_ind]->Fill(neuThe[i],neuCanCaloE[i],weight);
-                h_neuTimeDiffCorTaggCB[cut_ind]->Fill(neuCanTime[i]-corTaggTime,weight);
+                h_neuEvsT_CB[cut_ind]->Fill(neuCanCaloE[i],neuCanTime[i],weight);
             }
             if(neuCanInTAPS[i]){
                 h_AllVetoE_TAPS[cut_ind]->Fill(neuCanVetoE[i],weight);
                 h_AllCaloEvsVetoE_TAPS[cut_ind]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
                 h_neuEkinVSThetaTAPS[cut_ind]->Fill(neuThe[i],neuCanCaloE[i],weight);
-                h_neuTimeDiffCorTaggTAPS[cut_ind]->Fill(neuCanTime[i]-corTaggTime,weight);
+                h_neuEvsT_TAPS[cut_ind]->Fill(neuCanCaloE[i],neuCanTime[i],weight);
             }
         }
-        for (unsigned int i=0; i<protons.size(); i++){
+        for (unsigned int i=0; i<charged.size(); i++){
             h_chaEkinVSPhi[cut_ind]->Fill(chaPhi[i],chaCanCaloE[i],weight);
             h_chaCaloE[cut_ind]->Fill(chaCanCaloE[i],weight);
             if(chaCanInCB[i]){
                 h_AllVetoE_CB[cut_ind]->Fill(chaCanVetoE[i],weight);
                 h_AllCaloEvsVetoE_CB[cut_ind]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
                 h_chaEkinVSThetaCB[cut_ind]->Fill(chaThe[i],chaCanCaloE[i],weight);
-                h_chaTimeDiffCorTaggCB[cut_ind]->Fill(chaCanTime[i]-corTaggTime,weight);
+                h_chaEvsT_CB[cut_ind]->Fill(chaCanCaloE[i],chaCanTime[i],weight);
             }
             if(chaCanInTAPS[i]){
                 h_AllVetoE_TAPS[cut_ind]->Fill(chaCanVetoE[i],weight);
                 h_AllCaloEvsVetoE_TAPS[cut_ind]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
                 h_chaEkinVSThetaTAPS[cut_ind]->Fill(chaThe[i],chaCanCaloE[i],weight);
-                h_chaTimeDiffCorTaggTAPS[cut_ind]->Fill(chaCanTime[i]-corTaggTime,weight);
+                h_chaEvsT_TAPS[cut_ind]->Fill(chaCanCaloE[i],chaCanTime[i],weight);
             }
         }
 
@@ -1359,29 +1359,29 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
                 h_AllVetoE_CB[cut_ind]->Fill(neuCanVetoE[i],weight);
                 h_AllCaloEvsVetoE_CB[cut_ind]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
                 h_neuEkinVSThetaCB[cut_ind]->Fill(neuThe[i],neuCanCaloE[i],weight);
-                h_neuTimeDiffCorTaggCB[cut_ind]->Fill(neuCanTime[i]-corTaggTime,weight);
+                h_neuEvsT_CB[cut_ind]->Fill(neuCanCaloE[i],neuCanTime[i],weight);
             }
             if(neuCanInTAPS[i]){
                 h_AllVetoE_TAPS[cut_ind]->Fill(neuCanVetoE[i],weight);
                 h_AllCaloEvsVetoE_TAPS[cut_ind]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
                 h_neuEkinVSThetaTAPS[cut_ind]->Fill(neuThe[i],neuCanCaloE[i],weight);
-                h_neuTimeDiffCorTaggTAPS[cut_ind]->Fill(neuCanTime[i]-corTaggTime,weight);
+                h_neuEvsT_TAPS[cut_ind]->Fill(neuCanCaloE[i],neuCanTime[i],weight);
             }
         }
-        for (unsigned int i=0; i<protons.size(); i++){
+        for (unsigned int i=0; i<charged.size(); i++){
             h_chaEkinVSPhi[cut_ind]->Fill(chaPhi[i],chaCanCaloE[i],weight);
             h_chaCaloE[cut_ind]->Fill(chaCanCaloE[i],weight);
             if(chaCanInCB[i]){
                 h_AllVetoE_CB[cut_ind]->Fill(chaCanVetoE[i],weight);
                 h_AllCaloEvsVetoE_CB[cut_ind]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
                 h_chaEkinVSThetaCB[cut_ind]->Fill(chaThe[i],chaCanCaloE[i],weight);
-                h_chaTimeDiffCorTaggCB[cut_ind]->Fill(chaCanTime[i]-corTaggTime,weight);
+                h_chaEvsT_CB[cut_ind]->Fill(chaCanCaloE[i],chaCanTime[i],weight);
             }
             if(chaCanInTAPS[i]){
                 h_AllVetoE_TAPS[cut_ind]->Fill(chaCanVetoE[i],weight);
                 h_AllCaloEvsVetoE_TAPS[cut_ind]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
                 h_chaEkinVSThetaTAPS[cut_ind]->Fill(chaThe[i],chaCanCaloE[i],weight);
-                h_chaTimeDiffCorTaggTAPS[cut_ind]->Fill(chaCanTime[i]-corTaggTime,weight);
+                h_chaEvsT_TAPS[cut_ind]->Fill(chaCanCaloE[i],chaCanTime[i],weight);
             }
         }
 
@@ -1437,29 +1437,29 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
                 h_AllVetoE_CB[cut_ind]->Fill(neuCanVetoE[i],weight);
                 h_AllCaloEvsVetoE_CB[cut_ind]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
                 h_neuEkinVSThetaCB[cut_ind]->Fill(neuThe[i],neuCanCaloE[i],weight);
-                h_neuTimeDiffCorTaggCB[cut_ind]->Fill(neuCanTime[i]-corTaggTime,weight);
+                h_neuEvsT_CB[cut_ind]->Fill(neuCanCaloE[i],neuCanTime[i],weight);
             }
             if(neuCanInTAPS[i]){
                 h_AllVetoE_TAPS[cut_ind]->Fill(neuCanVetoE[i],weight);
                 h_AllCaloEvsVetoE_TAPS[cut_ind]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
                 h_neuEkinVSThetaTAPS[cut_ind]->Fill(neuThe[i],neuCanCaloE[i],weight);
-                h_neuTimeDiffCorTaggTAPS[cut_ind]->Fill(neuCanTime[i]-corTaggTime,weight);
+                h_neuEvsT_TAPS[cut_ind]->Fill(neuCanCaloE[i],neuCanTime[i],weight);
             }
         }
-        for (unsigned int i=0; i<protons.size(); i++){
+        for (unsigned int i=0; i<charged.size(); i++){
             h_chaEkinVSPhi[cut_ind]->Fill(chaPhi[i],chaCanCaloE[i],weight);
             h_chaCaloE[cut_ind]->Fill(chaCanCaloE[i],weight);
             if(chaCanInCB[i]){
                 h_AllVetoE_CB[cut_ind]->Fill(chaCanVetoE[i],weight);
                 h_AllCaloEvsVetoE_CB[cut_ind]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
                 h_chaEkinVSThetaCB[cut_ind]->Fill(chaThe[i],chaCanCaloE[i],weight);
-                h_chaTimeDiffCorTaggCB[cut_ind]->Fill(chaCanTime[i]-corTaggTime,weight);
+                h_chaEvsT_CB[cut_ind]->Fill(chaCanCaloE[i],chaCanTime[i],weight);
             }
             if(chaCanInTAPS[i]){
                 h_AllVetoE_TAPS[cut_ind]->Fill(chaCanVetoE[i],weight);
                 h_AllCaloEvsVetoE_TAPS[cut_ind]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
                 h_chaEkinVSThetaTAPS[cut_ind]->Fill(chaThe[i],chaCanCaloE[i],weight);
-                h_chaTimeDiffCorTaggTAPS[cut_ind]->Fill(chaCanTime[i]-corTaggTime,weight);
+                h_chaEvsT_TAPS[cut_ind]->Fill(chaCanCaloE[i],chaCanTime[i],weight);
             }
         }
 
@@ -1594,29 +1594,29 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
                 h_AllVetoE_CB[cut_ind]->Fill(neuCanVetoE[i],weight);
                 h_AllCaloEvsVetoE_CB[cut_ind]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
                 h_neuEkinVSThetaCB[cut_ind]->Fill(neuThe[i],neuCanCaloE[i],weight);
-                h_neuTimeDiffCorTaggCB[cut_ind]->Fill(neuCanTime[i]-corTaggTime,weight);
+                h_neuEvsT_CB[cut_ind]->Fill(neuCanCaloE[i],neuCanTime[i],weight);
             }
             if(neuCanInTAPS[i]){
                 h_AllVetoE_TAPS[cut_ind]->Fill(neuCanVetoE[i],weight);
                 h_AllCaloEvsVetoE_TAPS[cut_ind]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
                 h_neuEkinVSThetaTAPS[cut_ind]->Fill(neuThe[i],neuCanCaloE[i],weight);
-                h_neuTimeDiffCorTaggTAPS[cut_ind]->Fill(neuCanTime[i]-corTaggTime,weight);
+                h_neuEvsT_TAPS[cut_ind]->Fill(neuCanCaloE[i],neuCanTime[i],weight);
             }
         }
-        for (unsigned int i=0; i<protons.size(); i++){
+        for (unsigned int i=0; i<charged.size(); i++){
             h_chaEkinVSPhi[cut_ind]->Fill(chaPhi[i],chaCanCaloE[i],weight);
             h_chaCaloE[cut_ind]->Fill(chaCanCaloE[i],weight);
             if(chaCanInCB[i]){
                 h_AllVetoE_CB[cut_ind]->Fill(chaCanVetoE[i],weight);
                 h_AllCaloEvsVetoE_CB[cut_ind]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
                 h_chaEkinVSThetaCB[cut_ind]->Fill(chaThe[i],chaCanCaloE[i],weight);
-                h_chaTimeDiffCorTaggCB[cut_ind]->Fill(chaCanTime[i]-corTaggTime,weight);
+                h_chaEvsT_CB[cut_ind]->Fill(chaCanCaloE[i],chaCanTime[i],weight);
             }
             if(chaCanInTAPS[i]){
                 h_AllVetoE_TAPS[cut_ind]->Fill(chaCanVetoE[i],weight);
                 h_AllCaloEvsVetoE_TAPS[cut_ind]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
                 h_chaEkinVSThetaTAPS[cut_ind]->Fill(chaThe[i],chaCanCaloE[i],weight);
-                h_chaTimeDiffCorTaggTAPS[cut_ind]->Fill(chaCanTime[i]-corTaggTime,weight);
+                h_chaEvsT_TAPS[cut_ind]->Fill(chaCanCaloE[i],chaCanTime[i],weight);
             }
         }
 
@@ -1734,29 +1734,29 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
                 h_AllVetoE_CB[cut_ind]->Fill(neuCanVetoE[i],weight);
                 h_AllCaloEvsVetoE_CB[cut_ind]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
                 h_neuEkinVSThetaCB[cut_ind]->Fill(neuThe[i],neuCanCaloE[i],weight);
-                h_neuTimeDiffCorTaggCB[cut_ind]->Fill(neuCanTime[i]-corTaggTime,weight);
+                h_neuEvsT_CB[cut_ind]->Fill(neuCanCaloE[i],neuCanTime[i],weight);
             }
             if(neuCanInTAPS[i]){
                 h_AllVetoE_TAPS[cut_ind]->Fill(neuCanVetoE[i],weight);
                 h_AllCaloEvsVetoE_TAPS[cut_ind]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
                 h_neuEkinVSThetaTAPS[cut_ind]->Fill(neuThe[i],neuCanCaloE[i],weight);
-                h_neuTimeDiffCorTaggTAPS[cut_ind]->Fill(neuCanTime[i]-corTaggTime,weight);
+                h_neuEvsT_TAPS[cut_ind]->Fill(neuCanCaloE[i],neuCanTime[i],weight);
             }
         }
-        for (unsigned int i=0; i<protons.size(); i++){
+        for (unsigned int i=0; i<charged.size(); i++){
             h_chaEkinVSPhi[cut_ind]->Fill(chaPhi[i],chaCanCaloE[i],weight);
             h_chaCaloE[cut_ind]->Fill(chaCanCaloE[i],weight);
             if(chaCanInCB[i]){
                 h_AllVetoE_CB[cut_ind]->Fill(chaCanVetoE[i],weight);
                 h_AllCaloEvsVetoE_CB[cut_ind]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
                 h_chaEkinVSThetaCB[cut_ind]->Fill(chaThe[i],chaCanCaloE[i],weight);
-                h_chaTimeDiffCorTaggCB[cut_ind]->Fill(chaCanTime[i]-corTaggTime,weight);
+                h_chaEvsT_CB[cut_ind]->Fill(chaCanCaloE[i],chaCanTime[i],weight);
             }
             if(chaCanInTAPS[i]){
                 h_AllVetoE_TAPS[cut_ind]->Fill(chaCanVetoE[i],weight);
                 h_AllCaloEvsVetoE_TAPS[cut_ind]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
                 h_chaEkinVSThetaTAPS[cut_ind]->Fill(chaThe[i],chaCanCaloE[i],weight);
-                h_chaTimeDiffCorTaggTAPS[cut_ind]->Fill(chaCanTime[i]-corTaggTime,weight);
+                h_chaEvsT_TAPS[cut_ind]->Fill(chaCanCaloE[i],chaCanTime[i],weight);
             }
         }
 

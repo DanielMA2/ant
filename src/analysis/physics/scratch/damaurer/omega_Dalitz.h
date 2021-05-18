@@ -220,12 +220,12 @@ private:
     TH2D* h_NoProton_PIDEvsTime[nrCuts_KF];
     TH2D* h_Proton_PIDEvsTime[nrCuts_KF];
 
-    TH1D *h_Proton_TimeDiffCorTaggCB[nrCuts_KF];
-    TH1D *h_Proton_TimeDiffCorTaggTAPS[nrCuts_KF];
-    TH1D *h_NoProton_TimeDiffCorTaggCB[nrCuts_KF];
-    TH1D *h_NoProton_TimeDiffCorTaggTAPS[nrCuts_KF];
-    TH1D *h_Photon_TimeDiffCorTaggCB[nrCuts_KF];
-    TH1D *h_Photon_TimeDiffCorTaggTAPS[nrCuts_KF];
+    TH2D *h_Proton_CaloEvsT_CB[nrCuts_KF];
+    TH2D *h_Proton_CaloEvsT_TAPS[nrCuts_KF];
+    TH2D *h_NoProton_CaloEvsT_CB[nrCuts_KF];
+    TH2D *h_NoProton_CaloEvsT_TAPS[nrCuts_KF];
+    TH2D *h_Photon_CaloEvsT_CB[nrCuts_KF];
+    TH2D *h_Photon_CaloEvsT_TAPS[nrCuts_KF];
 
     TH1D* h_Photon_CaloE[nrCuts_KF];
     TH1D* h_NoProton_CaloE[nrCuts_KF];
