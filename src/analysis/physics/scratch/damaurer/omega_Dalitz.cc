@@ -100,6 +100,16 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
     const BinSettings phi_bins(720, -180, 180);
     const BinSettings PIDelement_bins(30);
 
+    //KinFit binSettings:
+    const BinSettings E_photon_bins(200, 0, 1600);
+    const BinSettings E_proton_bins(200, 900, 2000);
+    const BinSettings defEk_bins = BinSettings(201,-200,200);
+    const BinSettings defPhi_bins = BinSettings(101,-100,100);
+    const BinSettings defTheta_bins = BinSettings(101,-100,100);
+    vector<BinSettings> partTypeEkBins;
+    partTypeEkBins.emplace_back(E_proton_bins);
+    partTypeEkBins.emplace_back(E_photon_bins);
+
     auto hf_RecData_CandStat = new HistogramFactory("hf_RecData_CandStat", HistFac, "");
     auto hf_Tagger = new HistogramFactory("hf_Tagger", HistFac, "");
     auto hf_CaloEvsVetoE = new HistogramFactory("hf_CaloEvsVetoE", HistFac, "");
@@ -111,21 +121,30 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
     auto hf_missingP_IM = new HistogramFactory("hf_missingP_IM", HistFac, "");
     auto hf_KFfails = new HistogramFactory("hf_KFfails", HistFac, "");
     auto hf_OverviewKF = new HistogramFactory("hf_OverviewKF", HistFac, "");
+    auto hf_OverviewKF_freeZ = new HistogramFactory("hf_OverviewKF_freeZ", HistFac, "");
     auto hf_invmassKF = new HistogramFactory("hf_invmassKF", HistFac, "");
     auto hf_CBEsum = new HistogramFactory("hf_CB_Esum", HistFac, "");
 
-    auto hfPullsCBKF = new HistogramFactory("KinFit_CBpulls", HistFac, "");
-    auto hfPullsTAPSKF = new HistogramFactory("KinFit_TAPSpulls", HistFac, "");
+    auto hf_CombCBKF = new HistogramFactory("hf_CombCBKF", HistFac, "");
+    auto hf_CombTAPSKF = new HistogramFactory("hf_CombTAPSKF", HistFac, "");
 
-    auto hf_OverviewKF_freeZ = new HistogramFactory("hf_OverviewKF_freeZ", HistFac, "");
+    auto hf_CombCBKF_freeZ = new HistogramFactory("hf_CombCBKF_freeZ", HistFac, "");
+    auto hf_CombTAPSKF_freeZ = new HistogramFactory("hf_CombTAPSKF_freeZ", HistFac, "");
+
+    auto hfPullsCBKF = new HistogramFactory("hf_PullsCBKF", HistFac, "");
+    auto hfPullsTAPSKF = new HistogramFactory("hf_PullsTAPSKF", HistFac, "");
+
+    auto hfPullsCBKF_freeZ = new HistogramFactory("hf_PullsCBKF_freeZ", HistFac, "");
+    auto hfPullsTAPSKF_freeZ = new HistogramFactory("hf_PullsTAPSKF_freeZ", HistFac, "");
+
     auto hf_cluster_effRvsCaloE = new HistogramFactory("hf_cluster_effRvsCaloE", HistFac, "");
     auto hf_cluster_nCrystalsvsCaloE = new HistogramFactory("hf_cluster_nCrystalsvsCaloE", HistFac, "");
 
     //Side-check hf
     auto hf_CaloEvsVetoE_CB_SideCheck = new HistogramFactory("hf_CaloEvsVetoE_CB_SideCheck", HistFac, "");
     auto hf_CaloEvsVetoE_TAPS_SideCheck = new HistogramFactory("hf_CaloEvsVetoE_TAPS_SideCheck", HistFac, "");
-    auto hf_TimeDiffCorTagg_CB_SideCheck = new HistogramFactory(" hf_TimeDiffCorTagg_CB_SideCheck", HistFac, "");
-    auto hf_TimeDiffCorTagg_TAPS_SideCheck = new HistogramFactory(" hf_TimeDiffCorTagg_TAPS_SideCheck", HistFac, "");
+    auto hf_TimeDiffCorTagg_CB_SideCheck = new HistogramFactory("hf_TimeDiffCorTagg_CB_SideCheck", HistFac, "");
+    auto hf_TimeDiffCorTagg_TAPS_SideCheck = new HistogramFactory("hf_TimeDiffCorTagg_TAPS_SideCheck", HistFac, "");
 
     auto hf_BackToBack = new HistogramFactory("hf_BackToBack", HistFac, "");
 
@@ -209,7 +228,7 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
 
     }
 
-    for (unsigned int i=0; i<(nrCuts_total-nrCuts_beforeSel); i++){
+    for (unsigned int i=0; i<nrCuts_Sel; i++){
 
     h_2g_IM[i] = hf_2g_IM->makeTH1D("IM(2g) "+cuts[i+nrCuts_beforeSel],     // title
                                          "IM(2g) [MeV]", "#",     // xlabel, ylabel
@@ -514,24 +533,114 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
                                                           "h_ggOpeningAngles_"+cuts_KF[i], true     // ROOT object name, auto-generated if omitted
                                                           );
 
-    }
+        h_helicity_angles[i] = hf_eeChecks->makeTH1D("Helicity angles "+cuts_KF[i],     // title
+                                                          "cos(#Theta_{cms})", "#",     // xlabel, ylabel
+                                                          cos_bins,  // our binnings
+                                                          "h_helicity_angles_"+cuts_KF[i], true     // ROOT object name, auto-generated if omitted
+                                                          );
 
-    for (unsigned int i=0; i<nrPartType; i++){ //0 refers to proton, 1 to photons
+        for (unsigned int j=0; j<nrPartType; j++){ //0 refers to proton, 1 to photons
 
-        for (unsigned int j=0; j<nrFitVars; j++){
+            h_Ek_dev_CB[i][j] = hf_CombCBKF->makeTH2D(Form("CB: Energy deviation of rec. vs fitted %s after %s",fitPartName[j].c_str(),cuts_KF[i].c_str()), //title
+                                                "E_{rec} [MeV]","E_{fit}-E_{rec} [MeV]", // xlabel, ylabel
+                                                partTypeEkBins.at(j), defEk_bins,    // our binnings
+                                                Form("h_Ek_dev_CB_%s_%s",fitPartName[j].c_str(),cuts_KF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                );
 
-              h_PartPulls_CB[i][j] = hfPullsCBKF->makeTH1D(Form("CB: %s pulls of fitted %s",fitvarnameCB[j].c_str(),fitPartName[i].c_str()), //title
-                                                           Form("%s pull",fitvarnameCB[j].c_str()),"#", // xlabel, ylabel
-                                                           BinSettings(200,-10.,10.),   // our binnings
-                                                           Form("h_Pulls_CB_%s_%s",fitPartName[i].c_str(),fitvarnameCB[j].c_str()), true    // ROOT object name, auto-generated if omitted
-                                                           );
-              h_PartPulls_TAPS[i][j] = hfPullsTAPSKF->makeTH1D(Form("TAPS: %s pulls of fitted %s",fitvarnameTA[j].c_str(),fitPartName[i].c_str()), //title
-                                                               Form("%s pull",fitvarnameTA[j].c_str()),"#", // xlabel, ylabel
+            h_Theta_dev_CB[i][j] = hf_CombCBKF->makeTH2D(Form("CB: Theta deviation of rec. vs fitted %s after %s",fitPartName[j].c_str(),cuts_KF[i].c_str()), //title
+                                                "#Theta_{rec} [deg]","#Theta_{fit}-#Theta_{rec} [deg]", // xlabel, ylabel
+                                                theta_bins, defTheta_bins,    // our binnings
+                                                Form("h_Theta_dev_CB_%s_%s",fitPartName[j].c_str(),cuts_KF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                );
+
+            h_Phi_dev_CB[i][j] = hf_CombCBKF->makeTH2D(Form("CB: Phi deviation of rec. vs fitted %s after %s",fitPartName[j].c_str(),cuts_KF[i].c_str()), //title
+                                                "#Phi_{rec} [deg]","#Phi_{fit}-#Phi_{rec} [deg]", // xlabel, ylabel
+                                                phi_bins, defPhi_bins,    // our binnings
+                                                Form("h_Phi_dev_CB_%s_%s",fitPartName[j].c_str(),cuts_KF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                );
+
+            h_Ek_dev_TAPS[i][j] = hf_CombTAPSKF->makeTH2D(Form("TAPS: Energy deviation of rec. vs fitted %s after %s",fitPartName[j].c_str(),cuts_KF[i].c_str()), //title
+                                                "E_{rec} [MeV]","E_{fit}-E_{rec} [MeV]", // xlabel, ylabel
+                                                partTypeEkBins.at(j), defEk_bins,    // our binnings
+                                                Form("h_Ek_dev_TAPS_%s_%s",fitPartName[j].c_str(),cuts_KF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                );
+
+            h_Theta_dev_TAPS[i][j] = hf_CombTAPSKF->makeTH2D(Form("TAPS: Theta deviation of rec. vs fitted %s after %s",fitPartName[j].c_str(),cuts_KF[i].c_str()), //title
+                                                "#Theta_{rec} [deg]","#Theta_{fit}-#Theta_{rec} [deg]", // xlabel, ylabel
+                                                theta_bins, defTheta_bins,    // our binnings
+                                                Form("h_Theta_dev_TAPS_%s_%s",fitPartName[j].c_str(),cuts_KF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                );
+
+            h_Phi_dev_TAPS[i][j] = hf_CombTAPSKF->makeTH2D(Form("TAPS: Theta deviation of rec. vs fitted %s after %s",fitPartName[j].c_str(),cuts_KF[i].c_str()), //title
+                                                "#Phi_{rec} [deg]","#Phi_{fit}-#Phi_{rec} [deg]", // xlabel, ylabel
+                                                phi_bins, defPhi_bins,    // our binnings
+                                                Form("h_Phi_dev_TAPS_%s_%s",fitPartName[j].c_str(),cuts_KF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                );
+
+            h_Ek_dev_freeZ_CB[i][j] = hf_CombCBKF_freeZ->makeTH2D(Form("CB: Energy deviation of rec. vs fitted %s with free Z vertex after %s",fitPartName[j].c_str(),cuts_KF[i].c_str()), //title
+                                                "E_{rec} [MeV]","E_{fit}-E_{rec} [MeV]", // xlabel, ylabel
+                                                partTypeEkBins.at(j), defEk_bins,    // our binnings
+                                                Form("h_Ek_dev_freeZ_CB_%s_%s",fitPartName[j].c_str(),cuts_KF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                );
+
+            h_Theta_dev_freeZ_CB[i][j] = hf_CombCBKF_freeZ->makeTH2D(Form("CB: Theta deviation of rec. vs fitted %s with free Z vertex after %s",fitPartName[j].c_str(),cuts_KF[i].c_str()), //title
+                                                "#Theta_{rec} [deg]","#Theta_{fit}-#Theta_{rec} [deg]", // xlabel, ylabel
+                                                theta_bins, defTheta_bins,    // our binnings
+                                                Form("h_Theta_dev_freeZ_CB_%s_%s",fitPartName[j].c_str(),cuts_KF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                );
+
+            h_Phi_dev_freeZ_CB[i][j] = hf_CombCBKF_freeZ->makeTH2D(Form("CB: Phi deviation of rec. vs fitted %s with free Z vertex after %s",fitPartName[j].c_str(),cuts_KF[i].c_str()), //title
+                                                "#Phi_{rec} [deg]","#Phi_{fit}-#Phi_{rec} [deg]", // xlabel, ylabel
+                                                phi_bins, defPhi_bins,    // our binnings
+                                                Form("h_Phi_dev_freeZ_CB_%s_%s",fitPartName[j].c_str(),cuts_KF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                );
+
+            h_Ek_dev_freeZ_TAPS[i][j] = hf_CombTAPSKF_freeZ->makeTH2D(Form("TAPS: Energy deviation of rec. vs fitted %s with free Z vertex after %s",fitPartName[j].c_str(),cuts_KF[i].c_str()), //title
+                                                "E_{rec} [MeV]","E_{fit}-E_{rec} [MeV]", // xlabel, ylabel
+                                                partTypeEkBins.at(j), defEk_bins,    // our binnings
+                                                Form("h_Ek_dev_freeZ_TAPS_%s_%s",fitPartName[j].c_str(),cuts_KF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                );
+
+            h_Theta_dev_freeZ_TAPS[i][j] = hf_CombTAPSKF_freeZ->makeTH2D(Form("TAPS: Theta deviation of rec. vs fitted %s with free Z vertex after %s",fitPartName[j].c_str(),cuts_KF[i].c_str()), //title
+                                                "#Theta_{rec} [deg]","#Theta_{fit}-#Theta_{rec} [deg]", // xlabel, ylabel
+                                                theta_bins, defTheta_bins,    // our binnings
+                                                Form("h_Theta_dev_freeZ_TAPS_%s_%s",fitPartName[j].c_str(),cuts_KF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                );
+
+            h_Phi_dev_freeZ_TAPS[i][j] = hf_CombTAPSKF_freeZ->makeTH2D(Form("TAPS: Theta deviation of rec. vs fitted %s with free Z vertex after %s",fitPartName[j].c_str(),cuts_KF[i].c_str()), //title
+                                                "#Phi_{rec} [deg]","#Phi_{fit}-#Phi_{rec} [deg]", // xlabel, ylabel
+                                                phi_bins, defPhi_bins,    // our binnings
+                                                Form("h_Phi_dev_freeZ_TAPS_%s_%s",fitPartName[j].c_str(),cuts_KF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                );
+
+            for (unsigned int k=0; k<nrFitVars; k++){
+
+                  h_PartPulls_CB[i][j][k] = hfPullsCBKF->makeTH1D(Form("CB: %s pulls of fitted %s after %s",fitvarnameCB[k].c_str(),fitPartName[j].c_str(), cuts_KF[i].c_str()), //title
+                                                               Form("%s pull",fitvarnameCB[k].c_str()),"#", // xlabel, ylabel
                                                                BinSettings(200,-10.,10.),   // our binnings
-                                                               Form("h_Pulls_TAPS_%s_%s",fitPartName[i].c_str(),fitvarnameCB[j].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                               Form("h_Pulls_CB_%s_%s_%s",fitPartName[j].c_str(),fitvarnameCB[k].c_str(),cuts_KF[i].c_str()), true    // ROOT object name, auto-generated if omitted
                                                                );
+                  h_PartPulls_TAPS[i][j][k] = hfPullsTAPSKF->makeTH1D(Form("TAPS: %s pulls of fitted %s after %s",fitvarnameTA[k].c_str(),fitPartName[j].c_str(),cuts_KF[i].c_str()), //title
+                                                                   Form("%s pull",fitvarnameTA[k].c_str()),"#", // xlabel, ylabel
+                                                                   BinSettings(200,-10.,10.),   // our binnings
+                                                                   Form("h_Pulls_TAPS_%s_%s_%s",fitPartName[j].c_str(),fitvarnameCB[k].c_str(),cuts_KF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                                   );
 
+                  h_PartPulls_freeZ_CB[i][j][k] = hfPullsCBKF_freeZ->makeTH1D(Form("CB: %s with free Z vertex pulls of fitted %s after %s",fitvarnameCB[k].c_str(),fitPartName[j].c_str(), cuts_KF[i].c_str()), //title
+                                                               Form("%s pull",fitvarnameCB[k].c_str()),"#", // xlabel, ylabel
+                                                               BinSettings(200,-10.,10.),   // our binnings
+                                                               Form("h_Pulls_freeZ_CB_%s_%s_%s",fitPartName[j].c_str(),fitvarnameCB[k].c_str(),cuts_KF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                               );
+                  h_PartPulls_freeZ_TAPS[i][j][k] = hfPullsTAPSKF_freeZ->makeTH1D(Form("TAPS: %s pulls with free Z vertex of fitted %s after %s",fitvarnameTA[k].c_str(),fitPartName[j].c_str(),cuts_KF[i].c_str()), //title
+                                                                   Form("%s pull",fitvarnameTA[k].c_str()),"#", // xlabel, ylabel
+                                                                   BinSettings(200,-10.,10.),   // our binnings
+                                                                   Form("h_Pulls_freeZ_TAPS_%s_%s_%s",fitPartName[j].c_str(),fitvarnameCB[k].c_str(),cuts_KF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                                   );
+
+            }
         }
+
+
     }
 
     //hist = HistFac.makeTH1D(" Accepted Events", "step", "#", BinSettings(10), "steps");
@@ -1103,6 +1212,11 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         stat[cut_ind]+=TaggWeight;
         h_RecData_Stat->Fill(cut_ind, TaggWeight);
 
+        //Calculating stuff or filling hists:
+
+        vec3 vertshift{0,0,bestFitted_Zvert};
+        vec3 vertshift_freeZ{0,0,bestFitted_Zvert_freeZ};
+
         TLorentzVector Lproton_tmp = (TLorentzVector)(*protonCombs[bestKFindex].at(0));
         TLorentzVector Lomega_tmp = (TLorentzVector)(*photonCombs[bestKFindex].at(0)+*photonCombs[bestKFindex].at(1)+*photonCombs[bestKFindex].at(2)+*photonCombs[bestKFindex].at(3));
         TLorentzVector Lpion_tmp = (TLorentzVector)(*photonCombs[bestKFindex].at(0)+*photonCombs[bestKFindex].at(1));
@@ -1139,8 +1253,15 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         TLorentzVector Ldil_l2_boosted = dil_l2;
         Ldil_l1_boosted.Boost(-missing_dilepton.BoostVector());
         Ldil_l2_boosted.Boost(-missing_dilepton.BoostVector());
-        double dilee_angle = cos(Ldil_l1_boosted.Angle(Ldil_l2_boosted.Vect()));
 
+        /*
+        TLorentzVector Ldil_l1_test_boosted = dil_l1;
+        Ldil_l1_test_boosted.Boost(-Ldil_tmp.BoostVector());
+        double helAngles = cos(Ldil_tmp.Angle(Ldil_l1_test_boosted.Vect()));
+        */
+
+        double helAngles = cos(missing_dilepton.Angle(Ldil_l1_boosted.Vect()));
+        double dilee_angle = cos(Ldil_l1_boosted.Angle(Ldil_l2_boosted.Vect()));
         double ee_openingAngle = dil_l1.Angle(dil_l2.Vect())*radtodeg;
         double gg_openingAngle = pi0_g1.Angle(pi0_g2.Vect())*radtodeg;
 
@@ -1156,111 +1277,6 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
             if(l1eenr == l2eenr){
                 eeSamePID = true;
             }
-        }
-
-        for (unsigned int i=0; i<all.size(); i++){
-            if(allCanInCB[i]){
-                h_AllCaloEvsVetoE_CB[cut_ind]->Fill(allCanCaloE[i],allCanVetoE[i],TaggWeight);
-                h_AllVetoE_CB[cut_ind]->Fill(allCanVetoE[i],TaggWeight);
-            }
-            if(allCanInTAPS[i]){
-                h_AllCaloEvsVetoE_TAPS[cut_ind]->Fill(allCanCaloE[i],allCanVetoE[i],TaggWeight);
-                h_AllVetoE_TAPS[cut_ind]->Fill(allCanVetoE[i],TaggWeight);
-            }
-        }
-
-        h_nCandidates[cut_ind]->Fill(candidates.size(), TaggWeight);
-        h_nNeuChaCandidates[cut_ind]->Fill(charged.size(), neutral.size(), TaggWeight);
-
-        h_CBEsum[cut_ind]->Fill(triggersimu.GetCBEnergySum(),TaggWeight);
-        h_beamE[cut_ind]->Fill(InitialPhotonVec.E(),TaggWeight);
-
-        h_2g_IM[cut_ind-nrCuts_beforeSel]->Fill(L2g.M(),TaggWeight);
-
-        h_missingP_IM[cut_ind-nrCuts_beforeSel]->Fill(best_mm_proton,TaggWeight);
-        h_2gee_IM[cut_ind-nrCuts_beforeSel]->Fill(best_mm_2gee,TaggWeight);
-
-        h_Probability[cut_ind-nrCuts_beforeKF]->Fill(best_probability,TaggWeight);
-        h_Fit_zvert[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_Zvert,TaggWeight);
-        h_fitEbeam[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_BeamE,TaggWeight);
-        h_IM2gee_Fit[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2gee,TaggWeight);
-        h_IM2g_Fit[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2g,TaggWeight);
-        h_IMmissingP_Fit[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_proton,TaggWeight);
-        h_Probability_freeZ[cut_ind-nrCuts_beforeKF]->Fill(best_probability_freeZ,TaggWeight);
-        h_Fit_zvert_freeZ[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_Zvert_freeZ,TaggWeight);
-
-        h_wp_BackToBack[cut_ind-nrCuts_beforeKF]->Fill(wp_angle,TaggWeight);
-        h_wpi0dil_BackToBack[cut_ind-nrCuts_beforeKF]->Fill(piondil_angle,TaggWeight);
-        h_dilee_BackToBack[cut_ind-nrCuts_beforeKF]->Fill(dilee_angle,TaggWeight);
-        h_pi0gg_BackToBack[cut_ind-nrCuts_beforeKF]->Fill(piongg_angle,TaggWeight);
-
-        h_eeOpeningAngles[cut_ind-nrCuts_beforeKF]->Fill(ee_openingAngle,TaggWeight);
-        h_ggOpeningAngles[cut_ind-nrCuts_beforeKF]->Fill(gg_openingAngle,TaggWeight);
-
-        //PID stuff:
-
-        if(eeInPID){
-            h_eePIDelementNumbers[cut_ind-nrCuts_beforeKF]->Fill(l1eenr,l2eenr,TaggWeight);
-        }
-
-        if(eeSamePID){
-            h_eePID[cut_ind-nrCuts_beforeKF]->Fill(2,TaggWeight);
-            h_IM2gee_Fit_samePID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2gee,TaggWeight);
-            h_IM2g_Fit_samePID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2g,TaggWeight);
-            h_IMmissingP_Fit_samePID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_proton,TaggWeight);
-            h_IMeeFit_samePID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2e,TaggWeight);
-            h_IMee_samePID[cut_ind-nrCuts_beforeKF]->Fill((dil_l1+dil_l2).M(),TaggWeight);
-
-        }
-        else{
-            h_eePID[cut_ind-nrCuts_beforeKF]->Fill(1,TaggWeight);
-            h_IM2gee_Fit_diffPID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2gee,TaggWeight);
-            h_IM2g_Fit_diffPID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2g,TaggWeight);
-            h_IMmissingP_Fit_diffPID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_proton,TaggWeight);
-            h_IMeeFit_diffPID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2e,TaggWeight);
-            h_IMee_diffPID[cut_ind-nrCuts_beforeKF]->Fill((dil_l1+dil_l2).M(),TaggWeight);
-        }
-
-        //PID E vs time:
-
-        if(protonCombs[bestKFindex].at(0)->Candidate->FindVetoCluster()->DetectorType == Detector_t::Type_t::PID){
-            h_Proton_PIDEvsTime[cut_ind-nrCuts_beforeKF]->Fill(protonCombs[bestKFindex].at(0)->Candidate->FindVetoCluster()->Time,protonCombs[bestKFindex].at(0)->Candidate->FindVetoCluster()->Energy,TaggWeight);
-        }
-
-        for (unsigned int i=0; i<neu_nrSel; i++){
-
-            if(photonCombs[bestKFindex].at(i+2)->Candidate->FindVetoCluster()->DetectorType == Detector_t::Type_t::PID){
-                h_NoProton_PIDEvsTime[cut_ind-nrCuts_beforeKF]->Fill(photonCombs[bestKFindex].at(i+2)->Candidate->FindVetoCluster()->Time,photonCombs[bestKFindex].at(i+2)->Candidate->FindVetoCluster()->Energy,TaggWeight);
-            }
-
-        }
-
-        //Pulls:
-
-        if(protonCombs[bestKFindex].at(0)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
-            for (unsigned int i=0; i<nrFitVars; i++){
-                h_PartPulls_CB[0][i]->Fill(bestFitParticles.at(0).GetPulls().at(i),TaggWeight);
-            }
-        }
-        else{
-            for (unsigned int i=0; i<nrFitVars; i++){
-                h_PartPulls_TAPS[0][i]->Fill(bestFitParticles.at(0).GetPulls().at(i),TaggWeight);
-            }
-        }
-
-        for (unsigned int i=0; i<nrPhotons; i++){
-
-            if(photonCombs[bestKFindex].at(i)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
-                for (unsigned int j=0; j<nrFitVars; j++){
-                    h_PartPulls_CB[1][j]->Fill(bestFitParticles.at(i+1).GetPulls().at(j),TaggWeight);
-                }
-            }
-            else{
-                for (unsigned int j=0; j<nrFitVars; j++){
-                    h_PartPulls_TAPS[1][j]->Fill(bestFitParticles.at(i+1).GetPulls().at(j),TaggWeight);
-                }
-            }
-
         }
 
         //effR calculation for charged cand (not proton!):
@@ -1311,6 +1327,162 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         }
 
         effR_l2 = sqrt(effR_l2/e_l2);  // normalize energy weighted distance of the crystals to the total energy
+
+        for (unsigned int i=0; i<all.size(); i++){
+            if(allCanInCB[i]){
+                h_AllCaloEvsVetoE_CB[cut_ind]->Fill(allCanCaloE[i],allCanVetoE[i],TaggWeight);
+                h_AllVetoE_CB[cut_ind]->Fill(allCanVetoE[i],TaggWeight);
+            }
+            if(allCanInTAPS[i]){
+                h_AllCaloEvsVetoE_TAPS[cut_ind]->Fill(allCanCaloE[i],allCanVetoE[i],TaggWeight);
+                h_AllVetoE_TAPS[cut_ind]->Fill(allCanVetoE[i],TaggWeight);
+            }
+        }
+
+        h_nCandidates[cut_ind]->Fill(candidates.size(), TaggWeight);
+        h_nNeuChaCandidates[cut_ind]->Fill(charged.size(), neutral.size(), TaggWeight);
+
+        h_CBEsum[cut_ind]->Fill(triggersimu.GetCBEnergySum(),TaggWeight);
+        h_beamE[cut_ind]->Fill(InitialPhotonVec.E(),TaggWeight);
+
+        h_2g_IM[cut_ind-nrCuts_beforeSel]->Fill(L2g.M(),TaggWeight);
+
+        h_missingP_IM[cut_ind-nrCuts_beforeSel]->Fill(best_mm_proton,TaggWeight);
+        h_2gee_IM[cut_ind-nrCuts_beforeSel]->Fill(best_mm_2gee,TaggWeight);
+
+        h_Probability[cut_ind-nrCuts_beforeKF]->Fill(best_probability,TaggWeight);
+        h_Fit_zvert[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_Zvert,TaggWeight);
+        h_fitEbeam[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_BeamE,TaggWeight);
+        h_IM2gee_Fit[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2gee,TaggWeight);
+        h_IM2g_Fit[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2g,TaggWeight);
+        h_IMmissingP_Fit[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_proton,TaggWeight);
+        h_Probability_freeZ[cut_ind-nrCuts_beforeKF]->Fill(best_probability_freeZ,TaggWeight);
+        h_Fit_zvert_freeZ[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_Zvert_freeZ,TaggWeight);
+
+        h_wp_BackToBack[cut_ind-nrCuts_beforeKF]->Fill(wp_angle,TaggWeight);
+        h_wpi0dil_BackToBack[cut_ind-nrCuts_beforeKF]->Fill(piondil_angle,TaggWeight);
+        h_dilee_BackToBack[cut_ind-nrCuts_beforeKF]->Fill(dilee_angle,TaggWeight);
+        h_pi0gg_BackToBack[cut_ind-nrCuts_beforeKF]->Fill(piongg_angle,TaggWeight);
+
+        h_eeOpeningAngles[cut_ind-nrCuts_beforeKF]->Fill(ee_openingAngle,TaggWeight);
+        h_ggOpeningAngles[cut_ind-nrCuts_beforeKF]->Fill(gg_openingAngle,TaggWeight);
+        h_helicity_angles[cut_ind-nrCuts_beforeKF]->Fill(helAngles,TaggWeight);
+
+        //PID stuff:
+
+        if(eeInPID){
+            h_eePIDelementNumbers[cut_ind-nrCuts_beforeKF]->Fill(l1eenr,l2eenr,TaggWeight);
+        }
+
+        if(eeSamePID){
+            h_eePID[cut_ind-nrCuts_beforeKF]->Fill(2,TaggWeight);
+            h_IM2gee_Fit_samePID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2gee,TaggWeight);
+            h_IM2g_Fit_samePID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2g,TaggWeight);
+            h_IMmissingP_Fit_samePID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_proton,TaggWeight);
+            h_IMeeFit_samePID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2e,TaggWeight);
+            h_IMee_samePID[cut_ind-nrCuts_beforeKF]->Fill((dil_l1+dil_l2).M(),TaggWeight);
+
+        }
+        else{
+            h_eePID[cut_ind-nrCuts_beforeKF]->Fill(1,TaggWeight);
+            h_IM2gee_Fit_diffPID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2gee,TaggWeight);
+            h_IM2g_Fit_diffPID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2g,TaggWeight);
+            h_IMmissingP_Fit_diffPID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_proton,TaggWeight);
+            h_IMeeFit_diffPID[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_mm_2e,TaggWeight);
+            h_IMee_diffPID[cut_ind-nrCuts_beforeKF]->Fill((dil_l1+dil_l2).M(),TaggWeight);
+        }
+
+        //PID E vs time:
+
+        if(protonCombs[bestKFindex].at(0)->Candidate->FindVetoCluster()->DetectorType == Detector_t::Type_t::PID){
+            h_Proton_PIDEvsTime[cut_ind-nrCuts_beforeKF]->Fill(protonCombs[bestKFindex].at(0)->Candidate->FindVetoCluster()->Time,protonCombs[bestKFindex].at(0)->Candidate->FindVetoCluster()->Energy,TaggWeight);
+        }
+
+        for (unsigned int i=0; i<neu_nrSel; i++){
+
+            if(photonCombs[bestKFindex].at(i+2)->Candidate->FindVetoCluster()->DetectorType == Detector_t::Type_t::PID){
+                h_NoProton_PIDEvsTime[cut_ind-nrCuts_beforeKF]->Fill(photonCombs[bestKFindex].at(i+2)->Candidate->FindVetoCluster()->Time,photonCombs[bestKFindex].at(i+2)->Candidate->FindVetoCluster()->Energy,TaggWeight);
+            }
+
+        }
+
+        //Pulls:
+
+        if(protonCombs[bestKFindex].at(0)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+            h_Ek_dev_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Ek(),bestFitted_proton->Ek()-protonCombs[bestKFindex].at(0)->Ek(),TaggWeight);
+            h_Theta_dev_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Theta()*radtodeg,(bestFitted_proton->p + vertshift).Theta()*radtodeg - protonCombs[bestKFindex].at(0)->Theta()*radtodeg,TaggWeight);
+            h_Phi_dev_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Phi()*radtodeg,bestFitted_proton->Phi()*radtodeg-protonCombs[bestKFindex].at(0)->Phi()*radtodeg,TaggWeight);
+            for (unsigned int i=0; i<nrFitVars; i++){
+                h_PartPulls_CB[cut_ind-nrCuts_beforeKF][0][i]->Fill(bestFitParticles.at(0).GetPulls().at(i),TaggWeight);
+            }
+        }
+        else{
+            h_Ek_dev_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Ek(),bestFitted_proton->Ek()-protonCombs[bestKFindex].at(0)->Ek(),TaggWeight);
+            h_Theta_dev_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Theta()*radtodeg,(bestFitted_proton->p + vertshift).Theta()*radtodeg - protonCombs[bestKFindex].at(0)->Theta()*radtodeg,TaggWeight);
+            h_Phi_dev_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Phi()*radtodeg,bestFitted_proton->Phi()*radtodeg-protonCombs[bestKFindex].at(0)->Phi()*radtodeg,TaggWeight);
+            for (unsigned int i=0; i<nrFitVars; i++){
+                h_PartPulls_TAPS[cut_ind-nrCuts_beforeKF][0][i]->Fill(bestFitParticles.at(0).GetPulls().at(i),TaggWeight);
+            }
+        }
+
+        for (unsigned int i=0; i<nrPhotons; i++){
+            if(photonCombs[bestKFindex].at(i)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+                h_Ek_dev_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Ek(),bestFitted_photons.at(i)->Ek()-photonCombs[bestKFindex].at(i)->Ek(),TaggWeight);
+                h_Theta_dev_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Theta()*radtodeg,(bestFitted_photons.at(i)->p + vertshift).Theta()*radtodeg - photonCombs[bestKFindex].at(i)->Theta()*radtodeg,TaggWeight);
+                h_Phi_dev_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Phi()*radtodeg,bestFitted_photons.at(i)->Phi()*radtodeg-photonCombs[bestKFindex].at(i)->Phi()*radtodeg,TaggWeight);
+                for (unsigned int j=0; j<nrFitVars; j++){
+                    h_PartPulls_CB[cut_ind-nrCuts_beforeKF][1][j]->Fill(bestFitParticles.at(i+1).GetPulls().at(j),TaggWeight);
+                }
+            }
+            else{
+                h_Ek_dev_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Ek(),bestFitted_photons.at(i)->Ek()-photonCombs[bestKFindex].at(i)->Ek(),TaggWeight);
+                h_Theta_dev_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Theta()*radtodeg,(bestFitted_photons.at(i)->p + vertshift).Theta()*radtodeg - photonCombs[bestKFindex].at(i)->Theta()*radtodeg,TaggWeight);
+                h_Phi_dev_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Phi()*radtodeg,bestFitted_photons.at(i)->Phi()*radtodeg-photonCombs[bestKFindex].at(i)->Phi()*radtodeg,TaggWeight);
+                for (unsigned int j=0; j<nrFitVars; j++){
+                    h_PartPulls_TAPS[cut_ind-nrCuts_beforeKF][1][j]->Fill(bestFitParticles.at(i+1).GetPulls().at(j),TaggWeight);
+                }
+            }
+
+        }
+
+        //Pulls free Z vertex:
+
+        if(protonCombs[bestKFindex_freeZ].at(0)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+            h_Ek_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Ek(),bestFitted_proton_freeZ->Ek()-protonCombs[bestKFindex_freeZ].at(0)->Ek(),TaggWeight);
+            h_Theta_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Theta()*radtodeg,(bestFitted_proton_freeZ->p + vertshift_freeZ).Theta()*radtodeg - protonCombs[bestKFindex_freeZ].at(0)->Theta()*radtodeg,TaggWeight);
+            h_Phi_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Phi()*radtodeg,bestFitted_proton_freeZ->Phi()*radtodeg-protonCombs[bestKFindex_freeZ].at(0)->Phi()*radtodeg,TaggWeight);
+            for (unsigned int i=0; i<nrFitVars; i++){
+                h_PartPulls_freeZ_CB[cut_ind-nrCuts_beforeKF][0][i]->Fill(bestFitParticles_freeZ.at(0).GetPulls().at(i),TaggWeight);
+            }
+        }
+        else{
+            h_Ek_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Ek(),bestFitted_proton_freeZ->Ek()-protonCombs[bestKFindex_freeZ].at(0)->Ek(),TaggWeight);
+            h_Theta_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Theta()*radtodeg,(bestFitted_proton_freeZ->p + vertshift_freeZ).Theta()*radtodeg - protonCombs[bestKFindex_freeZ].at(0)->Theta()*radtodeg,TaggWeight);
+            h_Phi_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Phi()*radtodeg,bestFitted_proton_freeZ->Phi()*radtodeg-protonCombs[bestKFindex_freeZ].at(0)->Phi()*radtodeg,TaggWeight);
+            for (unsigned int i=0; i<nrFitVars; i++){
+                h_PartPulls_freeZ_TAPS[cut_ind-nrCuts_beforeKF][0][i]->Fill(bestFitParticles_freeZ.at(0).GetPulls().at(i),TaggWeight);
+            }
+        }
+
+        for (unsigned int i=0; i<nrPhotons; i++){
+            if(photonCombs[bestKFindex_freeZ].at(i)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+                h_Ek_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Ek(),bestFitted_photons_freeZ.at(i)->Ek()-photonCombs[bestKFindex_freeZ].at(i)->Ek(),TaggWeight);
+                h_Theta_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Theta()*radtodeg,(bestFitted_photons_freeZ.at(i)->p + vertshift).Theta()*radtodeg - photonCombs[bestKFindex_freeZ].at(i)->Theta()*radtodeg,TaggWeight);
+                h_Phi_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Phi()*radtodeg,bestFitted_photons_freeZ.at(i)->Phi()*radtodeg-photonCombs[bestKFindex_freeZ].at(i)->Phi()*radtodeg,TaggWeight);
+                for (unsigned int j=0; j<nrFitVars; j++){
+                    h_PartPulls_freeZ_CB[cut_ind-nrCuts_beforeKF][1][j]->Fill(bestFitParticles_freeZ.at(i+1).GetPulls().at(j),TaggWeight);
+                }
+            }
+            else{
+                h_Ek_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Ek(),bestFitted_photons_freeZ.at(i)->Ek()-photonCombs[bestKFindex_freeZ].at(i)->Ek(),TaggWeight);
+                h_Theta_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Theta()*radtodeg,(bestFitted_photons_freeZ.at(i)->p + vertshift).Theta()*radtodeg - photonCombs[bestKFindex_freeZ].at(i)->Theta()*radtodeg,TaggWeight);
+                h_Phi_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Phi()*radtodeg,bestFitted_photons_freeZ.at(i)->Phi()*radtodeg-photonCombs[bestKFindex_freeZ].at(i)->Phi()*radtodeg,TaggWeight);
+                for (unsigned int j=0; j<nrFitVars; j++){
+                    h_PartPulls_freeZ_TAPS[cut_ind-nrCuts_beforeKF][1][j]->Fill(bestFitParticles_freeZ.at(i+1).GetPulls().at(j),TaggWeight);
+                }
+            }
+
+        }
 
         //-----------------Filling IM(ee) hists----------------------------------------------------------
 
@@ -1430,6 +1602,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
 
         h_eeOpeningAngles[cut_ind-nrCuts_beforeKF]->Fill(ee_openingAngle,TaggWeight);
         h_ggOpeningAngles[cut_ind-nrCuts_beforeKF]->Fill(gg_openingAngle,TaggWeight);
+        h_helicity_angles[cut_ind-nrCuts_beforeKF]->Fill(helAngles,TaggWeight);
 
         //PID stuff:
 
@@ -1465,6 +1638,84 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
 
             if(photonCombs[bestKFindex].at(i+2)->Candidate->FindVetoCluster()->DetectorType == Detector_t::Type_t::PID){
                 h_NoProton_PIDEvsTime[cut_ind-nrCuts_beforeKF]->Fill(photonCombs[bestKFindex].at(i+2)->Candidate->FindVetoCluster()->Time,photonCombs[bestKFindex].at(i+2)->Candidate->FindVetoCluster()->Energy,TaggWeight);
+            }
+
+        }
+
+        //Pulls:
+
+        if(protonCombs[bestKFindex].at(0)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+            h_Ek_dev_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Ek(),bestFitted_proton->Ek()-protonCombs[bestKFindex].at(0)->Ek(),TaggWeight);
+            h_Theta_dev_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Theta()*radtodeg,(bestFitted_proton->p + vertshift).Theta()*radtodeg - protonCombs[bestKFindex].at(0)->Theta()*radtodeg,TaggWeight);
+            h_Phi_dev_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Phi()*radtodeg,bestFitted_proton->Phi()*radtodeg-protonCombs[bestKFindex].at(0)->Phi()*radtodeg,TaggWeight);
+            for (unsigned int i=0; i<nrFitVars; i++){
+                h_PartPulls_CB[cut_ind-nrCuts_beforeKF][0][i]->Fill(bestFitParticles.at(0).GetPulls().at(i),TaggWeight);
+            }
+        }
+        else{
+            h_Ek_dev_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Ek(),bestFitted_proton->Ek()-protonCombs[bestKFindex].at(0)->Ek(),TaggWeight);
+            h_Theta_dev_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Theta()*radtodeg,(bestFitted_proton->p + vertshift).Theta()*radtodeg - protonCombs[bestKFindex].at(0)->Theta()*radtodeg,TaggWeight);
+            h_Phi_dev_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Phi()*radtodeg,bestFitted_proton->Phi()*radtodeg-protonCombs[bestKFindex].at(0)->Phi()*radtodeg,TaggWeight);
+            for (unsigned int i=0; i<nrFitVars; i++){
+                h_PartPulls_TAPS[cut_ind-nrCuts_beforeKF][0][i]->Fill(bestFitParticles.at(0).GetPulls().at(i),TaggWeight);
+            }
+        }
+
+        for (unsigned int i=0; i<nrPhotons; i++){
+            if(photonCombs[bestKFindex].at(i)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+                h_Ek_dev_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Ek(),bestFitted_photons.at(i)->Ek()-photonCombs[bestKFindex].at(i)->Ek(),TaggWeight);
+                h_Theta_dev_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Theta()*radtodeg,(bestFitted_photons.at(i)->p + vertshift).Theta()*radtodeg - photonCombs[bestKFindex].at(i)->Theta()*radtodeg,TaggWeight);
+                h_Phi_dev_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Phi()*radtodeg,bestFitted_photons.at(i)->Phi()*radtodeg-photonCombs[bestKFindex].at(i)->Phi()*radtodeg,TaggWeight);
+                for (unsigned int j=0; j<nrFitVars; j++){
+                    h_PartPulls_CB[cut_ind-nrCuts_beforeKF][1][j]->Fill(bestFitParticles.at(i+1).GetPulls().at(j),TaggWeight);
+                }
+            }
+            else{
+                h_Ek_dev_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Ek(),bestFitted_photons.at(i)->Ek()-photonCombs[bestKFindex].at(i)->Ek(),TaggWeight);
+                h_Theta_dev_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Theta()*radtodeg,(bestFitted_photons.at(i)->p + vertshift).Theta()*radtodeg - photonCombs[bestKFindex].at(i)->Theta()*radtodeg,TaggWeight);
+                h_Phi_dev_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Phi()*radtodeg,bestFitted_photons.at(i)->Phi()*radtodeg-photonCombs[bestKFindex].at(i)->Phi()*radtodeg,TaggWeight);
+                for (unsigned int j=0; j<nrFitVars; j++){
+                    h_PartPulls_TAPS[cut_ind-nrCuts_beforeKF][1][j]->Fill(bestFitParticles.at(i+1).GetPulls().at(j),TaggWeight);
+                }
+            }
+
+        }
+
+        //Pulls free Z vertex:
+
+        if(protonCombs[bestKFindex_freeZ].at(0)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+            h_Ek_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Ek(),bestFitted_proton_freeZ->Ek()-protonCombs[bestKFindex_freeZ].at(0)->Ek(),TaggWeight);
+            h_Theta_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Theta()*radtodeg,(bestFitted_proton_freeZ->p + vertshift_freeZ).Theta()*radtodeg - protonCombs[bestKFindex_freeZ].at(0)->Theta()*radtodeg,TaggWeight);
+            h_Phi_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Phi()*radtodeg,bestFitted_proton_freeZ->Phi()*radtodeg-protonCombs[bestKFindex_freeZ].at(0)->Phi()*radtodeg,TaggWeight);
+            for (unsigned int i=0; i<nrFitVars; i++){
+                h_PartPulls_freeZ_CB[cut_ind-nrCuts_beforeKF][0][i]->Fill(bestFitParticles_freeZ.at(0).GetPulls().at(i),TaggWeight);
+            }
+        }
+        else{
+            h_Ek_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Ek(),bestFitted_proton_freeZ->Ek()-protonCombs[bestKFindex_freeZ].at(0)->Ek(),TaggWeight);
+            h_Theta_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Theta()*radtodeg,(bestFitted_proton_freeZ->p + vertshift_freeZ).Theta()*radtodeg - protonCombs[bestKFindex_freeZ].at(0)->Theta()*radtodeg,TaggWeight);
+            h_Phi_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Phi()*radtodeg,bestFitted_proton_freeZ->Phi()*radtodeg-protonCombs[bestKFindex_freeZ].at(0)->Phi()*radtodeg,TaggWeight);
+            for (unsigned int i=0; i<nrFitVars; i++){
+                h_PartPulls_freeZ_TAPS[cut_ind-nrCuts_beforeKF][0][i]->Fill(bestFitParticles_freeZ.at(0).GetPulls().at(i),TaggWeight);
+            }
+        }
+
+        for (unsigned int i=0; i<nrPhotons; i++){
+            if(photonCombs[bestKFindex_freeZ].at(i)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+                h_Ek_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Ek(),bestFitted_photons_freeZ.at(i)->Ek()-photonCombs[bestKFindex_freeZ].at(i)->Ek(),TaggWeight);
+                h_Theta_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Theta()*radtodeg,(bestFitted_photons_freeZ.at(i)->p + vertshift).Theta()*radtodeg - photonCombs[bestKFindex_freeZ].at(i)->Theta()*radtodeg,TaggWeight);
+                h_Phi_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Phi()*radtodeg,bestFitted_photons_freeZ.at(i)->Phi()*radtodeg-photonCombs[bestKFindex_freeZ].at(i)->Phi()*radtodeg,TaggWeight);
+                for (unsigned int j=0; j<nrFitVars; j++){
+                    h_PartPulls_freeZ_CB[cut_ind-nrCuts_beforeKF][1][j]->Fill(bestFitParticles_freeZ.at(i+1).GetPulls().at(j),TaggWeight);
+                }
+            }
+            else{
+                h_Ek_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Ek(),bestFitted_photons_freeZ.at(i)->Ek()-photonCombs[bestKFindex_freeZ].at(i)->Ek(),TaggWeight);
+                h_Theta_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Theta()*radtodeg,(bestFitted_photons_freeZ.at(i)->p + vertshift).Theta()*radtodeg - photonCombs[bestKFindex_freeZ].at(i)->Theta()*radtodeg,TaggWeight);
+                h_Phi_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Phi()*radtodeg,bestFitted_photons_freeZ.at(i)->Phi()*radtodeg-photonCombs[bestKFindex_freeZ].at(i)->Phi()*radtodeg,TaggWeight);
+                for (unsigned int j=0; j<nrFitVars; j++){
+                    h_PartPulls_freeZ_TAPS[cut_ind-nrCuts_beforeKF][1][j]->Fill(bestFitParticles_freeZ.at(i+1).GetPulls().at(j),TaggWeight);
+                }
             }
 
         }
@@ -1540,6 +1791,8 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
             }
         }
 
+
+
         //-----------------------------------------------------------------------------------
 
         if(!(bestFitted_Zvert_freeZ > -10 && bestFitted_Zvert_freeZ < 5))
@@ -1587,6 +1840,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
 
         h_eeOpeningAngles[cut_ind-nrCuts_beforeKF]->Fill(ee_openingAngle,TaggWeight);
         h_ggOpeningAngles[cut_ind-nrCuts_beforeKF]->Fill(gg_openingAngle,TaggWeight);
+        h_helicity_angles[cut_ind-nrCuts_beforeKF]->Fill(helAngles,TaggWeight);
 
         //PID stuff:
 
@@ -1622,6 +1876,84 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
 
             if(photonCombs[bestKFindex].at(i+2)->Candidate->FindVetoCluster()->DetectorType == Detector_t::Type_t::PID){
                 h_NoProton_PIDEvsTime[cut_ind-nrCuts_beforeKF]->Fill(photonCombs[bestKFindex].at(i+2)->Candidate->FindVetoCluster()->Time,photonCombs[bestKFindex].at(i+2)->Candidate->FindVetoCluster()->Energy,TaggWeight);
+            }
+
+        }
+
+        //Pulls:
+
+        if(protonCombs[bestKFindex].at(0)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+            h_Ek_dev_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Ek(),bestFitted_proton->Ek()-protonCombs[bestKFindex].at(0)->Ek(),TaggWeight);
+            h_Theta_dev_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Theta()*radtodeg,(bestFitted_proton->p + vertshift).Theta()*radtodeg - protonCombs[bestKFindex].at(0)->Theta()*radtodeg,TaggWeight);
+            h_Phi_dev_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Phi()*radtodeg,bestFitted_proton->Phi()*radtodeg-protonCombs[bestKFindex].at(0)->Phi()*radtodeg,TaggWeight);
+            for (unsigned int i=0; i<nrFitVars; i++){
+                h_PartPulls_CB[cut_ind-nrCuts_beforeKF][0][i]->Fill(bestFitParticles.at(0).GetPulls().at(i),TaggWeight);
+            }
+        }
+        else{
+            h_Ek_dev_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Ek(),bestFitted_proton->Ek()-protonCombs[bestKFindex].at(0)->Ek(),TaggWeight);
+            h_Theta_dev_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Theta()*radtodeg,(bestFitted_proton->p + vertshift).Theta()*radtodeg - protonCombs[bestKFindex].at(0)->Theta()*radtodeg,TaggWeight);
+            h_Phi_dev_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Phi()*radtodeg,bestFitted_proton->Phi()*radtodeg-protonCombs[bestKFindex].at(0)->Phi()*radtodeg,TaggWeight);
+            for (unsigned int i=0; i<nrFitVars; i++){
+                h_PartPulls_TAPS[cut_ind-nrCuts_beforeKF][0][i]->Fill(bestFitParticles.at(0).GetPulls().at(i),TaggWeight);
+            }
+        }
+
+        for (unsigned int i=0; i<nrPhotons; i++){
+            if(photonCombs[bestKFindex].at(i)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+                h_Ek_dev_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Ek(),bestFitted_photons.at(i)->Ek()-photonCombs[bestKFindex].at(i)->Ek(),TaggWeight);
+                h_Theta_dev_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Theta()*radtodeg,(bestFitted_photons.at(i)->p + vertshift).Theta()*radtodeg - photonCombs[bestKFindex].at(i)->Theta()*radtodeg,TaggWeight);
+                h_Phi_dev_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Phi()*radtodeg,bestFitted_photons.at(i)->Phi()*radtodeg-photonCombs[bestKFindex].at(i)->Phi()*radtodeg,TaggWeight);
+                for (unsigned int j=0; j<nrFitVars; j++){
+                    h_PartPulls_CB[cut_ind-nrCuts_beforeKF][1][j]->Fill(bestFitParticles.at(i+1).GetPulls().at(j),TaggWeight);
+                }
+            }
+            else{
+                h_Ek_dev_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Ek(),bestFitted_photons.at(i)->Ek()-photonCombs[bestKFindex].at(i)->Ek(),TaggWeight);
+                h_Theta_dev_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Theta()*radtodeg,(bestFitted_photons.at(i)->p + vertshift).Theta()*radtodeg - photonCombs[bestKFindex].at(i)->Theta()*radtodeg,TaggWeight);
+                h_Phi_dev_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Phi()*radtodeg,bestFitted_photons.at(i)->Phi()*radtodeg-photonCombs[bestKFindex].at(i)->Phi()*radtodeg,TaggWeight);
+                for (unsigned int j=0; j<nrFitVars; j++){
+                    h_PartPulls_TAPS[cut_ind-nrCuts_beforeKF][1][j]->Fill(bestFitParticles.at(i+1).GetPulls().at(j),TaggWeight);
+                }
+            }
+
+        }
+
+        //Pulls free Z vertex:
+
+        if(protonCombs[bestKFindex_freeZ].at(0)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+            h_Ek_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Ek(),bestFitted_proton_freeZ->Ek()-protonCombs[bestKFindex_freeZ].at(0)->Ek(),TaggWeight);
+            h_Theta_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Theta()*radtodeg,(bestFitted_proton_freeZ->p + vertshift_freeZ).Theta()*radtodeg - protonCombs[bestKFindex_freeZ].at(0)->Theta()*radtodeg,TaggWeight);
+            h_Phi_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Phi()*radtodeg,bestFitted_proton_freeZ->Phi()*radtodeg-protonCombs[bestKFindex_freeZ].at(0)->Phi()*radtodeg,TaggWeight);
+            for (unsigned int i=0; i<nrFitVars; i++){
+                h_PartPulls_freeZ_CB[cut_ind-nrCuts_beforeKF][0][i]->Fill(bestFitParticles_freeZ.at(0).GetPulls().at(i),TaggWeight);
+            }
+        }
+        else{
+            h_Ek_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Ek(),bestFitted_proton_freeZ->Ek()-protonCombs[bestKFindex_freeZ].at(0)->Ek(),TaggWeight);
+            h_Theta_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Theta()*radtodeg,(bestFitted_proton_freeZ->p + vertshift_freeZ).Theta()*radtodeg - protonCombs[bestKFindex_freeZ].at(0)->Theta()*radtodeg,TaggWeight);
+            h_Phi_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Phi()*radtodeg,bestFitted_proton_freeZ->Phi()*radtodeg-protonCombs[bestKFindex_freeZ].at(0)->Phi()*radtodeg,TaggWeight);
+            for (unsigned int i=0; i<nrFitVars; i++){
+                h_PartPulls_freeZ_TAPS[cut_ind-nrCuts_beforeKF][0][i]->Fill(bestFitParticles_freeZ.at(0).GetPulls().at(i),TaggWeight);
+            }
+        }
+
+        for (unsigned int i=0; i<nrPhotons; i++){
+            if(photonCombs[bestKFindex_freeZ].at(i)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+                h_Ek_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Ek(),bestFitted_photons_freeZ.at(i)->Ek()-photonCombs[bestKFindex_freeZ].at(i)->Ek(),TaggWeight);
+                h_Theta_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Theta()*radtodeg,(bestFitted_photons_freeZ.at(i)->p + vertshift).Theta()*radtodeg - photonCombs[bestKFindex_freeZ].at(i)->Theta()*radtodeg,TaggWeight);
+                h_Phi_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Phi()*radtodeg,bestFitted_photons_freeZ.at(i)->Phi()*radtodeg-photonCombs[bestKFindex_freeZ].at(i)->Phi()*radtodeg,TaggWeight);
+                for (unsigned int j=0; j<nrFitVars; j++){
+                    h_PartPulls_freeZ_CB[cut_ind-nrCuts_beforeKF][1][j]->Fill(bestFitParticles_freeZ.at(i+1).GetPulls().at(j),TaggWeight);
+                }
+            }
+            else{
+                h_Ek_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Ek(),bestFitted_photons_freeZ.at(i)->Ek()-photonCombs[bestKFindex_freeZ].at(i)->Ek(),TaggWeight);
+                h_Theta_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Theta()*radtodeg,(bestFitted_photons_freeZ.at(i)->p + vertshift).Theta()*radtodeg - photonCombs[bestKFindex_freeZ].at(i)->Theta()*radtodeg,TaggWeight);
+                h_Phi_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Phi()*radtodeg,bestFitted_photons_freeZ.at(i)->Phi()*radtodeg-photonCombs[bestKFindex_freeZ].at(i)->Phi()*radtodeg,TaggWeight);
+                for (unsigned int j=0; j<nrFitVars; j++){
+                    h_PartPulls_freeZ_TAPS[cut_ind-nrCuts_beforeKF][1][j]->Fill(bestFitParticles_freeZ.at(i+1).GetPulls().at(j),TaggWeight);
+                }
             }
 
         }
@@ -1774,6 +2106,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
 
         h_eeOpeningAngles[cut_ind-nrCuts_beforeKF]->Fill(ee_openingAngle,TaggWeight);
         h_ggOpeningAngles[cut_ind-nrCuts_beforeKF]->Fill(gg_openingAngle,TaggWeight);
+        h_helicity_angles[cut_ind-nrCuts_beforeKF]->Fill(helAngles,TaggWeight);
 
         //PID stuff:
 
@@ -1809,6 +2142,84 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
 
             if(photonCombs[bestKFindex].at(i+2)->Candidate->FindVetoCluster()->DetectorType == Detector_t::Type_t::PID){
                 h_NoProton_PIDEvsTime[cut_ind-nrCuts_beforeKF]->Fill(photonCombs[bestKFindex].at(i+2)->Candidate->FindVetoCluster()->Time,photonCombs[bestKFindex].at(i+2)->Candidate->FindVetoCluster()->Energy,TaggWeight);
+            }
+
+        }
+
+        //Pulls:
+
+        if(protonCombs[bestKFindex].at(0)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+            h_Ek_dev_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Ek(),bestFitted_proton->Ek()-protonCombs[bestKFindex].at(0)->Ek(),TaggWeight);
+            h_Theta_dev_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Theta()*radtodeg,(bestFitted_proton->p + vertshift).Theta()*radtodeg - protonCombs[bestKFindex].at(0)->Theta()*radtodeg,TaggWeight);
+            h_Phi_dev_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Phi()*radtodeg,bestFitted_proton->Phi()*radtodeg-protonCombs[bestKFindex].at(0)->Phi()*radtodeg,TaggWeight);
+            for (unsigned int i=0; i<nrFitVars; i++){
+                h_PartPulls_CB[cut_ind-nrCuts_beforeKF][0][i]->Fill(bestFitParticles.at(0).GetPulls().at(i),TaggWeight);
+            }
+        }
+        else{
+            h_Ek_dev_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Ek(),bestFitted_proton->Ek()-protonCombs[bestKFindex].at(0)->Ek(),TaggWeight);
+            h_Theta_dev_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Theta()*radtodeg,(bestFitted_proton->p + vertshift).Theta()*radtodeg - protonCombs[bestKFindex].at(0)->Theta()*radtodeg,TaggWeight);
+            h_Phi_dev_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Phi()*radtodeg,bestFitted_proton->Phi()*radtodeg-protonCombs[bestKFindex].at(0)->Phi()*radtodeg,TaggWeight);
+            for (unsigned int i=0; i<nrFitVars; i++){
+                h_PartPulls_TAPS[cut_ind-nrCuts_beforeKF][0][i]->Fill(bestFitParticles.at(0).GetPulls().at(i),TaggWeight);
+            }
+        }
+
+        for (unsigned int i=0; i<nrPhotons; i++){
+            if(photonCombs[bestKFindex].at(i)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+                h_Ek_dev_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Ek(),bestFitted_photons.at(i)->Ek()-photonCombs[bestKFindex].at(i)->Ek(),TaggWeight);
+                h_Theta_dev_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Theta()*radtodeg,(bestFitted_photons.at(i)->p + vertshift).Theta()*radtodeg - photonCombs[bestKFindex].at(i)->Theta()*radtodeg,TaggWeight);
+                h_Phi_dev_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Phi()*radtodeg,bestFitted_photons.at(i)->Phi()*radtodeg-photonCombs[bestKFindex].at(i)->Phi()*radtodeg,TaggWeight);
+                for (unsigned int j=0; j<nrFitVars; j++){
+                    h_PartPulls_CB[cut_ind-nrCuts_beforeKF][1][j]->Fill(bestFitParticles.at(i+1).GetPulls().at(j),TaggWeight);
+                }
+            }
+            else{
+                h_Ek_dev_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Ek(),bestFitted_photons.at(i)->Ek()-photonCombs[bestKFindex].at(i)->Ek(),TaggWeight);
+                h_Theta_dev_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Theta()*radtodeg,(bestFitted_photons.at(i)->p + vertshift).Theta()*radtodeg - photonCombs[bestKFindex].at(i)->Theta()*radtodeg,TaggWeight);
+                h_Phi_dev_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Phi()*radtodeg,bestFitted_photons.at(i)->Phi()*radtodeg-photonCombs[bestKFindex].at(i)->Phi()*radtodeg,TaggWeight);
+                for (unsigned int j=0; j<nrFitVars; j++){
+                    h_PartPulls_TAPS[cut_ind-nrCuts_beforeKF][1][j]->Fill(bestFitParticles.at(i+1).GetPulls().at(j),TaggWeight);
+                }
+            }
+
+        }
+
+        //Pulls free Z vertex:
+
+        if(protonCombs[bestKFindex_freeZ].at(0)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+            h_Ek_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Ek(),bestFitted_proton_freeZ->Ek()-protonCombs[bestKFindex_freeZ].at(0)->Ek(),TaggWeight);
+            h_Theta_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Theta()*radtodeg,(bestFitted_proton_freeZ->p + vertshift_freeZ).Theta()*radtodeg - protonCombs[bestKFindex_freeZ].at(0)->Theta()*radtodeg,TaggWeight);
+            h_Phi_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Phi()*radtodeg,bestFitted_proton_freeZ->Phi()*radtodeg-protonCombs[bestKFindex_freeZ].at(0)->Phi()*radtodeg,TaggWeight);
+            for (unsigned int i=0; i<nrFitVars; i++){
+                h_PartPulls_freeZ_CB[cut_ind-nrCuts_beforeKF][0][i]->Fill(bestFitParticles_freeZ.at(0).GetPulls().at(i),TaggWeight);
+            }
+        }
+        else{
+            h_Ek_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Ek(),bestFitted_proton_freeZ->Ek()-protonCombs[bestKFindex_freeZ].at(0)->Ek(),TaggWeight);
+            h_Theta_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Theta()*radtodeg,(bestFitted_proton_freeZ->p + vertshift_freeZ).Theta()*radtodeg - protonCombs[bestKFindex_freeZ].at(0)->Theta()*radtodeg,TaggWeight);
+            h_Phi_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Phi()*radtodeg,bestFitted_proton_freeZ->Phi()*radtodeg-protonCombs[bestKFindex_freeZ].at(0)->Phi()*radtodeg,TaggWeight);
+            for (unsigned int i=0; i<nrFitVars; i++){
+                h_PartPulls_freeZ_TAPS[cut_ind-nrCuts_beforeKF][0][i]->Fill(bestFitParticles_freeZ.at(0).GetPulls().at(i),TaggWeight);
+            }
+        }
+
+        for (unsigned int i=0; i<nrPhotons; i++){
+            if(photonCombs[bestKFindex_freeZ].at(i)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+                h_Ek_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Ek(),bestFitted_photons_freeZ.at(i)->Ek()-photonCombs[bestKFindex_freeZ].at(i)->Ek(),TaggWeight);
+                h_Theta_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Theta()*radtodeg,(bestFitted_photons_freeZ.at(i)->p + vertshift).Theta()*radtodeg - photonCombs[bestKFindex_freeZ].at(i)->Theta()*radtodeg,TaggWeight);
+                h_Phi_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Phi()*radtodeg,bestFitted_photons_freeZ.at(i)->Phi()*radtodeg-photonCombs[bestKFindex_freeZ].at(i)->Phi()*radtodeg,TaggWeight);
+                for (unsigned int j=0; j<nrFitVars; j++){
+                    h_PartPulls_freeZ_CB[cut_ind-nrCuts_beforeKF][1][j]->Fill(bestFitParticles_freeZ.at(i+1).GetPulls().at(j),TaggWeight);
+                }
+            }
+            else{
+                h_Ek_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Ek(),bestFitted_photons_freeZ.at(i)->Ek()-photonCombs[bestKFindex_freeZ].at(i)->Ek(),TaggWeight);
+                h_Theta_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Theta()*radtodeg,(bestFitted_photons_freeZ.at(i)->p + vertshift).Theta()*radtodeg - photonCombs[bestKFindex_freeZ].at(i)->Theta()*radtodeg,TaggWeight);
+                h_Phi_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Phi()*radtodeg,bestFitted_photons_freeZ.at(i)->Phi()*radtodeg-photonCombs[bestKFindex_freeZ].at(i)->Phi()*radtodeg,TaggWeight);
+                for (unsigned int j=0; j<nrFitVars; j++){
+                    h_PartPulls_freeZ_TAPS[cut_ind-nrCuts_beforeKF][1][j]->Fill(bestFitParticles_freeZ.at(i+1).GetPulls().at(j),TaggWeight);
+                }
             }
 
         }
@@ -1958,6 +2369,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
 
         h_eeOpeningAngles[cut_ind-nrCuts_beforeKF]->Fill(ee_openingAngle,TaggWeight);
         h_ggOpeningAngles[cut_ind-nrCuts_beforeKF]->Fill(gg_openingAngle,TaggWeight);
+        h_helicity_angles[cut_ind-nrCuts_beforeKF]->Fill(helAngles,TaggWeight);
 
         //PID stuff:
 
@@ -1993,6 +2405,84 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
 
             if(photonCombs[bestKFindex].at(i+2)->Candidate->FindVetoCluster()->DetectorType == Detector_t::Type_t::PID){
                 h_NoProton_PIDEvsTime[cut_ind-nrCuts_beforeKF]->Fill(photonCombs[bestKFindex].at(i+2)->Candidate->FindVetoCluster()->Time,photonCombs[bestKFindex].at(i+2)->Candidate->FindVetoCluster()->Energy,TaggWeight);
+            }
+
+        }
+
+        //Pulls:
+
+        if(protonCombs[bestKFindex].at(0)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+            h_Ek_dev_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Ek(),bestFitted_proton->Ek()-protonCombs[bestKFindex].at(0)->Ek(),TaggWeight);
+            h_Theta_dev_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Theta()*radtodeg,(bestFitted_proton->p + vertshift).Theta()*radtodeg - protonCombs[bestKFindex].at(0)->Theta()*radtodeg,TaggWeight);
+            h_Phi_dev_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Phi()*radtodeg,bestFitted_proton->Phi()*radtodeg-protonCombs[bestKFindex].at(0)->Phi()*radtodeg,TaggWeight);
+            for (unsigned int i=0; i<nrFitVars; i++){
+                h_PartPulls_CB[cut_ind-nrCuts_beforeKF][0][i]->Fill(bestFitParticles.at(0).GetPulls().at(i),TaggWeight);
+            }
+        }
+        else{
+            h_Ek_dev_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Ek(),bestFitted_proton->Ek()-protonCombs[bestKFindex].at(0)->Ek(),TaggWeight);
+            h_Theta_dev_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Theta()*radtodeg,(bestFitted_proton->p + vertshift).Theta()*radtodeg - protonCombs[bestKFindex].at(0)->Theta()*radtodeg,TaggWeight);
+            h_Phi_dev_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Phi()*radtodeg,bestFitted_proton->Phi()*radtodeg-protonCombs[bestKFindex].at(0)->Phi()*radtodeg,TaggWeight);
+            for (unsigned int i=0; i<nrFitVars; i++){
+                h_PartPulls_TAPS[cut_ind-nrCuts_beforeKF][0][i]->Fill(bestFitParticles.at(0).GetPulls().at(i),TaggWeight);
+            }
+        }
+
+        for (unsigned int i=0; i<nrPhotons; i++){
+            if(photonCombs[bestKFindex].at(i)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+                h_Ek_dev_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Ek(),bestFitted_photons.at(i)->Ek()-photonCombs[bestKFindex].at(i)->Ek(),TaggWeight);
+                h_Theta_dev_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Theta()*radtodeg,(bestFitted_photons.at(i)->p + vertshift).Theta()*radtodeg - photonCombs[bestKFindex].at(i)->Theta()*radtodeg,TaggWeight);
+                h_Phi_dev_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Phi()*radtodeg,bestFitted_photons.at(i)->Phi()*radtodeg-photonCombs[bestKFindex].at(i)->Phi()*radtodeg,TaggWeight);
+                for (unsigned int j=0; j<nrFitVars; j++){
+                    h_PartPulls_CB[cut_ind-nrCuts_beforeKF][1][j]->Fill(bestFitParticles.at(i+1).GetPulls().at(j),TaggWeight);
+                }
+            }
+            else{
+                h_Ek_dev_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Ek(),bestFitted_photons.at(i)->Ek()-photonCombs[bestKFindex].at(i)->Ek(),TaggWeight);
+                h_Theta_dev_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Theta()*radtodeg,(bestFitted_photons.at(i)->p + vertshift).Theta()*radtodeg - photonCombs[bestKFindex].at(i)->Theta()*radtodeg,TaggWeight);
+                h_Phi_dev_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Phi()*radtodeg,bestFitted_photons.at(i)->Phi()*radtodeg-photonCombs[bestKFindex].at(i)->Phi()*radtodeg,TaggWeight);
+                for (unsigned int j=0; j<nrFitVars; j++){
+                    h_PartPulls_TAPS[cut_ind-nrCuts_beforeKF][1][j]->Fill(bestFitParticles.at(i+1).GetPulls().at(j),TaggWeight);
+                }
+            }
+
+        }
+
+        //Pulls free Z vertex:
+
+        if(protonCombs[bestKFindex_freeZ].at(0)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+            h_Ek_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Ek(),bestFitted_proton_freeZ->Ek()-protonCombs[bestKFindex_freeZ].at(0)->Ek(),TaggWeight);
+            h_Theta_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Theta()*radtodeg,(bestFitted_proton_freeZ->p + vertshift_freeZ).Theta()*radtodeg - protonCombs[bestKFindex_freeZ].at(0)->Theta()*radtodeg,TaggWeight);
+            h_Phi_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Phi()*radtodeg,bestFitted_proton_freeZ->Phi()*radtodeg-protonCombs[bestKFindex_freeZ].at(0)->Phi()*radtodeg,TaggWeight);
+            for (unsigned int i=0; i<nrFitVars; i++){
+                h_PartPulls_freeZ_CB[cut_ind-nrCuts_beforeKF][0][i]->Fill(bestFitParticles_freeZ.at(0).GetPulls().at(i),TaggWeight);
+            }
+        }
+        else{
+            h_Ek_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Ek(),bestFitted_proton_freeZ->Ek()-protonCombs[bestKFindex_freeZ].at(0)->Ek(),TaggWeight);
+            h_Theta_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Theta()*radtodeg,(bestFitted_proton_freeZ->p + vertshift_freeZ).Theta()*radtodeg - protonCombs[bestKFindex_freeZ].at(0)->Theta()*radtodeg,TaggWeight);
+            h_Phi_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Phi()*radtodeg,bestFitted_proton_freeZ->Phi()*radtodeg-protonCombs[bestKFindex_freeZ].at(0)->Phi()*radtodeg,TaggWeight);
+            for (unsigned int i=0; i<nrFitVars; i++){
+                h_PartPulls_freeZ_TAPS[cut_ind-nrCuts_beforeKF][0][i]->Fill(bestFitParticles_freeZ.at(0).GetPulls().at(i),TaggWeight);
+            }
+        }
+
+        for (unsigned int i=0; i<nrPhotons; i++){
+            if(photonCombs[bestKFindex_freeZ].at(i)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+                h_Ek_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Ek(),bestFitted_photons_freeZ.at(i)->Ek()-photonCombs[bestKFindex_freeZ].at(i)->Ek(),TaggWeight);
+                h_Theta_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Theta()*radtodeg,(bestFitted_photons_freeZ.at(i)->p + vertshift).Theta()*radtodeg - photonCombs[bestKFindex_freeZ].at(i)->Theta()*radtodeg,TaggWeight);
+                h_Phi_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Phi()*radtodeg,bestFitted_photons_freeZ.at(i)->Phi()*radtodeg-photonCombs[bestKFindex_freeZ].at(i)->Phi()*radtodeg,TaggWeight);
+                for (unsigned int j=0; j<nrFitVars; j++){
+                    h_PartPulls_freeZ_CB[cut_ind-nrCuts_beforeKF][1][j]->Fill(bestFitParticles_freeZ.at(i+1).GetPulls().at(j),TaggWeight);
+                }
+            }
+            else{
+                h_Ek_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Ek(),bestFitted_photons_freeZ.at(i)->Ek()-photonCombs[bestKFindex_freeZ].at(i)->Ek(),TaggWeight);
+                h_Theta_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Theta()*radtodeg,(bestFitted_photons_freeZ.at(i)->p + vertshift).Theta()*radtodeg - photonCombs[bestKFindex_freeZ].at(i)->Theta()*radtodeg,TaggWeight);
+                h_Phi_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Phi()*radtodeg,bestFitted_photons_freeZ.at(i)->Phi()*radtodeg-photonCombs[bestKFindex_freeZ].at(i)->Phi()*radtodeg,TaggWeight);
+                for (unsigned int j=0; j<nrFitVars; j++){
+                    h_PartPulls_freeZ_TAPS[cut_ind-nrCuts_beforeKF][1][j]->Fill(bestFitParticles_freeZ.at(i+1).GetPulls().at(j),TaggWeight);
+                }
             }
 
         }
@@ -2120,6 +2610,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
 
         h_eeOpeningAngles[cut_ind-nrCuts_beforeKF]->Fill(ee_openingAngle,TaggWeight);
         h_ggOpeningAngles[cut_ind-nrCuts_beforeKF]->Fill(gg_openingAngle,TaggWeight);
+        h_helicity_angles[cut_ind-nrCuts_beforeKF]->Fill(helAngles,TaggWeight);
 
         //PID stuff:
 
@@ -2155,6 +2646,84 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
 
             if(photonCombs[bestKFindex].at(i+2)->Candidate->FindVetoCluster()->DetectorType == Detector_t::Type_t::PID){
                 h_NoProton_PIDEvsTime[cut_ind-nrCuts_beforeKF]->Fill(photonCombs[bestKFindex].at(i+2)->Candidate->FindVetoCluster()->Time,photonCombs[bestKFindex].at(i+2)->Candidate->FindVetoCluster()->Energy,TaggWeight);
+            }
+
+        }
+
+        //Pulls:
+
+        if(protonCombs[bestKFindex].at(0)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+            h_Ek_dev_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Ek(),bestFitted_proton->Ek()-protonCombs[bestKFindex].at(0)->Ek(),TaggWeight);
+            h_Theta_dev_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Theta()*radtodeg,(bestFitted_proton->p + vertshift).Theta()*radtodeg - protonCombs[bestKFindex].at(0)->Theta()*radtodeg,TaggWeight);
+            h_Phi_dev_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Phi()*radtodeg,bestFitted_proton->Phi()*radtodeg-protonCombs[bestKFindex].at(0)->Phi()*radtodeg,TaggWeight);
+            for (unsigned int i=0; i<nrFitVars; i++){
+                h_PartPulls_CB[cut_ind-nrCuts_beforeKF][0][i]->Fill(bestFitParticles.at(0).GetPulls().at(i),TaggWeight);
+            }
+        }
+        else{
+            h_Ek_dev_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Ek(),bestFitted_proton->Ek()-protonCombs[bestKFindex].at(0)->Ek(),TaggWeight);
+            h_Theta_dev_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Theta()*radtodeg,(bestFitted_proton->p + vertshift).Theta()*radtodeg - protonCombs[bestKFindex].at(0)->Theta()*radtodeg,TaggWeight);
+            h_Phi_dev_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Phi()*radtodeg,bestFitted_proton->Phi()*radtodeg-protonCombs[bestKFindex].at(0)->Phi()*radtodeg,TaggWeight);
+            for (unsigned int i=0; i<nrFitVars; i++){
+                h_PartPulls_TAPS[cut_ind-nrCuts_beforeKF][0][i]->Fill(bestFitParticles.at(0).GetPulls().at(i),TaggWeight);
+            }
+        }
+
+        for (unsigned int i=0; i<nrPhotons; i++){
+            if(photonCombs[bestKFindex].at(i)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+                h_Ek_dev_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Ek(),bestFitted_photons.at(i)->Ek()-photonCombs[bestKFindex].at(i)->Ek(),TaggWeight);
+                h_Theta_dev_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Theta()*radtodeg,(bestFitted_photons.at(i)->p + vertshift).Theta()*radtodeg - photonCombs[bestKFindex].at(i)->Theta()*radtodeg,TaggWeight);
+                h_Phi_dev_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Phi()*radtodeg,bestFitted_photons.at(i)->Phi()*radtodeg-photonCombs[bestKFindex].at(i)->Phi()*radtodeg,TaggWeight);
+                for (unsigned int j=0; j<nrFitVars; j++){
+                    h_PartPulls_CB[cut_ind-nrCuts_beforeKF][1][j]->Fill(bestFitParticles.at(i+1).GetPulls().at(j),TaggWeight);
+                }
+            }
+            else{
+                h_Ek_dev_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Ek(),bestFitted_photons.at(i)->Ek()-photonCombs[bestKFindex].at(i)->Ek(),TaggWeight);
+                h_Theta_dev_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Theta()*radtodeg,(bestFitted_photons.at(i)->p + vertshift).Theta()*radtodeg - photonCombs[bestKFindex].at(i)->Theta()*radtodeg,TaggWeight);
+                h_Phi_dev_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Phi()*radtodeg,bestFitted_photons.at(i)->Phi()*radtodeg-photonCombs[bestKFindex].at(i)->Phi()*radtodeg,TaggWeight);
+                for (unsigned int j=0; j<nrFitVars; j++){
+                    h_PartPulls_TAPS[cut_ind-nrCuts_beforeKF][1][j]->Fill(bestFitParticles.at(i+1).GetPulls().at(j),TaggWeight);
+                }
+            }
+
+        }
+
+        //Pulls free Z vertex:
+
+        if(protonCombs[bestKFindex_freeZ].at(0)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+            h_Ek_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Ek(),bestFitted_proton_freeZ->Ek()-protonCombs[bestKFindex_freeZ].at(0)->Ek(),TaggWeight);
+            h_Theta_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Theta()*radtodeg,(bestFitted_proton_freeZ->p + vertshift_freeZ).Theta()*radtodeg - protonCombs[bestKFindex_freeZ].at(0)->Theta()*radtodeg,TaggWeight);
+            h_Phi_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Phi()*radtodeg,bestFitted_proton_freeZ->Phi()*radtodeg-protonCombs[bestKFindex_freeZ].at(0)->Phi()*radtodeg,TaggWeight);
+            for (unsigned int i=0; i<nrFitVars; i++){
+                h_PartPulls_freeZ_CB[cut_ind-nrCuts_beforeKF][0][i]->Fill(bestFitParticles_freeZ.at(0).GetPulls().at(i),TaggWeight);
+            }
+        }
+        else{
+            h_Ek_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Ek(),bestFitted_proton_freeZ->Ek()-protonCombs[bestKFindex_freeZ].at(0)->Ek(),TaggWeight);
+            h_Theta_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Theta()*radtodeg,(bestFitted_proton_freeZ->p + vertshift_freeZ).Theta()*radtodeg - protonCombs[bestKFindex_freeZ].at(0)->Theta()*radtodeg,TaggWeight);
+            h_Phi_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Phi()*radtodeg,bestFitted_proton_freeZ->Phi()*radtodeg-protonCombs[bestKFindex_freeZ].at(0)->Phi()*radtodeg,TaggWeight);
+            for (unsigned int i=0; i<nrFitVars; i++){
+                h_PartPulls_freeZ_TAPS[cut_ind-nrCuts_beforeKF][0][i]->Fill(bestFitParticles_freeZ.at(0).GetPulls().at(i),TaggWeight);
+            }
+        }
+
+        for (unsigned int i=0; i<nrPhotons; i++){
+            if(photonCombs[bestKFindex_freeZ].at(i)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+                h_Ek_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Ek(),bestFitted_photons_freeZ.at(i)->Ek()-photonCombs[bestKFindex_freeZ].at(i)->Ek(),TaggWeight);
+                h_Theta_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Theta()*radtodeg,(bestFitted_photons_freeZ.at(i)->p + vertshift).Theta()*radtodeg - photonCombs[bestKFindex_freeZ].at(i)->Theta()*radtodeg,TaggWeight);
+                h_Phi_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Phi()*radtodeg,bestFitted_photons_freeZ.at(i)->Phi()*radtodeg-photonCombs[bestKFindex_freeZ].at(i)->Phi()*radtodeg,TaggWeight);
+                for (unsigned int j=0; j<nrFitVars; j++){
+                    h_PartPulls_freeZ_CB[cut_ind-nrCuts_beforeKF][1][j]->Fill(bestFitParticles_freeZ.at(i+1).GetPulls().at(j),TaggWeight);
+                }
+            }
+            else{
+                h_Ek_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Ek(),bestFitted_photons_freeZ.at(i)->Ek()-photonCombs[bestKFindex_freeZ].at(i)->Ek(),TaggWeight);
+                h_Theta_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Theta()*radtodeg,(bestFitted_photons_freeZ.at(i)->p + vertshift).Theta()*radtodeg - photonCombs[bestKFindex_freeZ].at(i)->Theta()*radtodeg,TaggWeight);
+                h_Phi_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Phi()*radtodeg,bestFitted_photons_freeZ.at(i)->Phi()*radtodeg-photonCombs[bestKFindex_freeZ].at(i)->Phi()*radtodeg,TaggWeight);
+                for (unsigned int j=0; j<nrFitVars; j++){
+                    h_PartPulls_freeZ_TAPS[cut_ind-nrCuts_beforeKF][1][j]->Fill(bestFitParticles_freeZ.at(i+1).GetPulls().at(j),TaggWeight);
+                }
             }
 
         }
@@ -2294,6 +2863,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
 
         h_eeOpeningAngles[cut_ind-nrCuts_beforeKF]->Fill(ee_openingAngle,TaggWeight);
         h_ggOpeningAngles[cut_ind-nrCuts_beforeKF]->Fill(gg_openingAngle,TaggWeight);
+        h_helicity_angles[cut_ind-nrCuts_beforeKF]->Fill(helAngles,TaggWeight);
 
         //PID stuff:
 
@@ -2329,6 +2899,84 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
 
             if(photonCombs[bestKFindex].at(i+2)->Candidate->FindVetoCluster()->DetectorType == Detector_t::Type_t::PID){
                 h_NoProton_PIDEvsTime[cut_ind-nrCuts_beforeKF]->Fill(photonCombs[bestKFindex].at(i+2)->Candidate->FindVetoCluster()->Time,photonCombs[bestKFindex].at(i+2)->Candidate->FindVetoCluster()->Energy,TaggWeight);
+            }
+
+        }
+
+        //Pulls:
+
+        if(protonCombs[bestKFindex].at(0)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+            h_Ek_dev_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Ek(),bestFitted_proton->Ek()-protonCombs[bestKFindex].at(0)->Ek(),TaggWeight);
+            h_Theta_dev_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Theta()*radtodeg,(bestFitted_proton->p + vertshift).Theta()*radtodeg - protonCombs[bestKFindex].at(0)->Theta()*radtodeg,TaggWeight);
+            h_Phi_dev_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Phi()*radtodeg,bestFitted_proton->Phi()*radtodeg-protonCombs[bestKFindex].at(0)->Phi()*radtodeg,TaggWeight);
+            for (unsigned int i=0; i<nrFitVars; i++){
+                h_PartPulls_CB[cut_ind-nrCuts_beforeKF][0][i]->Fill(bestFitParticles.at(0).GetPulls().at(i),TaggWeight);
+            }
+        }
+        else{
+            h_Ek_dev_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Ek(),bestFitted_proton->Ek()-protonCombs[bestKFindex].at(0)->Ek(),TaggWeight);
+            h_Theta_dev_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Theta()*radtodeg,(bestFitted_proton->p + vertshift).Theta()*radtodeg - protonCombs[bestKFindex].at(0)->Theta()*radtodeg,TaggWeight);
+            h_Phi_dev_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex].at(0)->Phi()*radtodeg,bestFitted_proton->Phi()*radtodeg-protonCombs[bestKFindex].at(0)->Phi()*radtodeg,TaggWeight);
+            for (unsigned int i=0; i<nrFitVars; i++){
+                h_PartPulls_TAPS[cut_ind-nrCuts_beforeKF][0][i]->Fill(bestFitParticles.at(0).GetPulls().at(i),TaggWeight);
+            }
+        }
+
+        for (unsigned int i=0; i<nrPhotons; i++){
+            if(photonCombs[bestKFindex].at(i)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+                h_Ek_dev_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Ek(),bestFitted_photons.at(i)->Ek()-photonCombs[bestKFindex].at(i)->Ek(),TaggWeight);
+                h_Theta_dev_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Theta()*radtodeg,(bestFitted_photons.at(i)->p + vertshift).Theta()*radtodeg - photonCombs[bestKFindex].at(i)->Theta()*radtodeg,TaggWeight);
+                h_Phi_dev_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Phi()*radtodeg,bestFitted_photons.at(i)->Phi()*radtodeg-photonCombs[bestKFindex].at(i)->Phi()*radtodeg,TaggWeight);
+                for (unsigned int j=0; j<nrFitVars; j++){
+                    h_PartPulls_CB[cut_ind-nrCuts_beforeKF][1][j]->Fill(bestFitParticles.at(i+1).GetPulls().at(j),TaggWeight);
+                }
+            }
+            else{
+                h_Ek_dev_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Ek(),bestFitted_photons.at(i)->Ek()-photonCombs[bestKFindex].at(i)->Ek(),TaggWeight);
+                h_Theta_dev_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Theta()*radtodeg,(bestFitted_photons.at(i)->p + vertshift).Theta()*radtodeg - photonCombs[bestKFindex].at(i)->Theta()*radtodeg,TaggWeight);
+                h_Phi_dev_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex].at(i)->Phi()*radtodeg,bestFitted_photons.at(i)->Phi()*radtodeg-photonCombs[bestKFindex].at(i)->Phi()*radtodeg,TaggWeight);
+                for (unsigned int j=0; j<nrFitVars; j++){
+                    h_PartPulls_TAPS[cut_ind-nrCuts_beforeKF][1][j]->Fill(bestFitParticles.at(i+1).GetPulls().at(j),TaggWeight);
+                }
+            }
+
+        }
+
+        //Pulls free Z vertex:
+
+        if(protonCombs[bestKFindex_freeZ].at(0)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+            h_Ek_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Ek(),bestFitted_proton_freeZ->Ek()-protonCombs[bestKFindex_freeZ].at(0)->Ek(),TaggWeight);
+            h_Theta_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Theta()*radtodeg,(bestFitted_proton_freeZ->p + vertshift_freeZ).Theta()*radtodeg - protonCombs[bestKFindex_freeZ].at(0)->Theta()*radtodeg,TaggWeight);
+            h_Phi_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Phi()*radtodeg,bestFitted_proton_freeZ->Phi()*radtodeg-protonCombs[bestKFindex_freeZ].at(0)->Phi()*radtodeg,TaggWeight);
+            for (unsigned int i=0; i<nrFitVars; i++){
+                h_PartPulls_freeZ_CB[cut_ind-nrCuts_beforeKF][0][i]->Fill(bestFitParticles_freeZ.at(0).GetPulls().at(i),TaggWeight);
+            }
+        }
+        else{
+            h_Ek_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Ek(),bestFitted_proton_freeZ->Ek()-protonCombs[bestKFindex_freeZ].at(0)->Ek(),TaggWeight);
+            h_Theta_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Theta()*radtodeg,(bestFitted_proton_freeZ->p + vertshift_freeZ).Theta()*radtodeg - protonCombs[bestKFindex_freeZ].at(0)->Theta()*radtodeg,TaggWeight);
+            h_Phi_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(protonCombs[bestKFindex_freeZ].at(0)->Phi()*radtodeg,bestFitted_proton_freeZ->Phi()*radtodeg-protonCombs[bestKFindex_freeZ].at(0)->Phi()*radtodeg,TaggWeight);
+            for (unsigned int i=0; i<nrFitVars; i++){
+                h_PartPulls_freeZ_TAPS[cut_ind-nrCuts_beforeKF][0][i]->Fill(bestFitParticles_freeZ.at(0).GetPulls().at(i),TaggWeight);
+            }
+        }
+
+        for (unsigned int i=0; i<nrPhotons; i++){
+            if(photonCombs[bestKFindex_freeZ].at(i)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+                h_Ek_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Ek(),bestFitted_photons_freeZ.at(i)->Ek()-photonCombs[bestKFindex_freeZ].at(i)->Ek(),TaggWeight);
+                h_Theta_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Theta()*radtodeg,(bestFitted_photons_freeZ.at(i)->p + vertshift).Theta()*radtodeg - photonCombs[bestKFindex_freeZ].at(i)->Theta()*radtodeg,TaggWeight);
+                h_Phi_dev_freeZ_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Phi()*radtodeg,bestFitted_photons_freeZ.at(i)->Phi()*radtodeg-photonCombs[bestKFindex_freeZ].at(i)->Phi()*radtodeg,TaggWeight);
+                for (unsigned int j=0; j<nrFitVars; j++){
+                    h_PartPulls_freeZ_CB[cut_ind-nrCuts_beforeKF][1][j]->Fill(bestFitParticles_freeZ.at(i+1).GetPulls().at(j),TaggWeight);
+                }
+            }
+            else{
+                h_Ek_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Ek(),bestFitted_photons_freeZ.at(i)->Ek()-photonCombs[bestKFindex_freeZ].at(i)->Ek(),TaggWeight);
+                h_Theta_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Theta()*radtodeg,(bestFitted_photons_freeZ.at(i)->p + vertshift).Theta()*radtodeg - photonCombs[bestKFindex_freeZ].at(i)->Theta()*radtodeg,TaggWeight);
+                h_Phi_dev_freeZ_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photonCombs[bestKFindex_freeZ].at(i)->Phi()*radtodeg,bestFitted_photons_freeZ.at(i)->Phi()*radtodeg-photonCombs[bestKFindex_freeZ].at(i)->Phi()*radtodeg,TaggWeight);
+                for (unsigned int j=0; j<nrFitVars; j++){
+                    h_PartPulls_freeZ_TAPS[cut_ind-nrCuts_beforeKF][1][j]->Fill(bestFitParticles_freeZ.at(i+1).GetPulls().at(j),TaggWeight);
+                }
             }
 
         }

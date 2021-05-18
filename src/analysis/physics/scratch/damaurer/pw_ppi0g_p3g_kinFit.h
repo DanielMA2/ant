@@ -159,11 +159,6 @@ private:
 
     TH2D* h_3g_EvTheta_CB;
     TH2D* h_3g_EvTheta_TAPS;
-    TH2D* h_p_EvTheta;
-    TH2D* h_w_EvTheta;
-    TH2D* h_wg_EvTheta;
-    TH2D* h_wpi0_EvTheta;
-    TH2D* h_wpi02g_EvTheta;
     //TH1D* h_Reconstructed_Data_Statistics;
 
     //KinFit-overview:
@@ -174,16 +169,22 @@ private:
     TH1D* h_IM3g_Fit[nrCutsKF];
     TH1D* h_IM2gPi0_Fit[nrCutsKF];
 
-    TH2D* h_Ek_dev_CB[nrPartType];
-    TH2D* h_Theta_dev_CB[nrPartType];
-    TH2D* h_Phi_dev_CB[nrPartType];
+    TH2D* h_p_EvTheta[nrCutsKF];
+    TH2D* h_w_EvTheta[nrCutsKF];
+    TH2D* h_wg_EvTheta[nrCutsKF];
+    TH2D* h_wpi0_EvTheta[nrCutsKF];
+    TH2D* h_wpi02g_EvTheta[nrCutsKF];
 
-    TH2D* h_Ek_dev_TAPS[nrPartType];
-    TH2D* h_Theta_dev_TAPS[nrPartType];
-    TH2D* h_Phi_dev_TAPS[nrPartType];
+    TH2D* h_Ek_dev_CB[nrCutsKF][nrPartType];
+    TH2D* h_Theta_dev_CB[nrCutsKF][nrPartType];
+    TH2D* h_Phi_dev_CB[nrCutsKF][nrPartType];
 
-    TH1D *h_PartPulls_CB[nrPartType][nrFitVars];
-    TH1D *h_PartPulls_TAPS[nrPartType][nrFitVars];
+    TH2D* h_Ek_dev_TAPS[nrCutsKF][nrPartType];
+    TH2D* h_Theta_dev_TAPS[nrCutsKF][nrPartType];
+    TH2D* h_Phi_dev_TAPS[nrCutsKF][nrPartType];
+
+    TH1D *h_PartPulls_CB[nrCutsKF][nrPartType][nrFitVars];
+    TH1D *h_PartPulls_TAPS[nrCutsKF][nrPartType][nrFitVars];
 
     TH1D* h_CBEsum[nrCuts_total];
 

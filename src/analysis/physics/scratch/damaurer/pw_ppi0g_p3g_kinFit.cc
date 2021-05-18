@@ -130,27 +130,115 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
     auto hf_Candidates = new HistogramFactory("hf_Candidates", HistFac, "");
     auto hf_wpi0g_EvsTheta = new HistogramFactory("hf_wpi0g_EvsTheta", HistFac, "");
 
+    auto hf_VetoE = new HistogramFactory("hf_VetoE", HistFac, "");
+    auto hf_CBEsum = new HistogramFactory("hf_CB_Esum", HistFac, "");
+
     //auto hf_OnlyEnergy = new HistogramFactory("All_the_candidate_energies", HistFac, "");
     //auto hf_OnlyAngles = new HistogramFactory("All_the_candidate_angles", HistFac, "");
     //auto hf_extras = new HistogramFactory("Some_additional_extra_hists", HistFac, "");
 
     //KinFit histfactories:
-    auto hf_OverviewKF = new HistogramFactory("KinFit_overview", HistFac, "");
-    auto hf_CombCBKF = new HistogramFactory("KinFit_CBvarComb2d", HistFac, "");
-    auto hf_CombTAPSKF = new HistogramFactory("KinFit_TAPSvarComb2d", HistFac, "");
-
-    auto hf_invmassKF = new HistogramFactory("KinFit_invmass", HistFac, "");
-
-    auto hfPullsCBKF = new HistogramFactory("KinFit_CBpulls", HistFac, "");
-    auto hfPullsTAPSKF = new HistogramFactory("KinFit_TAPSpulls", HistFac, "");
-    auto hf_VetoE = new HistogramFactory("hf_VetoE", HistFac, "");
-
-    auto hf_CBEsum = new HistogramFactory("hf_CB_Esum", HistFac, "");
-
+    auto hf_OverviewKF = new HistogramFactory("hf_OverviewKF", HistFac, "");
+    auto hf_CombCBKF = new HistogramFactory("hf_CombCBKF", HistFac, "");
+    auto hf_CombTAPSKF = new HistogramFactory("hf_CombTAPSKF", HistFac, "");
+    auto hf_invmassKF = new HistogramFactory("hf_invmassKF", HistFac, "");
+    auto hfPullsCBKF = new HistogramFactory("hf_PullsCBKF", HistFac, "");
+    auto hfPullsTAPSKF = new HistogramFactory("hf_PullsTAPSKF", HistFac, "");
     auto hf_CaloEvsVetoE_CB_SideCheck = new HistogramFactory("hf_CaloEvsVetoE_CB_SideCheck", HistFac, "");
     auto hf_CaloEvsVetoE_TAPS_SideCheck = new HistogramFactory("hf_CaloEvsVetoE_TAPS_SideCheck", HistFac, "");
-
     auto hf_PIDEvsTime = new HistogramFactory("hf_PIDEvsTime", HistFac, "");
+
+    h_RecData_Stat = hf_RecData_CandStat->makeTH1D("Amount of events after cuts:",     // title
+                                     "Cuts", "#",     // xlabel, ylabel
+                                     statistic_bins,  // our binnings
+                                     "h_RecData_Stat", true    // ROOT object name, auto-generated if omitted
+                                     );
+
+    h_RecData_relStat = hf_RecData_CandStat->makeTH1D("rel. amount of events after cuts:",     // title
+                                      "Cuts", "rel. #",     // xlabel, ylabel
+                                      statistic_bins,  // our binnings
+                                      "h_RecData_relStat", true    // ROOT object name, auto-generated if omitted
+                                      );
+
+    h_TaggerTime = hf_Tagger->makeTH1D("Tagger Time",     // title
+                                    "t [ns]", "#",     // xlabel, ylabel
+                                    time_bins,  // our binnings
+                                    "h_TaggerTime"     // ROOT object name, auto-generated if omitted
+                                    );
+
+    h_nClusters = hf_Tagger->makeTH1D("Number of Clusters", "nClusters", "#", BinSettings(20), "h_nClusters");
+
+
+    /*
+    h_InitialBeamE = hf_OnlyEnergy->makeTH1D("Photon beam - Energy distribution",     // title
+                                   "E [GeV]", "#",     // xlabel, ylabel
+                                   initialBeamE_bins,  // our binnings
+                                   "h_InitialBeamE"     // ROOT object name, auto-generated if omitted
+                                   );
+
+    h_VetoEnergies = hf_Tagger->makeTH1D("Veto Energies", "E [MeV]", "#", Veto_Energy_bins, "h_VetoEnergies");
+
+
+    h_NeuPolarAngles = hf_OnlyAngles->makeTH1D("Neutral candidate polarangles",     // title
+                                       "#Theta [deg]", "#",     // xlabel, ylabel
+                                       theta_bins,  // our binnings
+                                       "h_NeuPolarAngles", true     // ROOT object name, auto-generated if omitted
+                                       );
+
+    h_NeuAzimuthAngles = hf_OnlyAngles->makeTH1D("Neutral candidate azimuthangles",     // title
+                                       "#Phi [deg]", "#",     // xlabel, ylabel
+                                       phi_bins,  // our binnings
+                                       "h_NeuAzimuthAngles", true     // ROOT object name, auto-generated if omitted
+                                       );
+
+    h_ChaPolarAngles = hf_OnlyAngles->makeTH1D("Charged particles polarangles",     // title
+                                                    "#Theta [deg]", "#",     // xlabel, ylabel
+                                                    theta_bins,  // our binnings
+                                                    "h_ChaPolarAngles", true     // ROOT object name, auto-generated if omitted
+                                                    );
+
+    h_ChaAzimuthAngles = hf_OnlyAngles->makeTH1D("Charged particles azimuthangles",     // title
+                                                    "#Phi [deg]", "#",     // xlabel, ylabel
+                                                    phi_bins,  // our binnings
+                                                    "h_ChaAzimuthAngles", true     // ROOT object name, auto-generated if omitted
+                                                    );
+
+    h_3gPolarAngles = hf_OnlyAngles->makeTH1D("Rec. Photons polarangles",     // title
+                                             "#Theta [deg]", "#",     // xlabel, ylabel
+                                             theta_bins,  // our binnings
+                                             "h_3gPolarAngles", true     // ROOT object name, auto-generated if omitted
+                                             );
+
+    h_3gPolarAnglesCB = hf_OnlyAngles->makeTH1D("Rec. Photons polarangles only in CB",     // title
+                                             "#Theta [deg]", "#",     // xlabel, ylabel
+                                             theta_bins,  // our binnings
+                                             "h_3gPolarAnglesCB", true     // ROOT object name, auto-generated if omitted
+                                             );
+
+    h_3gPolarAnglesTAPS = hf_OnlyAngles->makeTH1D("Rec. Photons polarangles only in TAPS",     // title
+                                             "#Theta [deg]", "#",     // xlabel, ylabel
+                                             theta_bins,  // our binnings
+                                             "h_3gPolarAnglesTAPS", true     // ROOT object name, auto-generated if omitted
+                                             );
+
+    h_3gAzimuthAngles = hf_OnlyAngles->makeTH1D("Rec. Photons azimuthangles",     // title
+                                               "#Phi [deg]", "#",     // xlabel, ylabel
+                                               phi_bins,  // our binnings
+                                               "h_3gAzimuthAngles", true     // ROOT object name, auto-generated if omitted
+                                               );
+
+    h_3g_EvTheta_CB = hf_wpi0g_EvsTheta->makeTH2D("Photon energy vs theta only in CB", //title
+                                       "Theta [deg]","E [MeV]",  // xlabel, ylabel
+                                       theta_bins, E_photon_bins,    // our binnings
+                                       "h_3g_EvTheta_CB", true    // ROOT object name, auto-generated if omitted
+                                       );
+
+    h_3g_EvTheta_TAPS = hf_wpi0g_EvsTheta->makeTH2D("Photon energy vs theta only in TAPS", //title
+                                       "Theta [deg]","E [MeV]",  // xlabel, ylabel
+                                       theta_bins, E_photon_bins,    // our binnings
+                                       "h_3g_EvTheta_TAPS", true    // ROOT object name, auto-generated if omitted
+                                       );
+    */
 
     for (unsigned int i=0; i<nrCuts_total; i++){
         /*
@@ -268,7 +356,7 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
 
     }
 
-    for (unsigned int i=0; i<(nrCuts_total-nrCuts_beforeSel); i++){
+    for (unsigned int i=0; i<nrCuts_Sel; i++){
         /*
         stringstream ss;
         ss << i;
@@ -396,127 +484,6 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
     }
     */
 
-    h_RecData_Stat = hf_RecData_CandStat->makeTH1D("Amount of events after cuts:",     // title
-                                     "Cuts", "#",     // xlabel, ylabel
-                                     statistic_bins,  // our binnings
-                                     "h_RecData_Stat", true    // ROOT object name, auto-generated if omitted
-                                     );
-
-    h_RecData_relStat = hf_RecData_CandStat->makeTH1D("rel. amount of events after cuts:",     // title
-                                      "Cuts", "rel. #",     // xlabel, ylabel
-                                      statistic_bins,  // our binnings
-                                      "h_RecData_relStat", true    // ROOT object name, auto-generated if omitted
-                                      );
-
-    h_TaggerTime = hf_Tagger->makeTH1D("Tagger Time",     // title
-                                    "t [ns]", "#",     // xlabel, ylabel
-                                    time_bins,  // our binnings
-                                    "h_TaggerTime"     // ROOT object name, auto-generated if omitted
-                                    );
-
-    h_nClusters = hf_Tagger->makeTH1D("Number of Clusters", "nClusters", "#", BinSettings(20), "h_nClusters");
-
-    h_p_EvTheta = hf_wpi0g_EvsTheta->makeTH2D("Rec. proton energy vs theta", //title
-                                                 "Theta [deg]","E [MeV]",  // xlabel, ylabel
-                                                 theta_bins, E_proton_bins,    // our binnings
-                                                 "h_p_EvTheta", true    // ROOT object name, auto-generated if omitted
-                                                 );
-
-    h_w_EvTheta = hf_wpi0g_EvsTheta->makeTH2D("Rec. omega meson energy vs theta", //title
-                                                 "Theta [deg]","E [MeV]",  // xlabel, ylabel
-                                                 theta_bins, E_omega_bins,    // our binnings
-                                                 "h_w_EvTheta", true    // ROOT object name, auto-generated if omitted
-                                                 );
-
-    h_wg_EvTheta = hf_wpi0g_EvsTheta->makeTH2D("Rec. omega decay-photon energy vs theta", //title
-                                       "Theta [deg]","E [MeV]",  // xlabel, ylabel
-                                       theta_bins, E_photon_bins,    // our binnings
-                                       "h_wg_EvTheta", true    // ROOT object name, auto-generated if omitted
-                                       );
-
-    h_wpi0_EvTheta = hf_wpi0g_EvsTheta->makeTH2D("Rec. Pi0 energy vs theta", //title
-                                        "Theta [deg]","E [MeV]", // xlabel, ylabel
-                                        theta_bins, E_pi0_bins,    // our binnings
-                                        "h_wpi0_EvTheta", true    // ROOT object name, auto-generated if omitted
-                                        );
-
-    h_wpi02g_EvTheta = hf_wpi0g_EvsTheta->makeTH2D("Rec. Pi0 decay-photons energy vs theta", //title
-                                        "Theta [deg]","E [MeV]", // xlabel, ylabel
-                                        theta_bins, E_pi0_bins,    // our binnings
-                                        "h_wpi02g_EvTheta", true    // ROOT object name, auto-generated if omitted
-                                        );
-    
-    /*
-    h_InitialBeamE = hf_OnlyEnergy->makeTH1D("Photon beam - Energy distribution",     // title
-                                   "E [GeV]", "#",     // xlabel, ylabel
-                                   initialBeamE_bins,  // our binnings
-                                   "h_InitialBeamE"     // ROOT object name, auto-generated if omitted
-                                   );
-
-    h_VetoEnergies = hf_Tagger->makeTH1D("Veto Energies", "E [MeV]", "#", Veto_Energy_bins, "h_VetoEnergies");
-
-
-    h_NeuPolarAngles = hf_OnlyAngles->makeTH1D("Neutral candidate polarangles",     // title
-                                       "#Theta [deg]", "#",     // xlabel, ylabel
-                                       theta_bins,  // our binnings
-                                       "h_NeuPolarAngles", true     // ROOT object name, auto-generated if omitted
-                                       );
-
-    h_NeuAzimuthAngles = hf_OnlyAngles->makeTH1D("Neutral candidate azimuthangles",     // title
-                                       "#Phi [deg]", "#",     // xlabel, ylabel
-                                       phi_bins,  // our binnings
-                                       "h_NeuAzimuthAngles", true     // ROOT object name, auto-generated if omitted
-                                       );
-
-    h_ChaPolarAngles = hf_OnlyAngles->makeTH1D("Charged particles polarangles",     // title
-                                                    "#Theta [deg]", "#",     // xlabel, ylabel
-                                                    theta_bins,  // our binnings
-                                                    "h_ChaPolarAngles", true     // ROOT object name, auto-generated if omitted
-                                                    );
-
-    h_ChaAzimuthAngles = hf_OnlyAngles->makeTH1D("Charged particles azimuthangles",     // title
-                                                    "#Phi [deg]", "#",     // xlabel, ylabel
-                                                    phi_bins,  // our binnings
-                                                    "h_ChaAzimuthAngles", true     // ROOT object name, auto-generated if omitted
-                                                    );
-
-    h_3gPolarAngles = hf_OnlyAngles->makeTH1D("Rec. Photons polarangles",     // title
-                                             "#Theta [deg]", "#",     // xlabel, ylabel
-                                             theta_bins,  // our binnings
-                                             "h_3gPolarAngles", true     // ROOT object name, auto-generated if omitted
-                                             );
-
-    h_3gPolarAnglesCB = hf_OnlyAngles->makeTH1D("Rec. Photons polarangles only in CB",     // title
-                                             "#Theta [deg]", "#",     // xlabel, ylabel
-                                             theta_bins,  // our binnings
-                                             "h_3gPolarAnglesCB", true     // ROOT object name, auto-generated if omitted
-                                             );
-
-    h_3gPolarAnglesTAPS = hf_OnlyAngles->makeTH1D("Rec. Photons polarangles only in TAPS",     // title
-                                             "#Theta [deg]", "#",     // xlabel, ylabel
-                                             theta_bins,  // our binnings
-                                             "h_3gPolarAnglesTAPS", true     // ROOT object name, auto-generated if omitted
-                                             );
-
-    h_3gAzimuthAngles = hf_OnlyAngles->makeTH1D("Rec. Photons azimuthangles",     // title
-                                               "#Phi [deg]", "#",     // xlabel, ylabel
-                                               phi_bins,  // our binnings
-                                               "h_3gAzimuthAngles", true     // ROOT object name, auto-generated if omitted
-                                               );
-
-    h_3g_EvTheta_CB = hf_wpi0g_EvsTheta->makeTH2D("Photon energy vs theta only in CB", //title
-                                       "Theta [deg]","E [MeV]",  // xlabel, ylabel
-                                       theta_bins, E_photon_bins,    // our binnings
-                                       "h_3g_EvTheta_CB", true    // ROOT object name, auto-generated if omitted
-                                       );
-
-    h_3g_EvTheta_TAPS = hf_wpi0g_EvsTheta->makeTH2D("Photon energy vs theta only in TAPS", //title
-                                       "Theta [deg]","E [MeV]",  // xlabel, ylabel
-                                       theta_bins, E_photon_bins,    // our binnings
-                                       "h_3g_EvTheta_TAPS", true    // ROOT object name, auto-generated if omitted
-                                       );
-    */
-
     //KinFit-overview:
     //h_Steps = hf_OverviewKF->makeTH1D("Steps","","",BinSettings(10),"h_Steps");
     for (unsigned int i=0; i<nrCutsKF; i++){
@@ -525,58 +492,89 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
         h_fitEbeam[i] = hf_OverviewKF->makeTH1D(Form("Fitted beam energy %s",cutsKF[i].c_str()),"E [MeV]","#",initialBeamE_bins,Form("h_fitEbeam_%s",cutsKF[i].c_str()),true);
         h_IM3g_Fit[i] = hf_invmassKF->makeTH1D(Form("Fitted photons invariant mass %s",cutsKF[i].c_str()),"Im(3g_fit) [MeV]","#",Im_omega_bins,Form("h_IM3g_Fit_%s",cutsKF[i].c_str()),true);
         h_IM2gPi0_Fit[i] = hf_invmassKF->makeTH1D(Form("IM(2gPi0) for fitted photons %s",cutsKF[i].c_str()),"IM(2gPi0) [MeV]", "#",Im_pi0_bins,Form("h_IM2gPi0_Fit_%s",cutsKF[i].c_str()), true);
-    }
 
-    for (unsigned int i=0; i<nrPartType; i++){ //0 refers to proton, 1 to photons
+        h_p_EvTheta[i] = hf_wpi0g_EvsTheta->makeTH2D(Form("Rec. proton energy vs theta after %s",cutsKF[i].c_str()), //title
+                                                     "Theta [deg]","E [MeV]",  // xlabel, ylabel
+                                                     theta_bins, E_proton_bins,    // our binnings
+                                                     Form("h_p_EvTheta_%s",cutsKF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                     );
 
-        h_Ek_dev_CB[i] = hf_CombCBKF->makeTH2D(Form("CB: Energy deviation of rec. vs fitted %s",fitPartName[i].c_str()), //title
-                                            "E_{rec} [MeV]","E_{fit}-E_{rec} [MeV]", // xlabel, ylabel
-                                            partTypeEkBins.at(i), defEk_bins,    // our binnings
-                                            "h_Ek_dev_CB_"+fitPartName[i], true    // ROOT object name, auto-generated if omitted
+        h_w_EvTheta[i] = hf_wpi0g_EvsTheta->makeTH2D(Form("Rec. omega meson energy vs theta after %s",cutsKF[i].c_str()), //title
+                                                     "Theta [deg]","E [MeV]",  // xlabel, ylabel
+                                                     theta_bins, E_omega_bins,    // our binnings
+                                                     Form("h_w_EvTheta_%s",cutsKF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                     );
+
+        h_wg_EvTheta[i] = hf_wpi0g_EvsTheta->makeTH2D(Form("Rec. omega decay-photon energy vs theta after %s",cutsKF[i].c_str()), //title
+                                           "Theta [deg]","E [MeV]",  // xlabel, ylabel
+                                           theta_bins, E_photon_bins,    // our binnings
+                                           Form("h_wg_EvTheta_%s",cutsKF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                           );
+
+        h_wpi0_EvTheta[i] = hf_wpi0g_EvsTheta->makeTH2D(Form("Rec. Pi0 energy vs theta after %s",cutsKF[i].c_str()), //title
+                                            "Theta [deg]","E [MeV]", // xlabel, ylabel
+                                            theta_bins, E_pi0_bins,    // our binnings
+                                            Form("h_wpi0_EvTheta_%s",cutsKF[i].c_str()), true    // ROOT object name, auto-generated if omitted
                                             );
 
-        h_Theta_dev_CB[i] = hf_CombCBKF->makeTH2D(Form("CB: Theta deviation of rec. vs fitted %s",fitPartName[i].c_str()), //title
-                                            "#Theta_{rec} [deg]","#Theta_{fit}-#Theta_{rec} [deg]", // xlabel, ylabel
-                                            theta_bins, defTheta_bins,    // our binnings
-                                            "h_Theta_dev_CB_"+fitPartName[i], true    // ROOT object name, auto-generated if omitted
+        h_wpi02g_EvTheta[i] = hf_wpi0g_EvsTheta->makeTH2D(Form("Rec. Pi0 decay-photons energy vs theta after %s",cutsKF[i].c_str()), //title
+                                            "Theta [deg]","E [MeV]", // xlabel, ylabel
+                                            theta_bins, E_pi0_bins,    // our binnings
+                                            Form("h_wpi02g_EvTheta_%s",cutsKF[i].c_str()), true    // ROOT object name, auto-generated if omitted
                                             );
 
-        h_Phi_dev_CB[i] = hf_CombCBKF->makeTH2D(Form("CB: Phi deviation of rec. vs fitted %s",fitPartName[i].c_str()), //title
-                                            "#Phi_{rec} [deg]","#Phi_{fit}-#Phi_{rec} [deg]", // xlabel, ylabel
-                                            phi_bins, defPhi_bins,    // our binnings
-                                            "h_Phi_dev_CB_"+fitPartName[i], true    // ROOT object name, auto-generated if omitted
-                                            );
+        for (unsigned int j=0; j<nrPartType; j++){ //0 refers to proton, 1 to photons
 
-        h_Ek_dev_TAPS[i] = hf_CombTAPSKF->makeTH2D(Form("TAPS: Energy deviation of rec. vs fitted %s",fitPartName[i].c_str()), //title
-                                            "E_{rec} [MeV]","E_{fit}-E_{rec} [MeV]", // xlabel, ylabel
-                                            partTypeEkBins.at(i), defEk_bins,    // our binnings
-                                            "h_Ek_dev_TAPS_"+fitPartName[i], true    // ROOT object name, auto-generated if omitted
-                                            );
+            h_Ek_dev_CB[i][j] = hf_CombCBKF->makeTH2D(Form("CB: Energy deviation of rec. vs fitted %s after %s",fitPartName[j].c_str(),cutsKF[i].c_str()), //title
+                                                "E_{rec} [MeV]","E_{fit}-E_{rec} [MeV]", // xlabel, ylabel
+                                                partTypeEkBins.at(j), defEk_bins,    // our binnings
+                                                Form("h_Ek_dev_CB_%s_%s",fitPartName[j].c_str(),cutsKF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                );
 
-        h_Theta_dev_TAPS[i] = hf_CombTAPSKF->makeTH2D(Form("TAPS: Theta deviation of rec. vs fitted %s",fitPartName[i].c_str()), //title
-                                            "#Theta_{rec} [deg]","#Theta_{fit}-#Theta_{rec} [deg]", // xlabel, ylabel
-                                            theta_bins, defTheta_bins,    // our binnings
-                                            "h_Theta_dev_TAPS_"+fitPartName[i], true    // ROOT object name, auto-generated if omitted
-                                            );
+            h_Theta_dev_CB[i][j] = hf_CombCBKF->makeTH2D(Form("CB: Theta deviation of rec. vs fitted %s after %s",fitPartName[j].c_str(),cutsKF[i].c_str()), //title
+                                                "#Theta_{rec} [deg]","#Theta_{fit}-#Theta_{rec} [deg]", // xlabel, ylabel
+                                                theta_bins, defTheta_bins,    // our binnings
+                                                Form("h_Theta_dev_CB_%s_%s",fitPartName[j].c_str(),cutsKF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                );
 
-        h_Phi_dev_TAPS[i] = hf_CombTAPSKF->makeTH2D(Form("TAPS: Theta deviation of rec. vs fitted %s",fitPartName[i].c_str()), //title
-                                            "#Phi_{rec} [deg]","#Phi_{fit}-#Phi_{rec} [deg]", // xlabel, ylabel
-                                            phi_bins, defPhi_bins,    // our binnings
-                                            "h_Phi_dev_TAPS_"+fitPartName[i], true    // ROOT object name, auto-generated if omitted
-                                            );
+            h_Phi_dev_CB[i][j] = hf_CombCBKF->makeTH2D(Form("CB: Phi deviation of rec. vs fitted %s after %s",fitPartName[j].c_str(),cutsKF[i].c_str()), //title
+                                                "#Phi_{rec} [deg]","#Phi_{fit}-#Phi_{rec} [deg]", // xlabel, ylabel
+                                                phi_bins, defPhi_bins,    // our binnings
+                                                Form("h_Phi_dev_CB_%s_%s",fitPartName[j].c_str(),cutsKF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                );
 
-        for (unsigned int j=0; j<nrFitVars; j++){
+            h_Ek_dev_TAPS[i][j] = hf_CombTAPSKF->makeTH2D(Form("TAPS: Energy deviation of rec. vs fitted %s after %s",fitPartName[j].c_str(),cutsKF[i].c_str()), //title
+                                                "E_{rec} [MeV]","E_{fit}-E_{rec} [MeV]", // xlabel, ylabel
+                                                partTypeEkBins.at(j), defEk_bins,    // our binnings
+                                                Form("h_Ek_dev_TAPS_%s_%s",fitPartName[j].c_str(),cutsKF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                );
 
-              h_PartPulls_CB[i][j] = hfPullsCBKF->makeTH1D(Form("CB: %s pulls of fitted %s",fitvarnameCB[j].c_str(),fitPartName[i].c_str()), //title
-                                                           Form("%s pull",fitvarnameCB[j].c_str()),"#", // xlabel, ylabel
-                                                           BinSettings(200,-10.,10.),   // our binnings
-                                                           Form("h_Pulls_CB_%s_%s",fitPartName[i].c_str(),fitvarnameCB[j].c_str()), true    // ROOT object name, auto-generated if omitted
-                                                           );
-              h_PartPulls_TAPS[i][j] = hfPullsTAPSKF->makeTH1D(Form("TAPS: %s pulls of fitted %s",fitvarnameTA[j].c_str(),fitPartName[i].c_str()), //title
-                                                               Form("%s pull",fitvarnameTA[j].c_str()),"#", // xlabel, ylabel
+            h_Theta_dev_TAPS[i][j] = hf_CombTAPSKF->makeTH2D(Form("TAPS: Theta deviation of rec. vs fitted %s after %s",fitPartName[j].c_str(),cutsKF[i].c_str()), //title
+                                                "#Theta_{rec} [deg]","#Theta_{fit}-#Theta_{rec} [deg]", // xlabel, ylabel
+                                                theta_bins, defTheta_bins,    // our binnings
+                                                Form("h_Theta_dev_TAPS_%s_%s",fitPartName[j].c_str(),cutsKF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                );
+
+            h_Phi_dev_TAPS[i][j] = hf_CombTAPSKF->makeTH2D(Form("TAPS: Theta deviation of rec. vs fitted %s after %s",fitPartName[j].c_str(),cutsKF[i].c_str()), //title
+                                                "#Phi_{rec} [deg]","#Phi_{fit}-#Phi_{rec} [deg]", // xlabel, ylabel
+                                                phi_bins, defPhi_bins,    // our binnings
+                                                Form("h_Phi_dev_TAPS_%s_%s",fitPartName[j].c_str(),cutsKF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                );
+
+            for (unsigned int k=0; k<nrFitVars; k++){
+
+                  h_PartPulls_CB[i][j][k] = hfPullsCBKF->makeTH1D(Form("CB: %s pulls of fitted %s after %s",fitvarnameCB[k].c_str(),fitPartName[j].c_str(),cutsKF[i].c_str()), //title
+                                                               Form("%s pull",fitvarnameCB[k].c_str()),"#", // xlabel, ylabel
                                                                BinSettings(200,-10.,10.),   // our binnings
-                                                               Form("h_Pulls_TAPS_%s_%s",fitPartName[i].c_str(),fitvarnameCB[j].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                               Form("h_Pulls_CB_%s_%s_%s",fitPartName[j].c_str(),fitvarnameCB[k].c_str(),cutsKF[i].c_str()), true    // ROOT object name, auto-generated if omitted
                                                                );
+                  h_PartPulls_TAPS[i][j][k] = hfPullsTAPSKF->makeTH1D(Form("TAPS: %s pulls of fitted %s after %s",fitvarnameTA[k].c_str(),fitPartName[j].c_str(),cutsKF[i].c_str()), //title
+                                                                   Form("%s pull",fitvarnameTA[k].c_str()),"#", // xlabel, ylabel
+                                                                   BinSettings(200,-10.,10.),   // our binnings
+                                                                   Form("h_Pulls_TAPS_%s_%s_%s",fitPartName[j].c_str(),fitvarnameTA[k].c_str(),cutsKF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                                   );
+
+            }
 
         }
 
@@ -1554,50 +1552,6 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
             pi02g_fitM = fitphotcomb3;
         }
 
-        if(proton_toFit->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
-
-            h_Ek_dev_CB[0]->Fill(proton_toFit->Ek(),fitted_proton->Ek()-proton_toFit->Ek(),weight);
-            h_Theta_dev_CB[0]->Fill(proton_toFit->Theta()*radtodeg,(fitted_proton->p + vertshift).Theta()*radtodeg - proton_toFit->Theta()*radtodeg,weight);
-            h_Phi_dev_CB[0]->Fill(proton_toFit->Phi()*radtodeg,fitted_proton->Phi()*radtodeg-proton_toFit->Phi()*radtodeg,weight);
-            for (unsigned int j=0; j<nrFitVars; j++){
-                h_PartPulls_CB[0][j]->Fill(fitParticles.at(0).GetPulls().at(j),weight);
-            }
-
-        }
-        else{
-
-            h_Ek_dev_TAPS[0]->Fill(proton_toFit->Ek(),fitted_proton->Ek()-proton_toFit->Ek(),weight);
-            h_Theta_dev_TAPS[0]->Fill(proton_toFit->Theta()*radtodeg,(fitted_proton->p + vertshift).Theta()*radtodeg - proton_toFit->Theta()*radtodeg,weight);
-            h_Phi_dev_TAPS[0]->Fill(proton_toFit->Phi()*radtodeg,fitted_proton->Phi()*radtodeg-proton_toFit->Phi()*radtodeg,weight);
-            for (unsigned int j=0; j<nrFitVars; j++){
-                h_PartPulls_TAPS[0][j]->Fill(fitParticles.at(0).GetPulls().at(j),weight);
-            }
-        }
-
-        for (unsigned int i=0; i<photons.size(); i++){
-
-            if(photons.at(i)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
-
-                h_Ek_dev_CB[1]->Fill(photons.at(i)->Ek(),fitted_photons.at(i)->Ek()-photons.at(i)->Ek(),weight);
-                h_Theta_dev_CB[1]->Fill(photons.at(i)->Theta()*radtodeg,(fitted_photons.at(i)->p + vertshift).Theta()*radtodeg - photons.at(i)->Theta()*radtodeg,weight);
-                h_Phi_dev_CB[1]->Fill(photons.at(i)->Phi()*radtodeg,fitted_photons.at(i)->Phi()*radtodeg-photons.at(i)->Phi()*radtodeg,weight);
-                for (unsigned int j=0; j<nrFitVars; j++){
-                    h_PartPulls_CB[1][j]->Fill(fitParticles.at(i+1).GetPulls().at(j),weight);
-                }
-
-            }
-            else{
-
-                h_Ek_dev_TAPS[1]->Fill(photons.at(i)->Ek(),fitted_photons.at(i)->Ek()-photons.at(i)->Ek(),weight);
-                h_Theta_dev_TAPS[1]->Fill(photons.at(i)->Theta()*radtodeg,(fitted_photons.at(i)->p + vertshift).Theta()*radtodeg - photons.at(i)->Theta()*radtodeg,weight);
-                h_Phi_dev_TAPS[1]->Fill(photons.at(i)->Phi()*radtodeg,fitted_photons.at(i)->Phi()*radtodeg-photons.at(i)->Phi()*radtodeg,weight);
-                for (unsigned int j=0; j<nrFitVars; j++){
-                    h_PartPulls_TAPS[1][j]->Fill(fitParticles.at(i+1).GetPulls().at(j),weight);
-                }
-            }
-
-        }
-
         h_wp_BackToBack[cut_ind-nrCuts_beforeSel]->Fill(wp_angle,weight);
         h_wpi0g_BackToBack[cut_ind-nrCuts_beforeSel]->Fill(wpi0g_angle,weight);
         h_pi0gg_BackToBack[cut_ind-nrCuts_beforeSel]->Fill(pi0gg_angle,weight);
@@ -1676,13 +1630,59 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
             h_Proton_PIDEvsTime[cut_ind-nrCuts_beforeSel]->Fill(proton_toFit->Candidate->FindVetoCluster()->Time,proton_toFit->Candidate->FindVetoCluster()->Energy,weight);
         }
 
-        h_p_EvTheta->Fill(Lp.Theta()*radtodeg,Lp.E(),weight);
-        h_w_EvTheta->Fill(Lw.Theta()*radtodeg,Lw.E(),weight);
-        h_wg_EvTheta->Fill(wg.Theta()*radtodeg,wg.E(),weight);
-        h_wpi0_EvTheta->Fill(wpi0.Theta()*radtodeg,wpi0.E(),weight);
+        h_p_EvTheta[cut_ind-nrCuts_beforeKF]->Fill(Lp.Theta()*radtodeg,Lp.E(),weight);
+        h_w_EvTheta[cut_ind-nrCuts_beforeKF]->Fill(Lw.Theta()*radtodeg,Lw.E(),weight);
+        h_wg_EvTheta[cut_ind-nrCuts_beforeKF]->Fill(wg.Theta()*radtodeg,wg.E(),weight);
+        h_wpi0_EvTheta[cut_ind-nrCuts_beforeKF]->Fill(wpi0.Theta()*radtodeg,wpi0.E(),weight);
 
         for(int i=0; i<nr_pi0g;i++){
-            h_wpi02g_EvTheta->Fill(wpi0g[i].Theta()*radtodeg,wpi0g[i].E(),weight);
+            h_wpi02g_EvTheta[cut_ind-nrCuts_beforeKF]->Fill(wpi0g[i].Theta()*radtodeg,wpi0g[i].E(),weight);
+        }
+
+        //Pulls:
+
+        if(proton_toFit->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+
+            h_Ek_dev_CB[cut_ind-nrCuts_beforeKF][0]->Fill(proton_toFit->Ek(),fitted_proton->Ek()-proton_toFit->Ek(),weight);
+            h_Theta_dev_CB[cut_ind-nrCuts_beforeKF][0]->Fill(proton_toFit->Theta()*radtodeg,(fitted_proton->p + vertshift).Theta()*radtodeg - proton_toFit->Theta()*radtodeg,weight);
+            h_Phi_dev_CB[cut_ind-nrCuts_beforeKF][0]->Fill(proton_toFit->Phi()*radtodeg,fitted_proton->Phi()*radtodeg-proton_toFit->Phi()*radtodeg,weight);
+            for (unsigned int j=0; j<nrFitVars; j++){
+                h_PartPulls_CB[cut_ind-nrCuts_beforeKF][0][j]->Fill(fitParticles.at(0).GetPulls().at(j),weight);
+            }
+
+        }
+        else{
+
+            h_Ek_dev_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(proton_toFit->Ek(),fitted_proton->Ek()-proton_toFit->Ek(),weight);
+            h_Theta_dev_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(proton_toFit->Theta()*radtodeg,(fitted_proton->p + vertshift).Theta()*radtodeg - proton_toFit->Theta()*radtodeg,weight);
+            h_Phi_dev_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(proton_toFit->Phi()*radtodeg,fitted_proton->Phi()*radtodeg-proton_toFit->Phi()*radtodeg,weight);
+            for (unsigned int j=0; j<nrFitVars; j++){
+                h_PartPulls_TAPS[cut_ind-nrCuts_beforeKF][0][j]->Fill(fitParticles.at(0).GetPulls().at(j),weight);
+            }
+        }
+
+        for (unsigned int i=0; i<photons.size(); i++){
+
+            if(photons.at(i)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+
+                h_Ek_dev_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photons.at(i)->Ek(),fitted_photons.at(i)->Ek()-photons.at(i)->Ek(),weight);
+                h_Theta_dev_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photons.at(i)->Theta()*radtodeg,(fitted_photons.at(i)->p + vertshift).Theta()*radtodeg - photons.at(i)->Theta()*radtodeg,weight);
+                h_Phi_dev_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photons.at(i)->Phi()*radtodeg,fitted_photons.at(i)->Phi()*radtodeg-photons.at(i)->Phi()*radtodeg,weight);
+                for (unsigned int j=0; j<nrFitVars; j++){
+                    h_PartPulls_CB[cut_ind-nrCuts_beforeKF][1][j]->Fill(fitParticles.at(i+1).GetPulls().at(j),weight);
+                }
+
+            }
+            else{
+
+                h_Ek_dev_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photons.at(i)->Ek(),fitted_photons.at(i)->Ek()-photons.at(i)->Ek(),weight);
+                h_Theta_dev_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photons.at(i)->Theta()*radtodeg,(fitted_photons.at(i)->p + vertshift).Theta()*radtodeg - photons.at(i)->Theta()*radtodeg,weight);
+                h_Phi_dev_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photons.at(i)->Phi()*radtodeg,fitted_photons.at(i)->Phi()*radtodeg-photons.at(i)->Phi()*radtodeg,weight);
+                for (unsigned int j=0; j<nrFitVars; j++){
+                    h_PartPulls_TAPS[cut_ind-nrCuts_beforeKF][1][j]->Fill(fitParticles.at(i+1).GetPulls().at(j),weight);
+                }
+            }
+
         }
 
         if(!(best_probability>0.01))
@@ -1770,13 +1770,59 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
             h_Proton_PIDEvsTime[cut_ind-nrCuts_beforeSel]->Fill(proton_toFit->Candidate->FindVetoCluster()->Time,proton_toFit->Candidate->FindVetoCluster()->Energy,weight);
         }
 
-        h_p_EvTheta->Fill(Lp.Theta()*radtodeg,Lp.E(),weight);
-        h_w_EvTheta->Fill(Lw.Theta()*radtodeg,Lw.E(),weight);
-        h_wg_EvTheta->Fill(wg.Theta()*radtodeg,wg.E(),weight);
-        h_wpi0_EvTheta->Fill(wpi0.Theta()*radtodeg,wpi0.E(),weight);
+        h_p_EvTheta[cut_ind-nrCuts_beforeKF]->Fill(Lp.Theta()*radtodeg,Lp.E(),weight);
+        h_w_EvTheta[cut_ind-nrCuts_beforeKF]->Fill(Lw.Theta()*radtodeg,Lw.E(),weight);
+        h_wg_EvTheta[cut_ind-nrCuts_beforeKF]->Fill(wg.Theta()*radtodeg,wg.E(),weight);
+        h_wpi0_EvTheta[cut_ind-nrCuts_beforeKF]->Fill(wpi0.Theta()*radtodeg,wpi0.E(),weight);
 
         for(int i=0; i<nr_pi0g;i++){
-            h_wpi02g_EvTheta->Fill(wpi0g[i].Theta()*radtodeg,wpi0g[i].E(),weight);
+            h_wpi02g_EvTheta[cut_ind-nrCuts_beforeKF]->Fill(wpi0g[i].Theta()*radtodeg,wpi0g[i].E(),weight);
+        }
+
+        //Pulls:
+
+        if(proton_toFit->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+
+            h_Ek_dev_CB[cut_ind-nrCuts_beforeKF][0]->Fill(proton_toFit->Ek(),fitted_proton->Ek()-proton_toFit->Ek(),weight);
+            h_Theta_dev_CB[cut_ind-nrCuts_beforeKF][0]->Fill(proton_toFit->Theta()*radtodeg,(fitted_proton->p + vertshift).Theta()*radtodeg - proton_toFit->Theta()*radtodeg,weight);
+            h_Phi_dev_CB[cut_ind-nrCuts_beforeKF][0]->Fill(proton_toFit->Phi()*radtodeg,fitted_proton->Phi()*radtodeg-proton_toFit->Phi()*radtodeg,weight);
+            for (unsigned int j=0; j<nrFitVars; j++){
+                h_PartPulls_CB[cut_ind-nrCuts_beforeKF][0][j]->Fill(fitParticles.at(0).GetPulls().at(j),weight);
+            }
+
+        }
+        else{
+
+            h_Ek_dev_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(proton_toFit->Ek(),fitted_proton->Ek()-proton_toFit->Ek(),weight);
+            h_Theta_dev_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(proton_toFit->Theta()*radtodeg,(fitted_proton->p + vertshift).Theta()*radtodeg - proton_toFit->Theta()*radtodeg,weight);
+            h_Phi_dev_TAPS[cut_ind-nrCuts_beforeKF][0]->Fill(proton_toFit->Phi()*radtodeg,fitted_proton->Phi()*radtodeg-proton_toFit->Phi()*radtodeg,weight);
+            for (unsigned int j=0; j<nrFitVars; j++){
+                h_PartPulls_TAPS[cut_ind-nrCuts_beforeKF][0][j]->Fill(fitParticles.at(0).GetPulls().at(j),weight);
+            }
+        }
+
+        for (unsigned int i=0; i<photons.size(); i++){
+
+            if(photons.at(i)->Candidate->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
+
+                h_Ek_dev_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photons.at(i)->Ek(),fitted_photons.at(i)->Ek()-photons.at(i)->Ek(),weight);
+                h_Theta_dev_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photons.at(i)->Theta()*radtodeg,(fitted_photons.at(i)->p + vertshift).Theta()*radtodeg - photons.at(i)->Theta()*radtodeg,weight);
+                h_Phi_dev_CB[cut_ind-nrCuts_beforeKF][1]->Fill(photons.at(i)->Phi()*radtodeg,fitted_photons.at(i)->Phi()*radtodeg-photons.at(i)->Phi()*radtodeg,weight);
+                for (unsigned int j=0; j<nrFitVars; j++){
+                    h_PartPulls_CB[cut_ind-nrCuts_beforeKF][1][j]->Fill(fitParticles.at(i+1).GetPulls().at(j),weight);
+                }
+
+            }
+            else{
+
+                h_Ek_dev_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photons.at(i)->Ek(),fitted_photons.at(i)->Ek()-photons.at(i)->Ek(),weight);
+                h_Theta_dev_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photons.at(i)->Theta()*radtodeg,(fitted_photons.at(i)->p + vertshift).Theta()*radtodeg - photons.at(i)->Theta()*radtodeg,weight);
+                h_Phi_dev_TAPS[cut_ind-nrCuts_beforeKF][1]->Fill(photons.at(i)->Phi()*radtodeg,fitted_photons.at(i)->Phi()*radtodeg-photons.at(i)->Phi()*radtodeg,weight);
+                for (unsigned int j=0; j<nrFitVars; j++){
+                    h_PartPulls_TAPS[cut_ind-nrCuts_beforeKF][1][j]->Fill(fitParticles.at(i+1).GetPulls().at(j),weight);
+                }
+            }
+
         }
 
         //Filling the tree for further analysis

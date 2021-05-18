@@ -167,6 +167,7 @@ private:
     TH1D* h_2gee_IM[nrCuts_Sel];
 
     //KinFit hists:
+
     TH1D* h_IM2gee_Fit[nrCuts_KF];
     TH1D* h_IM2gee_Fit_samePID[nrCuts_KF];
     TH1D* h_IM2gee_Fit_diffPID[nrCuts_KF];
@@ -190,6 +191,7 @@ private:
     TH1D* h_Fit_zvert[nrCuts_KF];
     TH1D* h_fitEbeam[nrCuts_KF];
     TH1D* h_Probability[nrCuts_KF];
+    TH1D* h_helicity_angles[nrCuts_KF];
 
     TH1D* h_wp_BackToBack[nrCuts_KF];
     TH1D* h_wpi0dil_BackToBack[nrCuts_KF];
@@ -239,8 +241,26 @@ private:
     TH2D *h_NoProton_EvsPhi[nrCuts_KF];
     TH2D *h_Photon_EvsPhi[nrCuts_KF];
 
-    TH1D *h_PartPulls_CB[nrPartType][nrFitVars];
-    TH1D *h_PartPulls_TAPS[nrPartType][nrFitVars];
+    TH2D* h_Ek_dev_CB[nrCuts_KF][nrPartType];
+    TH2D* h_Theta_dev_CB[nrCuts_KF][nrPartType];
+    TH2D* h_Phi_dev_CB[nrCuts_KF][nrPartType];
+
+    TH2D* h_Ek_dev_TAPS[nrCuts_KF][nrPartType];
+    TH2D* h_Theta_dev_TAPS[nrCuts_KF][nrPartType];
+    TH2D* h_Phi_dev_TAPS[nrCuts_KF][nrPartType];
+
+    TH2D* h_Ek_dev_freeZ_CB[nrCuts_KF][nrPartType];
+    TH2D* h_Theta_dev_freeZ_CB[nrCuts_KF][nrPartType];
+    TH2D* h_Phi_dev_freeZ_CB[nrCuts_KF][nrPartType];
+
+    TH2D* h_Ek_dev_freeZ_TAPS[nrCuts_KF][nrPartType];
+    TH2D* h_Theta_dev_freeZ_TAPS[nrCuts_KF][nrPartType];
+    TH2D* h_Phi_dev_freeZ_TAPS[nrCuts_KF][nrPartType];
+
+    TH1D *h_PartPulls_CB[nrCuts_KF][nrPartType][nrFitVars];
+    TH1D *h_PartPulls_TAPS[nrCuts_KF][nrPartType][nrFitVars];
+    TH1D *h_PartPulls_freeZ_CB[nrCuts_KF][nrPartType][nrFitVars];
+    TH1D *h_PartPulls_freeZ_TAPS[nrCuts_KF][nrPartType][nrFitVars];
 
     TH1D* h_Probability_freeZ[nrCuts_KF];
     TH1D *h_Fit_zvert_freeZ[nrCuts_KF];
