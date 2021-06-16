@@ -363,6 +363,12 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
         string myString = ss.str();
         */
 
+        h_neuLowestCaloE[i] = hf_Extras->makeTH1D("Lowest neutral energy clusters "+cuts[i+nrCuts_beforeSel], //title
+                                                  "Calo E [MeV]", "#",  // xlabel, ylabel
+                                                  Calo_Energy_bins,    // our binnings
+                                                  "h_neuLowestCaloE_"+cuts[i+nrCuts_beforeSel], true    // ROOT object name, auto-generated if omitted
+                                                  );
+
         h_missingP_IM[i] = hf_missingP_IM->makeTH1D("Im(missingP) "+cuts[i+nrCuts_beforeSel],     // title
                                                              "IM(missingP) [MeV]", "#",     // xlabel, ylabel
                                                              Im_proton_bins,  // our binnings
@@ -967,33 +973,37 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
         double wpi0g_angle = cos(wpi0_boosted.Angle(wg_boosted.Vect()));
 
         TLorentzVector clusterElowestg;
-        TLorentzVector nextClusterElowestg;
+        double clusterElowestgEnergy;
+        double lowestAngleToSplitoff;
 
         if(neuCanCaloE[0] <= neuCanCaloE[1] && neuCanCaloE[0] <= neuCanCaloE[2]){
-            clusterElowestg = (TLorentzVector)g[0];
-            if(neuCanCaloE[1] <= neuCanCaloE[2]){
-                nextClusterElowestg = (TLorentzVector)g[1];
+            clusterElowestg = (TLorentzVector)g0;
+            clusterElowestgEnergy = neuCanCaloE[0];
+            if(clusterElowestg.Angle(g1.Vect()) <= clusterElowestg.Angle(g2.Vect())){
+                lowestAngleToSplitoff = clusterElowestg.Angle(g1.Vect());
             }
             else{
-                nextClusterElowestg = (TLorentzVector)g[2];
+                lowestAngleToSplitoff = clusterElowestg.Angle(g2.Vect());
             }
         }
         else if(neuCanCaloE[1] <= neuCanCaloE[0] && neuCanCaloE[1] <= neuCanCaloE[2]){
-            clusterElowestg = (TLorentzVector)g[1];
-            if(neuCanCaloE[0] <= neuCanCaloE[2]){
-                nextClusterElowestg = (TLorentzVector)g[0];
+            clusterElowestg = (TLorentzVector)g1;
+            clusterElowestgEnergy = neuCanCaloE[1];
+            if(clusterElowestg.Angle(g0.Vect()) <= clusterElowestg.Angle(g2.Vect())){
+                lowestAngleToSplitoff = clusterElowestg.Angle(g0.Vect());
             }
             else{
-                nextClusterElowestg = (TLorentzVector)g[2];
+                lowestAngleToSplitoff = clusterElowestg.Angle(g2.Vect());
             }
         }
         else{
-            clusterElowestg = (TLorentzVector)g[2];
-            if(neuCanCaloE[0] <= neuCanCaloE[1]){
-                nextClusterElowestg = (TLorentzVector)g[0];
+            clusterElowestg = (TLorentzVector)g2;
+            clusterElowestgEnergy = neuCanCaloE[2];
+            if(clusterElowestg.Angle(g0.Vect()) <= clusterElowestg.Angle(g1.Vect())){
+                lowestAngleToSplitoff = clusterElowestg.Angle(g0.Vect());
             }
             else{
-                nextClusterElowestg = (TLorentzVector)g[1];
+                lowestAngleToSplitoff = clusterElowestg.Angle(g1.Vect());
             }
         }
 
@@ -1015,7 +1025,8 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
         h_2gComb_OpeningAngles[cut_ind-nrCuts_beforeSel]->Fill(g0.Angle(g2.Vect())*radtodeg,weight);
         h_2gComb_OpeningAngles[cut_ind-nrCuts_beforeSel]->Fill(g1.Angle(g2.Vect())*radtodeg,weight);
 
-        h_2gLowestClusterE_OpeningAngles[cut_ind-nrCuts_beforeSel]->Fill(clusterElowestg.Angle(nextClusterElowestg.Vect())*radtodeg,weight);
+        h_neuLowestCaloE[cut_ind-nrCuts_beforeSel]->Fill(clusterElowestgEnergy,weight);
+        h_2gLowestClusterE_OpeningAngles[cut_ind-nrCuts_beforeSel]->Fill(lowestAngleToSplitoff*radtodeg,weight);
 
         h_doublyDCScm_gp_wp[cut_ind-nrCuts_beforeSel]->Fill(cos(Linitial.Angle(Lw_boosted.Vect())),Linitial.M(),weight);
 
@@ -1094,7 +1105,8 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
         h_2gComb_OpeningAngles[cut_ind-nrCuts_beforeSel]->Fill(g0.Angle(g2.Vect())*radtodeg,weight);
         h_2gComb_OpeningAngles[cut_ind-nrCuts_beforeSel]->Fill(g1.Angle(g2.Vect())*radtodeg,weight);
 
-        h_2gLowestClusterE_OpeningAngles[cut_ind-nrCuts_beforeSel]->Fill(clusterElowestg.Angle(nextClusterElowestg.Vect())*radtodeg,weight);
+        h_neuLowestCaloE[cut_ind-nrCuts_beforeSel]->Fill(clusterElowestgEnergy,weight);
+        h_2gLowestClusterE_OpeningAngles[cut_ind-nrCuts_beforeSel]->Fill(lowestAngleToSplitoff*radtodeg,weight);
 
         h_doublyDCScm_gp_wp[cut_ind-nrCuts_beforeSel]->Fill(cos(Linitial.Angle(Lw_boosted.Vect())),Linitial.M(),weight);
 
@@ -1172,7 +1184,8 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
         h_2gComb_OpeningAngles[cut_ind-nrCuts_beforeSel]->Fill(g0.Angle(g2.Vect())*radtodeg,weight);
         h_2gComb_OpeningAngles[cut_ind-nrCuts_beforeSel]->Fill(g1.Angle(g2.Vect())*radtodeg,weight);
 
-        h_2gLowestClusterE_OpeningAngles[cut_ind-nrCuts_beforeSel]->Fill(clusterElowestg.Angle(nextClusterElowestg.Vect())*radtodeg,weight);
+        h_neuLowestCaloE[cut_ind-nrCuts_beforeSel]->Fill(clusterElowestgEnergy,weight);
+        h_2gLowestClusterE_OpeningAngles[cut_ind-nrCuts_beforeSel]->Fill(lowestAngleToSplitoff*radtodeg,weight);
 
         h_doublyDCScm_gp_wp[cut_ind-nrCuts_beforeSel]->Fill(cos(Linitial.Angle(Lw_boosted.Vect())),Linitial.M(),weight);
 
@@ -1342,7 +1355,8 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
         h_2gComb_OpeningAngles[cut_ind-nrCuts_beforeSel]->Fill(g0.Angle(g2.Vect())*radtodeg,weight);
         h_2gComb_OpeningAngles[cut_ind-nrCuts_beforeSel]->Fill(g1.Angle(g2.Vect())*radtodeg,weight);
 
-        h_2gLowestClusterE_OpeningAngles[cut_ind-nrCuts_beforeSel]->Fill(clusterElowestg.Angle(nextClusterElowestg.Vect())*radtodeg,weight);
+        h_neuLowestCaloE[cut_ind-nrCuts_beforeSel]->Fill(clusterElowestgEnergy,weight);
+        h_2gLowestClusterE_OpeningAngles[cut_ind-nrCuts_beforeSel]->Fill(lowestAngleToSplitoff*radtodeg,weight);
 
         h_doublyDCScm_gp_wp[cut_ind-nrCuts_beforeSel]->Fill(cos(Linitial.Angle(Lw_boosted.Vect())),Linitial.M(),weight);
 
@@ -1420,7 +1434,8 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
         h_2gComb_OpeningAngles[cut_ind-nrCuts_beforeSel]->Fill(g0.Angle(g2.Vect())*radtodeg,weight);
         h_2gComb_OpeningAngles[cut_ind-nrCuts_beforeSel]->Fill(g1.Angle(g2.Vect())*radtodeg,weight);
 
-        h_2gLowestClusterE_OpeningAngles[cut_ind-nrCuts_beforeSel]->Fill(clusterElowestg.Angle(nextClusterElowestg.Vect())*radtodeg,weight);
+        h_neuLowestCaloE[cut_ind-nrCuts_beforeSel]->Fill(clusterElowestgEnergy,weight);
+        h_2gLowestClusterE_OpeningAngles[cut_ind-nrCuts_beforeSel]->Fill(lowestAngleToSplitoff*radtodeg,weight);
 
         h_doublyDCScm_gp_wp[cut_ind-nrCuts_beforeSel]->Fill(cos(Linitial.Angle(Lw_boosted.Vect())),Linitial.M(),weight);
 
@@ -1577,7 +1592,8 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
         h_2gComb_OpeningAngles[cut_ind-nrCuts_beforeSel]->Fill(g0.Angle(g2.Vect())*radtodeg,weight);
         h_2gComb_OpeningAngles[cut_ind-nrCuts_beforeSel]->Fill(g1.Angle(g2.Vect())*radtodeg,weight);
 
-        h_2gLowestClusterE_OpeningAngles[cut_ind-nrCuts_beforeSel]->Fill(clusterElowestg.Angle(nextClusterElowestg.Vect())*radtodeg,weight);
+        h_neuLowestCaloE[cut_ind-nrCuts_beforeSel]->Fill(clusterElowestgEnergy,weight);
+        h_2gLowestClusterE_OpeningAngles[cut_ind-nrCuts_beforeSel]->Fill(lowestAngleToSplitoff*radtodeg,weight);
 
         h_doublyDCScm_gp_wp[cut_ind-nrCuts_beforeSel]->Fill(cos(Linitial.Angle(Lw_boosted.Vect())),Linitial.M(),weight);
 
@@ -1717,7 +1733,8 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
         h_2gComb_OpeningAngles[cut_ind-nrCuts_beforeSel]->Fill(g0.Angle(g2.Vect())*radtodeg,weight);
         h_2gComb_OpeningAngles[cut_ind-nrCuts_beforeSel]->Fill(g1.Angle(g2.Vect())*radtodeg,weight);
 
-        h_2gLowestClusterE_OpeningAngles[cut_ind-nrCuts_beforeSel]->Fill(clusterElowestg.Angle(nextClusterElowestg.Vect())*radtodeg,weight);
+        h_neuLowestCaloE[cut_ind-nrCuts_beforeSel]->Fill(clusterElowestgEnergy,weight);
+        h_2gLowestClusterE_OpeningAngles[cut_ind-nrCuts_beforeSel]->Fill(lowestAngleToSplitoff*radtodeg,weight);
 
         h_doublyDCScm_gp_wp[cut_ind-nrCuts_beforeSel]->Fill(cos(Linitial.Angle(Lw_boosted.Vect())),Linitial.M(),weight);
 

@@ -95,29 +95,12 @@ private:
 
     tree_t t;
 
-    TH1D* h_beamE[nrCuts_total];
-    TH1D* h_missingP_IM[nrCuts_Sel];
-    TH1D* h_3g_IM[nrCuts_Sel];
-    TH1D* h_2gComb_IM[nrCuts_Sel];
-    TH1D* h_2gComb_OpeningAngles[nrCuts_Sel];
-    TH1D* h_2gLowestClusterE_OpeningAngles[nrCuts_Sel];
-    TH2D* h_doublyDCScm_gp_wp[nrCuts_Sel];
-    TH2D* h_doublyDCSlab_gp_wp[nrCuts_Sel];
-
-    TH1D* h_wp_BackToBack[nrCuts_Sel];
-    TH2D* h_Proton_PIDEvsTime[nrCuts_Sel];
-
-    TH2D* h_Proton_CaloEvsVetoE_CB[nrCuts_Sel];
-    TH2D* h_Proton_CaloEvsVetoE_TAPS[nrCuts_Sel];
-
-    TH1D* h_2gPi0_IM[nrCuts_Sel];
-    TH1D* h_wpi0g_BackToBack[nrCuts_Sel];
-    TH1D* h_pi0gg_BackToBack[nrCuts_Sel];
-    TH2D* h_EpivsIM3g[nrCuts_Sel];
+    //Histograms directly after data readout:
 
     TH2D* h_AllCaloEvsVetoE_CB[nrCuts_total];
     TH2D* h_AllCaloEvsVetoE_TAPS[nrCuts_total];
 
+    TH1D* h_beamE[nrCuts_total];
     TH1D* h_neuCaloE[nrCuts_total];
     TH1D* h_chaCaloE[nrCuts_total];
     TH1D* h_AllVetoE_CB[nrCuts_total];
@@ -137,32 +120,32 @@ private:
     TH1D* h_nCandidates[nrCuts_total];
     TH2D* h_nNeuChaCandidates[nrCuts_total];
 
-    //TH1D* h_pi0g_BackToBack[nrCuts_BackToBack];
+    TH1D* h_CBEsum[nrCuts_total];
 
-    TH1D* h_TaggerTime;
-    TH1D* h_InitialBeamE;
-    TH1D* h_VetoEnergies;
-    TH1D* h_nClusters;
-    TH1D* h_nClusters_pr;
+    //Histograms after candidate selection:
 
-    TH1D* h_NeuAzimuthAngles;
-    TH1D* h_NeuPolarAngles;
-    TH1D* h_ChaPolarAngles;
-    TH1D* h_ChaAzimuthAngles;
-    TH1D* h_3gPolarAngles;
-    TH1D* h_3gPolarAnglesCB;
-    TH1D* h_3gPolarAnglesTAPS;
-    TH1D* h_3gAzimuthAngles;
+    TH1D* h_missingP_IM[nrCuts_Sel];
+    TH1D* h_3g_IM[nrCuts_Sel];
+    TH1D* h_2gComb_IM[nrCuts_Sel];
+    TH1D* h_2gComb_OpeningAngles[nrCuts_Sel];
+    TH1D* h_2gLowestClusterE_OpeningAngles[nrCuts_Sel];
+    TH2D* h_doublyDCScm_gp_wp[nrCuts_Sel];
+    TH2D* h_doublyDCSlab_gp_wp[nrCuts_Sel];
+    TH1D* h_neuLowestCaloE[nrCuts_Sel];
 
-    TH1D* h_RecData_relStat;
-    TH1D* h_RecData_Stat;
+    TH1D* h_wp_BackToBack[nrCuts_Sel];
+    TH2D* h_Proton_PIDEvsTime[nrCuts_Sel];
 
-    TH2D* h_3g_EvTheta_CB;
-    TH2D* h_3g_EvTheta_TAPS;
-    //TH1D* h_Reconstructed_Data_Statistics;
+    TH2D* h_Proton_CaloEvsVetoE_CB[nrCuts_Sel];
+    TH2D* h_Proton_CaloEvsVetoE_TAPS[nrCuts_Sel];
 
-    //KinFit-overview:
-    //TH1D* h_Steps;
+    TH1D* h_2gPi0_IM[nrCuts_Sel];
+    TH1D* h_wpi0g_BackToBack[nrCuts_Sel];
+    TH1D* h_pi0gg_BackToBack[nrCuts_Sel];
+    TH2D* h_EpivsIM3g[nrCuts_Sel];
+
+    //Histograms after kinfit hypothesis:
+
     TH1D* h_Probability[nrCutsKF];
     TH1D* h_Fit_zvert[nrCutsKF];
     TH1D* h_fitEbeam[nrCutsKF];
@@ -186,7 +169,31 @@ private:
     TH1D *h_PartPulls_CB[nrCutsKF][nrPartType][nrFitVars];
     TH1D *h_PartPulls_TAPS[nrCutsKF][nrPartType][nrFitVars];
 
-    TH1D* h_CBEsum[nrCuts_total];
+    //TH1D* h_pi0g_BackToBack[nrCuts_BackToBack];
+
+    TH1D* h_TaggerTime;
+    TH1D* h_InitialBeamE;
+    TH1D* h_VetoEnergies;
+    TH1D* h_nClusters;
+    TH1D* h_nClusters_pr;
+
+    TH1D* h_NeuAzimuthAngles;
+    TH1D* h_NeuPolarAngles;
+    TH1D* h_ChaPolarAngles;
+    TH1D* h_ChaAzimuthAngles;
+    TH1D* h_3gPolarAngles;
+    TH1D* h_3gPolarAnglesCB;
+    TH1D* h_3gPolarAnglesTAPS;
+    TH1D* h_3gAzimuthAngles;
+
+    TH1D* h_RecData_relStat;
+    TH1D* h_RecData_Stat;
+
+    TH2D* h_3g_EvTheta_CB;
+    TH2D* h_3g_EvTheta_TAPS;
+
+    //TH1D* h_Steps;
+    //TH1D* h_Reconstructed_Data_Statistics;
 
     PromptRandom::Switch promptrandom;
     utils::TriggerSimulation triggersimu;
