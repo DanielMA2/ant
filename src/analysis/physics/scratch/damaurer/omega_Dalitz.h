@@ -74,12 +74,13 @@ protected:
     std::shared_ptr<expconfig::detector::PID> pid_detector;
     std::shared_ptr<expconfig::detector::TAPSVeto> veto_detector;
 
-    static const int nrCuts_total = 12;
-    static const int nrCuts_beforeSel = 2;
-    static const int nrCuts_beforeKF = 5;
+    static const int nrCuts_total = 13;
 
-    static const int nrCuts_KF = nrCuts_total-nrCuts_beforeKF;
+    static const int nrCuts_beforeSel = 3;
+    static const int nrCuts_beforeKF = 6;
+
     static const int nrCuts_Sel = nrCuts_total-nrCuts_beforeSel;
+    static const int nrCuts_KF = nrCuts_total-nrCuts_beforeKF;
 
     static const int eePID = 3;
     static const int steps_PID = 20;
@@ -88,8 +89,7 @@ protected:
     static const int nrFitVars = 4;
     static const int nrPhotons = 4;
 
-    std::string cuts[nrCuts_total] = {"CUT#0_NoCuts","CUT#1_CBEsum","CUT#2_Sel2Neu3Cha","CUT#3_OmegaEthreshold","CUT#4_IM(2g)_mpi0+-0.4mpi0","CUT#5_mm(p)ANDkf","CUT#6_kinFit_prob_CL2%","CUT#7_FreeZVert","CUT#8_effR","CUT#9_nCrystals","CUT#10_elCaloEthreshold","CUT#11_leptonband"};
-    std::string cuts_KF[nrCuts_KF] = {"CUT#5_mm(p)ANDkf","CUT#6_kinFit_prob_CL2%","CUT#7_FreeZVert","CUT#8_effR","CUT#9_nCrystals","CUT#10_elCaloEthreshold","CUT#11_leptonband"};
+    std::string cuts[nrCuts_total] = {"CUT#0_NoCuts","CUT#1_PromptTaggerHit","CUT#2_CBEsum","CUT#3_Sel2Neu3Cha","CUT#4_OmegaEthreshold","CUT#5_IM(2g)_mpi0+-0.4mpi0","CUT#6_mm(p)ANDkf","CUT#7_kinFit_prob_CL2%","CUT#8_FreeZVert","CUT#9_effR","CUT#10_nCrystals","CUT#11_elCaloEthreshold","CUT#12_leptonband"};
 
     std::string PIDstat[eePID-1] = {"Different","Same"};
 
@@ -141,11 +141,11 @@ protected:
 
 private:
 
+    TH1D* h_nClusters;
+
     TH1D* h_RecData_Stat;
     TH1D* h_RecData_relStat;
 
-    TH1D* h_TaggerTime;
-    TH1D* h_nClusters;   
     TH1D* h_mmpFails;
     TH1D* h_kfFails;
     TH1D* h_totalFails;
@@ -156,6 +156,8 @@ private:
     TH1D* h_CBEsum[nrCuts_total];
     TH2D* h_AllCaloEvsVetoE_CB[nrCuts_total];
     TH2D* h_AllCaloEvsVetoE_TAPS[nrCuts_total];
+
+    TH1D* h_TaggerTime[nrCuts_total];
 
     TH1D* h_nCandidates[nrCuts_total];
     TH2D* h_nNeuChaCandidates[nrCuts_total];

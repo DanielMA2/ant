@@ -67,9 +67,11 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
     fitter.SetZVertexSigma(3.0);
     taps = make_shared<expconfig::detector::TAPS_2013_11>(false, false, false);
 
-    const BinSettings time_bins(200, 0,10);
+    //const BinSettings time_bins(200, 0,10);
     //const BinSettings timeDiffCorTaggCB_bins(200, -5,10);
     //const BinSettings timeDiffCorTaggTAPS_bins(200, -5,20);
+
+    const BinSettings bins_tagger_time(2000, -200, 200);
 
     const BinSettings Veto_Energy_bins(500, 0, 12);
     const BinSettings Calo_Energy_bins(500, 0, 1200);
@@ -160,12 +162,6 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
                                       "h_RecData_relStat", true    // ROOT object name, auto-generated if omitted
                                       );
 
-    h_TaggerTime = hf_Tagger->makeTH1D("Tagger Time",     // title
-                                    "t [ns]", "#",     // xlabel, ylabel
-                                    time_bins,  // our binnings
-                                    "h_TaggerTime"     // ROOT object name, auto-generated if omitted
-                                    );
-
     h_nClusters = hf_Tagger->makeTH1D("Number of Clusters", "nClusters", "#", BinSettings(20), "h_nClusters");
 
 
@@ -249,6 +245,12 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
 
         h_nCandidates[i] = hf_Candidates->makeTH1D("Number of Candidates", "nCandidates "+cuts[i], "#", BinSettings(10), "h_nCandidates_"+cuts[i]);
         h_nNeuChaCandidates[i] = hf_Candidates->makeTH2D("Number of charged vs neutral candidates "+cuts[i], "nChaCand", "nNeuCand", BinSettings(6), BinSettings(8), "h_nNeuChaCandidates_"+cuts[i], true);
+
+        h_TaggerTime[i] = hf_Tagger->makeTH1D("Tagger Time "+cuts[i],     // title
+                                        "t [ns]", "#",     // xlabel, ylabel
+                                        bins_tagger_time,  // our binnings
+                                        "h_TaggerTime_"+cuts[i], true     // ROOT object name, auto-generated if omitted
+                                        );
 
         h_AllCaloEvsVetoE_CB[i] = hf_CaloEvsVetoE->makeTH2D("Deposited Calo- VS Veto-energies in CB "+cuts[i],     // title
                                          "Calo E [MeV]","Veto E [MeV]",  // xlabel, ylabel
@@ -492,92 +494,92 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
 
     //KinFit-overview:
     //h_Steps = hf_OverviewKF->makeTH1D("Steps","","",BinSettings(10),"h_Steps");
-    for (unsigned int i=0; i<nrCutsKF; i++){
-        h_Probability[i] = hf_OverviewKF->makeTH1D(Form("Fit probability %s",cutsKF[i].c_str()),"P(#chi^{2})","#",BinSettings(1000,0.,1.),Form("h_Probability_%s",cutsKF[i].c_str()),true);
-        h_Fit_zvert[i] = hf_OverviewKF->makeTH1D(Form("Fitted z-vertex %s",cutsKF[i].c_str()),"z [cm]","#",BinSettings(50,-15,15),Form("h_Fit_zvert_%s",cutsKF[i].c_str()),true);
-        h_fitEbeam[i] = hf_OverviewKF->makeTH1D(Form("Fitted beam energy %s",cutsKF[i].c_str()),"E [MeV]","#",initialBeamE_bins,Form("h_fitEbeam_%s",cutsKF[i].c_str()),true);
-        h_IM3g_Fit[i] = hf_invmassKF->makeTH1D(Form("Fitted photons invariant mass %s",cutsKF[i].c_str()),"Im(3g_fit) [MeV]","#",Im_omega_bins,Form("h_IM3g_Fit_%s",cutsKF[i].c_str()),true);
-        h_IM2gPi0_Fit[i] = hf_invmassKF->makeTH1D(Form("IM(2gPi0) for fitted photons %s",cutsKF[i].c_str()),"IM(2gPi0) [MeV]", "#",Im_pi0_bins,Form("h_IM2gPi0_Fit_%s",cutsKF[i].c_str()), true);
+    for (unsigned int i=0; i<nrCuts_KF; i++){
+        h_Probability[i] = hf_OverviewKF->makeTH1D(Form("Fit probability %s",cuts[i+nrCuts_beforeKF].c_str()),"P(#chi^{2})","#",BinSettings(1000,0.,1.),Form("h_Probability_%s",cuts[i+nrCuts_beforeKF].c_str()),true);
+        h_Fit_zvert[i] = hf_OverviewKF->makeTH1D(Form("Fitted z-vertex %s",cuts[i+nrCuts_beforeKF].c_str()),"z [cm]","#",BinSettings(50,-15,15),Form("h_Fit_zvert_%s",cuts[i+nrCuts_beforeKF].c_str()),true);
+        h_fitEbeam[i] = hf_OverviewKF->makeTH1D(Form("Fitted beam energy %s",cuts[i+nrCuts_beforeKF].c_str()),"E [MeV]","#",initialBeamE_bins,Form("h_fitEbeam_%s",cuts[i+nrCuts_beforeKF].c_str()),true);
+        h_IM3g_Fit[i] = hf_invmassKF->makeTH1D(Form("Fitted photons invariant mass %s",cuts[i+nrCuts_beforeKF].c_str()),"Im(3g_fit) [MeV]","#",Im_omega_bins,Form("h_IM3g_Fit_%s",cuts[i+nrCuts_beforeKF].c_str()),true);
+        h_IM2gPi0_Fit[i] = hf_invmassKF->makeTH1D(Form("IM(2gPi0) for fitted photons %s",cuts[i+nrCuts_beforeKF].c_str()),"IM(2gPi0) [MeV]", "#",Im_pi0_bins,Form("h_IM2gPi0_Fit_%s",cuts[i+nrCuts_beforeKF].c_str()), true);
 
-        h_p_EvTheta[i] = hf_wpi0g_EvsTheta->makeTH2D(Form("Rec. proton energy vs theta after %s",cutsKF[i].c_str()), //title
+        h_p_EvTheta[i] = hf_wpi0g_EvsTheta->makeTH2D(Form("Rec. proton energy vs theta after %s",cuts[i+nrCuts_beforeKF].c_str()), //title
                                                      "Theta [deg]","E [MeV]",  // xlabel, ylabel
                                                      theta_bins, E_proton_bins,    // our binnings
-                                                     Form("h_p_EvTheta_%s",cutsKF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                     Form("h_p_EvTheta_%s",cuts[i+nrCuts_beforeKF].c_str()), true    // ROOT object name, auto-generated if omitted
                                                      );
 
-        h_w_EvTheta[i] = hf_wpi0g_EvsTheta->makeTH2D(Form("Rec. omega meson energy vs theta after %s",cutsKF[i].c_str()), //title
+        h_w_EvTheta[i] = hf_wpi0g_EvsTheta->makeTH2D(Form("Rec. omega meson energy vs theta after %s",cuts[i+nrCuts_beforeKF].c_str()), //title
                                                      "Theta [deg]","E [MeV]",  // xlabel, ylabel
                                                      theta_bins, E_omega_bins,    // our binnings
-                                                     Form("h_w_EvTheta_%s",cutsKF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                     Form("h_w_EvTheta_%s",cuts[i+nrCuts_beforeKF].c_str()), true    // ROOT object name, auto-generated if omitted
                                                      );
 
-        h_wg_EvTheta[i] = hf_wpi0g_EvsTheta->makeTH2D(Form("Rec. omega decay-photon energy vs theta after %s",cutsKF[i].c_str()), //title
+        h_wg_EvTheta[i] = hf_wpi0g_EvsTheta->makeTH2D(Form("Rec. omega decay-photon energy vs theta after %s",cuts[i+nrCuts_beforeKF].c_str()), //title
                                            "Theta [deg]","E [MeV]",  // xlabel, ylabel
                                            theta_bins, E_photon_bins,    // our binnings
-                                           Form("h_wg_EvTheta_%s",cutsKF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                           Form("h_wg_EvTheta_%s",cuts[i+nrCuts_beforeKF].c_str()), true    // ROOT object name, auto-generated if omitted
                                            );
 
-        h_wpi0_EvTheta[i] = hf_wpi0g_EvsTheta->makeTH2D(Form("Rec. Pi0 energy vs theta after %s",cutsKF[i].c_str()), //title
+        h_wpi0_EvTheta[i] = hf_wpi0g_EvsTheta->makeTH2D(Form("Rec. Pi0 energy vs theta after %s",cuts[i+nrCuts_beforeKF].c_str()), //title
                                             "Theta [deg]","E [MeV]", // xlabel, ylabel
                                             theta_bins, E_pi0_bins,    // our binnings
-                                            Form("h_wpi0_EvTheta_%s",cutsKF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                            Form("h_wpi0_EvTheta_%s",cuts[i+nrCuts_beforeKF].c_str()), true    // ROOT object name, auto-generated if omitted
                                             );
 
-        h_wpi02g_EvTheta[i] = hf_wpi0g_EvsTheta->makeTH2D(Form("Rec. Pi0 decay-photons energy vs theta after %s",cutsKF[i].c_str()), //title
+        h_wpi02g_EvTheta[i] = hf_wpi0g_EvsTheta->makeTH2D(Form("Rec. Pi0 decay-photons energy vs theta after %s",cuts[i+nrCuts_beforeKF].c_str()), //title
                                             "Theta [deg]","E [MeV]", // xlabel, ylabel
                                             theta_bins, E_pi0_bins,    // our binnings
-                                            Form("h_wpi02g_EvTheta_%s",cutsKF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                            Form("h_wpi02g_EvTheta_%s",cuts[i+nrCuts_beforeKF].c_str()), true    // ROOT object name, auto-generated if omitted
                                             );
 
         for (unsigned int j=0; j<nrPartType; j++){ //0 refers to proton, 1 to photons
 
-            h_Ek_dev_CB[i][j] = hf_CombCBKF->makeTH2D(Form("CB: Energy deviation of rec. vs fitted %s after %s",fitPartName[j].c_str(),cutsKF[i].c_str()), //title
+            h_Ek_dev_CB[i][j] = hf_CombCBKF->makeTH2D(Form("CB: Energy deviation of rec. vs fitted %s after %s",fitPartName[j].c_str(),cuts[i+nrCuts_beforeKF].c_str()), //title
                                                 "E_{rec} [MeV]","E_{fit}-E_{rec} [MeV]", // xlabel, ylabel
                                                 partTypeEkBins.at(j), defEk_bins,    // our binnings
-                                                Form("h_Ek_dev_CB_%s_%s",fitPartName[j].c_str(),cutsKF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                Form("h_Ek_dev_CB_%s_%s",fitPartName[j].c_str(),cuts[i+nrCuts_beforeKF].c_str()), true    // ROOT object name, auto-generated if omitted
                                                 );
 
-            h_Theta_dev_CB[i][j] = hf_CombCBKF->makeTH2D(Form("CB: Theta deviation of rec. vs fitted %s after %s",fitPartName[j].c_str(),cutsKF[i].c_str()), //title
+            h_Theta_dev_CB[i][j] = hf_CombCBKF->makeTH2D(Form("CB: Theta deviation of rec. vs fitted %s after %s",fitPartName[j].c_str(),cuts[i+nrCuts_beforeKF].c_str()), //title
                                                 "#Theta_{rec} [deg]","#Theta_{fit}-#Theta_{rec} [deg]", // xlabel, ylabel
                                                 theta_bins, defTheta_bins,    // our binnings
-                                                Form("h_Theta_dev_CB_%s_%s",fitPartName[j].c_str(),cutsKF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                Form("h_Theta_dev_CB_%s_%s",fitPartName[j].c_str(),cuts[i+nrCuts_beforeKF].c_str()), true    // ROOT object name, auto-generated if omitted
                                                 );
 
-            h_Phi_dev_CB[i][j] = hf_CombCBKF->makeTH2D(Form("CB: Phi deviation of rec. vs fitted %s after %s",fitPartName[j].c_str(),cutsKF[i].c_str()), //title
+            h_Phi_dev_CB[i][j] = hf_CombCBKF->makeTH2D(Form("CB: Phi deviation of rec. vs fitted %s after %s",fitPartName[j].c_str(),cuts[i+nrCuts_beforeKF].c_str()), //title
                                                 "#Phi_{rec} [deg]","#Phi_{fit}-#Phi_{rec} [deg]", // xlabel, ylabel
                                                 phi_bins, defPhi_bins,    // our binnings
-                                                Form("h_Phi_dev_CB_%s_%s",fitPartName[j].c_str(),cutsKF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                Form("h_Phi_dev_CB_%s_%s",fitPartName[j].c_str(),cuts[i+nrCuts_beforeKF].c_str()), true    // ROOT object name, auto-generated if omitted
                                                 );
 
-            h_Ek_dev_TAPS[i][j] = hf_CombTAPSKF->makeTH2D(Form("TAPS: Energy deviation of rec. vs fitted %s after %s",fitPartName[j].c_str(),cutsKF[i].c_str()), //title
+            h_Ek_dev_TAPS[i][j] = hf_CombTAPSKF->makeTH2D(Form("TAPS: Energy deviation of rec. vs fitted %s after %s",fitPartName[j].c_str(),cuts[i+nrCuts_beforeKF].c_str()), //title
                                                 "E_{rec} [MeV]","E_{fit}-E_{rec} [MeV]", // xlabel, ylabel
                                                 partTypeEkBins.at(j), defEk_bins,    // our binnings
-                                                Form("h_Ek_dev_TAPS_%s_%s",fitPartName[j].c_str(),cutsKF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                Form("h_Ek_dev_TAPS_%s_%s",fitPartName[j].c_str(),cuts[i+nrCuts_beforeKF].c_str()), true    // ROOT object name, auto-generated if omitted
                                                 );
 
-            h_Theta_dev_TAPS[i][j] = hf_CombTAPSKF->makeTH2D(Form("TAPS: Theta deviation of rec. vs fitted %s after %s",fitPartName[j].c_str(),cutsKF[i].c_str()), //title
+            h_Theta_dev_TAPS[i][j] = hf_CombTAPSKF->makeTH2D(Form("TAPS: Theta deviation of rec. vs fitted %s after %s",fitPartName[j].c_str(),cuts[i+nrCuts_beforeKF].c_str()), //title
                                                 "#Theta_{rec} [deg]","#Theta_{fit}-#Theta_{rec} [deg]", // xlabel, ylabel
                                                 theta_bins, defTheta_bins,    // our binnings
-                                                Form("h_Theta_dev_TAPS_%s_%s",fitPartName[j].c_str(),cutsKF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                Form("h_Theta_dev_TAPS_%s_%s",fitPartName[j].c_str(),cuts[i+nrCuts_beforeKF].c_str()), true    // ROOT object name, auto-generated if omitted
                                                 );
 
-            h_Phi_dev_TAPS[i][j] = hf_CombTAPSKF->makeTH2D(Form("TAPS: Theta deviation of rec. vs fitted %s after %s",fitPartName[j].c_str(),cutsKF[i].c_str()), //title
+            h_Phi_dev_TAPS[i][j] = hf_CombTAPSKF->makeTH2D(Form("TAPS: Theta deviation of rec. vs fitted %s after %s",fitPartName[j].c_str(),cuts[i+nrCuts_beforeKF].c_str()), //title
                                                 "#Phi_{rec} [deg]","#Phi_{fit}-#Phi_{rec} [deg]", // xlabel, ylabel
                                                 phi_bins, defPhi_bins,    // our binnings
-                                                Form("h_Phi_dev_TAPS_%s_%s",fitPartName[j].c_str(),cutsKF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                Form("h_Phi_dev_TAPS_%s_%s",fitPartName[j].c_str(),cuts[i+nrCuts_beforeKF].c_str()), true    // ROOT object name, auto-generated if omitted
                                                 );
 
             for (unsigned int k=0; k<nrFitVars; k++){
 
-                  h_PartPulls_CB[i][j][k] = hfPullsCBKF->makeTH1D(Form("CB: %s pulls of fitted %s after %s",fitvarnameCB[k].c_str(),fitPartName[j].c_str(),cutsKF[i].c_str()), //title
+                  h_PartPulls_CB[i][j][k] = hfPullsCBKF->makeTH1D(Form("CB: %s pulls of fitted %s after %s",fitvarnameCB[k].c_str(),fitPartName[j].c_str(),cuts[i+nrCuts_beforeKF].c_str()), //title
                                                                Form("%s pull",fitvarnameCB[k].c_str()),"#", // xlabel, ylabel
                                                                BinSettings(200,-10.,10.),   // our binnings
-                                                               Form("h_Pulls_CB_%s_%s_%s",fitPartName[j].c_str(),fitvarnameCB[k].c_str(),cutsKF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                               Form("h_Pulls_CB_%s_%s_%s",fitPartName[j].c_str(),fitvarnameCB[k].c_str(),cuts[i+nrCuts_beforeKF].c_str()), true    // ROOT object name, auto-generated if omitted
                                                                );
-                  h_PartPulls_TAPS[i][j][k] = hfPullsTAPSKF->makeTH1D(Form("TAPS: %s pulls of fitted %s after %s",fitvarnameTA[k].c_str(),fitPartName[j].c_str(),cutsKF[i].c_str()), //title
+                  h_PartPulls_TAPS[i][j][k] = hfPullsTAPSKF->makeTH1D(Form("TAPS: %s pulls of fitted %s after %s",fitvarnameTA[k].c_str(),fitPartName[j].c_str(),cuts[i+nrCuts_beforeKF].c_str()), //title
                                                                    Form("%s pull",fitvarnameTA[k].c_str()),"#", // xlabel, ylabel
                                                                    BinSettings(200,-10.,10.),   // our binnings
-                                                                   Form("h_Pulls_TAPS_%s_%s_%s",fitPartName[j].c_str(),fitvarnameTA[k].c_str(),cutsKF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                                   Form("h_Pulls_TAPS_%s_%s_%s",fitPartName[j].c_str(),fitvarnameTA[k].c_str(),cuts[i+nrCuts_beforeKF].c_str()), true    // ROOT object name, auto-generated if omitted
                                                                    );
 
             }
@@ -801,10 +803,7 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
         corTaggTime = triggersimu.GetCorrectedTaggerTime(taggerhit);
         promptrandom.SetTaggerTime(corTaggTime);
 
-        if (promptrandom.State() == PromptRandom::Case::Outside)
-            continue;
-
-        cut_ind=0;
+        const double weight = promptrandom.FillWeight();
 
         TLorentzVector InitialPhotonVec = taggerhit.GetPhotonBeam();
         TLorentzVector InitialProtonVec = LorentzVec(vec3(0,0,0),ParticleTypeDatabase::Proton.Mass());
@@ -812,12 +811,61 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
 
         //Adding selections & filling histograms
 
-        const double weight = promptrandom.FillWeight();
+        cut_ind=0;
 
         stat[cut_ind]+=weight;
         h_RecData_Stat->Fill(cut_ind, weight);
 
-        h_TaggerTime->Fill(taggerhit.Time, weight);
+        h_TaggerTime[cut_ind]->Fill(taggerhit.Time, weight);
+
+        h_nCandidates[cut_ind]->Fill(candidates.size(), weight);
+        h_nNeuChaCandidates[cut_ind]->Fill(charged.size(), neutral.size(), weight);
+
+        h_CBEsum[cut_ind]->Fill(triggersimu.GetCBEnergySum(),weight);
+        h_beamE[cut_ind]->Fill(InitialPhotonVec.E(),weight);
+
+        for (unsigned int i=0; i<neutral.size(); i++){
+            h_neuEkinVSPhi[cut_ind]->Fill(neuPhi[i],neuCanCaloE[i],weight);
+            h_neuCaloE[cut_ind]->Fill(neuCanCaloE[i],weight);
+            if(neuCanInCB[i]){
+                h_AllVetoE_CB[cut_ind]->Fill(neuCanVetoE[i],weight);
+                h_AllCaloEvsVetoE_CB[cut_ind]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
+                h_neuEkinVSThetaCB[cut_ind]->Fill(neuThe[i],neuCanCaloE[i],weight);
+                h_neuEvsT_CB[cut_ind]->Fill(neuCanCaloE[i],neuCanTime[i],weight);
+            }
+            if(neuCanInTAPS[i]){
+                h_AllVetoE_TAPS[cut_ind]->Fill(neuCanVetoE[i],weight);
+                h_AllCaloEvsVetoE_TAPS[cut_ind]->Fill(neuCanCaloE[i],neuCanVetoE[i],weight);
+                h_neuEkinVSThetaTAPS[cut_ind]->Fill(neuThe[i],neuCanCaloE[i],weight);
+                h_neuEvsT_TAPS[cut_ind]->Fill(neuCanCaloE[i],neuCanTime[i],weight);
+            }
+        }
+        for (unsigned int i=0; i<charged.size(); i++){
+            h_chaEkinVSPhi[cut_ind]->Fill(chaPhi[i],chaCanCaloE[i],weight);
+            h_chaCaloE[cut_ind]->Fill(chaCanCaloE[i],weight);
+            if(chaCanInCB[i]){
+                h_AllVetoE_CB[cut_ind]->Fill(chaCanVetoE[i],weight);
+                h_AllCaloEvsVetoE_CB[cut_ind]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
+                h_chaEkinVSThetaCB[cut_ind]->Fill(chaThe[i],chaCanCaloE[i],weight);
+                h_chaEvsT_CB[cut_ind]->Fill(chaCanCaloE[i],chaCanTime[i],weight);
+            }
+            if(chaCanInTAPS[i]){
+                h_AllVetoE_TAPS[cut_ind]->Fill(chaCanVetoE[i],weight);
+                h_AllCaloEvsVetoE_TAPS[cut_ind]->Fill(chaCanCaloE[i],chaCanVetoE[i],weight);
+                h_chaEkinVSThetaTAPS[cut_ind]->Fill(chaThe[i],chaCanCaloE[i],weight);
+                h_chaEvsT_TAPS[cut_ind]->Fill(chaCanCaloE[i],chaCanTime[i],weight);
+            }
+        }
+
+        if (promptrandom.State() == PromptRandom::Case::Outside)
+            continue;
+
+        cut_ind++;
+
+        stat[cut_ind]+=weight;
+        h_RecData_Stat->Fill(cut_ind, weight);
+
+        h_TaggerTime[cut_ind]->Fill(taggerhit.Time, weight);
 
         h_nCandidates[cut_ind]->Fill(candidates.size(), weight);
         h_nNeuChaCandidates[cut_ind]->Fill(charged.size(), neutral.size(), weight);
@@ -866,6 +914,8 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
         stat[cut_ind]+=weight;
         h_RecData_Stat->Fill(cut_ind, weight);
 
+        h_TaggerTime[cut_ind]->Fill(taggerhit.Time, weight);
+
         h_nCandidates[cut_ind]->Fill(candidates.size(), weight);
         h_nNeuChaCandidates[cut_ind]->Fill(charged.size(), neutral.size(), weight);
 
@@ -907,10 +957,6 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
 
         if(!(photons.size() == neu_nrSel && protons.size() == cha_nrSel))
             continue;
-
-        cut_ind++;
-        stat[cut_ind]+=weight;
-        h_RecData_Stat->Fill(cut_ind, weight);
 
         TLorentzVector L3g;
 
@@ -1007,6 +1053,12 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
             }
         }
 
+        cut_ind++;
+        stat[cut_ind]+=weight;
+        h_RecData_Stat->Fill(cut_ind, weight);
+
+        h_TaggerTime[cut_ind]->Fill(taggerhit.Time, weight);
+
         h_wp_BackToBack[cut_ind-nrCuts_beforeSel]->Fill(wp_angle,weight);
         h_wpi0g_BackToBack[cut_ind-nrCuts_beforeSel]->Fill(wpi0g_angle,weight);
         h_pi0gg_BackToBack[cut_ind-nrCuts_beforeSel]->Fill(pi0gg_angle,weight);
@@ -1087,6 +1139,8 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
         stat[cut_ind]+=weight;
         h_RecData_Stat->Fill(cut_ind, weight);
 
+        h_TaggerTime[cut_ind]->Fill(taggerhit.Time, weight);
+
         h_wp_BackToBack[cut_ind-nrCuts_beforeSel]->Fill(wp_angle,weight);
         h_wpi0g_BackToBack[cut_ind-nrCuts_beforeSel]->Fill(wpi0g_angle,weight);
         h_pi0gg_BackToBack[cut_ind-nrCuts_beforeSel]->Fill(pi0gg_angle,weight);
@@ -1165,6 +1219,8 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
         cut_ind++;
         stat[cut_ind]+=weight;
         h_RecData_Stat->Fill(cut_ind, weight);
+
+        h_TaggerTime[cut_ind]->Fill(taggerhit.Time, weight);
 
         h_wp_BackToBack[cut_ind-nrCuts_beforeSel]->Fill(wp_angle,weight);
         h_wpi0g_BackToBack[cut_ind-nrCuts_beforeSel]->Fill(wpi0g_angle,weight);
@@ -1337,6 +1393,8 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
         stat[cut_ind]+=weight;
         h_RecData_Stat->Fill(cut_ind, weight);
 
+        h_TaggerTime[cut_ind]->Fill(taggerhit.Time, weight);
+
         h_wp_BackToBack[cut_ind-nrCuts_beforeSel]->Fill(wp_angle,weight);
         h_wpi0g_BackToBack[cut_ind-nrCuts_beforeSel]->Fill(wpi0g_angle,weight);
         h_pi0gg_BackToBack[cut_ind-nrCuts_beforeSel]->Fill(pi0gg_angle,weight);
@@ -1415,6 +1473,8 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
         cut_ind++;
         stat[cut_ind]+=weight;
         h_RecData_Stat->Fill(cut_ind, weight);
+
+        h_TaggerTime[cut_ind]->Fill(taggerhit.Time, weight);
 
         h_wp_BackToBack[cut_ind-nrCuts_beforeSel]->Fill(wp_angle,weight);
         h_wpi0g_BackToBack[cut_ind-nrCuts_beforeSel]->Fill(wpi0g_angle,weight);
@@ -1530,10 +1590,6 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
         if (!std_ext::copy_if_greater(best_probability, fitresult.Probability))
             continue;
 
-        cut_ind++;
-        stat[cut_ind]+=weight;
-        h_RecData_Stat->Fill(cut_ind, weight);
-
         // retrieve the fitted photon and proton information as well as the number of iterations
         auto fitted_proton = fitter.GetFittedProton();
         auto fitted_photons = fitter.GetFittedPhotons();
@@ -1566,6 +1622,12 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
         else{
             pi02g_fitM = fitphotcomb3;
         }
+
+        cut_ind++;
+        stat[cut_ind]+=weight;
+        h_RecData_Stat->Fill(cut_ind, weight);
+
+        h_TaggerTime[cut_ind]->Fill(taggerhit.Time, weight);
 
         h_wp_BackToBack[cut_ind-nrCuts_beforeSel]->Fill(wp_angle,weight);
         h_wpi0g_BackToBack[cut_ind-nrCuts_beforeSel]->Fill(wpi0g_angle,weight);
@@ -1707,6 +1769,8 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
         cut_ind++;
         stat[cut_ind]+=weight;
         h_RecData_Stat->Fill(cut_ind, weight);
+
+        h_TaggerTime[cut_ind]->Fill(taggerhit.Time, weight);
 
         h_wp_BackToBack[cut_ind-nrCuts_beforeSel]->Fill(wp_angle,weight);
         h_wpi0g_BackToBack[cut_ind-nrCuts_beforeSel]->Fill(wpi0g_angle,weight);
@@ -1858,12 +1922,16 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
 void scratch_damaurer_pw_ppi0g_p3g_kinFit::ShowResult()
 {    
 
+    cout << "" << endl;
+
     for (unsigned int i=0; i<nrCuts_total; i++){
         cout << "Amount events after " << i << " applied cuts: " << h_RecData_Stat->GetBinContent(i*steps+1) << endl;
         //h_RecData_Stat->SetBinContent(i*steps+1, stat[i]);
         //h_RecData_Stat->SetBinError(i*steps+1, sqrt(stat[i]));
         h_RecData_Stat->GetXaxis()->SetBinLabel(i*steps+1,cuts[i].c_str());
     }
+
+    cout << "" << endl;
 
     for (unsigned int i=0; i<(nrCuts_total-1); i++){
         cout << "Relative amount of events after " << (i+1) << " applied cuts: " << 100*(h_RecData_Stat->GetBinContent((i+1)*steps+1)/h_RecData_Stat->GetBinContent(1)) << " %" << endl;
@@ -1872,6 +1940,8 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ShowResult()
         h_RecData_relStat->SetBinError((i+1)*steps+1, sqrt(pow((sqrt(h_RecData_Stat->GetBinError((i+1)*steps+1))/h_RecData_Stat->GetBinContent(1)),2)+pow((sqrt(h_RecData_Stat->GetBinError(1))*h_RecData_Stat->GetBinContent((i+1)*steps+1))/(pow(h_RecData_Stat->GetBinContent(1),2)),2)));
         h_RecData_relStat->GetXaxis()->SetBinLabel((i+1)*steps+1,cuts[i+1].c_str());
     }
+
+    cout << "" << endl;
 
     ant::canvas(GetName()+": Event-Statistics after applied cuts:")
             << drawoption("HIST")
@@ -2052,7 +2122,7 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ShowResult()
             << endc; // actually draws the canvas
 
     ant::canvas c_KinFit_overview(GetName()+": Kinfit overview");
-            for (unsigned int i=0; i<nrCutsKF; i++){
+            for (unsigned int i=0; i<nrCuts_KF; i++){
             c_KinFit_overview << h_Fit_zvert[i];
             c_KinFit_overview << h_Probability[i];
             c_KinFit_overview << h_fitEbeam[i];
@@ -2060,7 +2130,7 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ShowResult()
             c_KinFit_overview << endc;
 
     ant::canvas c_KinFit_invmass(GetName()+": KinFit invmasses");
-            for (unsigned int i=0; i<nrCutsKF; i++){
+            for (unsigned int i=0; i<nrCuts_KF; i++){
             c_KinFit_invmass << h_IM3g_Fit[i];
             c_KinFit_invmass << h_IM2gPi0_Fit[i];
             }
@@ -2116,8 +2186,13 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::Finish()
 {
     cout << "please work!" << endl;
 
+    cout << "" << endl;
+
     LOG(INFO) << "Fit Model Statistics Data:\n" << *fit_model_data;
     LOG(INFO) << "Fit Model Statistics MC:\n" << *fit_model_mc;
+
+    cout << "" << endl;
+
 /*
     int max_particles_detected = h_ALL_PolarAngles->GetEntries();
     int Photons_max_detected = h_3gPolarAngles->GetEntries();

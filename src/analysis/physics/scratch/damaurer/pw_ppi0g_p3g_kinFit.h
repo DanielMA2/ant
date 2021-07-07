@@ -73,15 +73,15 @@ protected:
 
     //-- Histograms
 
-    static const int nrCuts_total = 9;
-    static const int nrCuts_beforeSel = 2;
-    static const int nrCuts_beforeKF = 7;
+    static const int nrCuts_total = 10;
+    static const int nrCuts_beforeSel = 3;
+    static const int nrCuts_beforeKF = 8;
 
     //static const int nrCuts_beforePi0 = 4;
     //static const int nrCuts_pi0 = nrCuts_total-nrCuts_beforePi0;
 
     static const int nrCuts_Sel = nrCuts_total-nrCuts_beforeSel;
-    static const int nrCutsKF = nrCuts_total-nrCuts_beforeKF;
+    static const int nrCuts_KF = nrCuts_total-nrCuts_beforeKF;
 
     static const int neu_nrSel = 3;
     static const int cha_nrSel = 1;
@@ -121,6 +121,7 @@ private:
     TH2D* h_nNeuChaCandidates[nrCuts_total];
 
     TH1D* h_CBEsum[nrCuts_total];
+    TH1D* h_TaggerTime[nrCuts_total];
 
     //Histograms after candidate selection:
 
@@ -146,32 +147,31 @@ private:
 
     //Histograms after kinfit hypothesis:
 
-    TH1D* h_Probability[nrCutsKF];
-    TH1D* h_Fit_zvert[nrCutsKF];
-    TH1D* h_fitEbeam[nrCutsKF];
-    TH1D* h_IM3g_Fit[nrCutsKF];
-    TH1D* h_IM2gPi0_Fit[nrCutsKF];
+    TH1D* h_Probability[nrCuts_KF];
+    TH1D* h_Fit_zvert[nrCuts_KF];
+    TH1D* h_fitEbeam[nrCuts_KF];
+    TH1D* h_IM3g_Fit[nrCuts_KF];
+    TH1D* h_IM2gPi0_Fit[nrCuts_KF];
 
-    TH2D* h_p_EvTheta[nrCutsKF];
-    TH2D* h_w_EvTheta[nrCutsKF];
-    TH2D* h_wg_EvTheta[nrCutsKF];
-    TH2D* h_wpi0_EvTheta[nrCutsKF];
-    TH2D* h_wpi02g_EvTheta[nrCutsKF];
+    TH2D* h_p_EvTheta[nrCuts_KF];
+    TH2D* h_w_EvTheta[nrCuts_KF];
+    TH2D* h_wg_EvTheta[nrCuts_KF];
+    TH2D* h_wpi0_EvTheta[nrCuts_KF];
+    TH2D* h_wpi02g_EvTheta[nrCuts_KF];
 
-    TH2D* h_Ek_dev_CB[nrCutsKF][nrPartType];
-    TH2D* h_Theta_dev_CB[nrCutsKF][nrPartType];
-    TH2D* h_Phi_dev_CB[nrCutsKF][nrPartType];
+    TH2D* h_Ek_dev_CB[nrCuts_KF][nrPartType];
+    TH2D* h_Theta_dev_CB[nrCuts_KF][nrPartType];
+    TH2D* h_Phi_dev_CB[nrCuts_KF][nrPartType];
 
-    TH2D* h_Ek_dev_TAPS[nrCutsKF][nrPartType];
-    TH2D* h_Theta_dev_TAPS[nrCutsKF][nrPartType];
-    TH2D* h_Phi_dev_TAPS[nrCutsKF][nrPartType];
+    TH2D* h_Ek_dev_TAPS[nrCuts_KF][nrPartType];
+    TH2D* h_Theta_dev_TAPS[nrCuts_KF][nrPartType];
+    TH2D* h_Phi_dev_TAPS[nrCuts_KF][nrPartType];
 
-    TH1D *h_PartPulls_CB[nrCutsKF][nrPartType][nrFitVars];
-    TH1D *h_PartPulls_TAPS[nrCutsKF][nrPartType][nrFitVars];
+    TH1D *h_PartPulls_CB[nrCuts_KF][nrPartType][nrFitVars];
+    TH1D *h_PartPulls_TAPS[nrCuts_KF][nrPartType][nrFitVars];
 
     //TH1D* h_pi0g_BackToBack[nrCuts_BackToBack];
 
-    TH1D* h_TaggerTime;
     TH1D* h_InitialBeamE;
     TH1D* h_VetoEnergies;
     TH1D* h_nClusters;
@@ -198,8 +198,8 @@ private:
     PromptRandom::Switch promptrandom;
     utils::TriggerSimulation triggersimu;
 
-    std::string cuts[nrCuts_total] = {"CUT#0_NoCuts", "CUT#1_CBEsum", "CUT#2_Sel3Neu1Cha", "CUT#3_ImMissingParticle_+-2sigma_mp", "CUT#4_OmegaEthreshold", "CUT#5_SelMinM(2neu-mpi0)_+-2sigma_mpi0", "CUT#6_neuCaloEthreshold", "CUT#7_kinFit", "CUT#8_kinFit_prob_CL1%"};
-    std::string cutsKF[nrCutsKF] = {"CUT#7_kinFit", "CUT#8_kinFit_prob_CL1%"};
+    std::string cuts[nrCuts_total] = {"CUT#0_NoCuts", "CUT#1_PromptTaggerHit", "CUT#2_CBEsum", "CUT#3_Sel3Neu1Cha", "CUT#4_ImMissingParticle_+-2sigma_mp", "CUT#5_OmegaEthreshold", "CUT#6_SelMinM(2neu-mpi0)_+-2sigma_mpi0", "CUT#7_neuCaloEthreshold", "CUT#8_kinFit", "CUT#9_kinFit_prob_CL1%"};
+
     std::string fitPartName[nrPartType] ={"protons" , "photons"};
     std::string fitvarnameCB[nrFitVars] = {"invEk","theta","phi","R"};
     std::string fitvarnameTA[nrFitVars] = {"invEk","Rxy","phi","L"};

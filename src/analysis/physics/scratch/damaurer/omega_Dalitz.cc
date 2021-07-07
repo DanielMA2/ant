@@ -90,8 +90,8 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
     const BinSettings IM_ee_bins(200, 0, 800);
     const BinSettings kf_prob_bins(1000,0.,1.);
     const BinSettings CB_Esum_bins(250,0.,2000.);
-    const BinSettings timeDiffCorTaggCB_bins(50, 0,10);
-    const BinSettings timeDiffCorTaggTAPS_bins(100, 0,25);
+    //const BinSettings timeDiffCorTaggCB_bins(50, 0,10);
+    //const BinSettings timeDiffCorTaggTAPS_bins(100, 0,25);
     const BinSettings PIDtime_bins(482,-60.5,60.5);
     const BinSettings effR_bins(100, 0,25);
     const BinSettings nCrystal_bins(30);
@@ -167,15 +167,10 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
     // using the make methods
 
     h_nClusters = hf_Tagger->makeTH1D("Number of clusters", "nClusters", "#", bins_nClusters, "h_nClusters", true);
+
     h_mmpFails = hf_KFfails->makeTH1D("Fit mm(p) fails","nrFails","#",bins_kfFails,"h_mmpFails",true);
     h_kfFails = hf_KFfails->makeTH1D("Fit status fails","nrFails","#",bins_kfFails,"h_kfFails",true);
     h_totalFails = hf_KFfails->makeTH1D("Total fit fails","nrFails","#",bins_kfFails,"h_totalFails",true);
-
-    h_TaggerTime = hf_Tagger->makeTH1D("Tagger Time",     // title
-                                    "t [ns]", "#",     // xlabel, ylabel
-                                    bins_tagger_time,  // our binnings
-                                    "h_TaggerTime", true     // ROOT object name, auto-generated if omitted
-                                    );
 
     h_RecData_Stat = hf_RecData_CandStat->makeTH1D("Amount of events after cuts:",     // title
                                      "Cuts", "#",     // xlabel, ylabel
@@ -190,6 +185,12 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
                                       );
 
     for (unsigned int i=0; i<nrCuts_total; i++){
+
+    h_TaggerTime[i] = hf_Tagger->makeTH1D("Tagger Time "+cuts[i],     // title
+                                    "t [ns]", "#",     // xlabel, ylabel
+                                    bins_tagger_time,  // our binnings
+                                    "h_TaggerTime_"+cuts[i], true     // ROOT object name, auto-generated if omitted
+                                    );
 
     h_AllCaloEvsVetoE_CB[i] = hf_CaloEvsVetoE->makeTH2D("Deposited calo vs veto energies in CB "+cuts[i],     // title
                                      "Calo E [MeV]", "Veto E [MeV]",  // xlabel, ylabel
@@ -254,23 +255,23 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
 
         //-------------------KinFit basic stuff--------------------------------------
 
-        h_Probability[i] = hf_OverviewKF->makeTH1D(Form("Fit probability %s",cuts_KF[i].c_str()),"P(#chi^{2})","#",kf_prob_bins,Form("h_Probability_%s",cuts_KF[i].c_str()),true);
-        h_Fit_zvert[i] = hf_OverviewKF->makeTH1D(Form("Fitted z-vertex %s",cuts_KF[i].c_str()),"z [cm]","#",zVert_bins,Form("h_Fit_zvert_%s",cuts_KF[i].c_str()),true);
-        h_fitEbeam[i] = hf_OverviewKF->makeTH1D(Form("Fitted beam energy %s",cuts_KF[i].c_str()),"E [MeV]","#",BeamE_bins,Form("h_fitEbeam_%s",cuts_KF[i].c_str()),true);
-        h_IMmissingP_Fit[i] = hf_invmassKF->makeTH1D(Form("Fitted mm(p) %s",cuts_KF[i].c_str()),"mm(fitted_p) [MeV]","#",Im_proton_bins,Form("h_IMmissingP_Fit_%s",cuts_KF[i].c_str()),true);
-        h_IM2gee_Fit[i] = hf_invmassKF->makeTH1D(Form("Fitted 2gee invariant mass %s",cuts_KF[i].c_str()),"Im(fitted_2gee) [MeV]","#",Im_omega_bins,Form("h_IM2gee_Fit_%s",cuts_KF[i].c_str()),true);
-        h_IM2g_Fit[i] = hf_invmassKF->makeTH1D(Form("Fitted 2g invariant mass %s",cuts_KF[i].c_str()),"Im(fitted_2g) [MeV]", "#",Im_pi0_bins,Form("h_IM2g_Fit_%s",cuts_KF[i].c_str()), true);
-        h_Probability_freeZ[i] = hf_OverviewKF_freeZ->makeTH1D(Form("Free Z Kinfitter probability %s",cuts_KF[i].c_str()),"P(#chi^{2})","#",kf_prob_bins,Form("h_Probability_freeZ_%s",cuts_KF[i].c_str()),true);
-        h_Fit_zvert_freeZ[i] = hf_OverviewKF_freeZ->makeTH1D(Form("Fitted unconstrained z-vertex %s",cuts_KF[i].c_str()),"z [cm]","#",zVertFree_bins,Form("h_Fit_zvert_unconstrained_%s",cuts_KF[i].c_str()), true);
+        h_Probability[i] = hf_OverviewKF->makeTH1D(Form("Fit probability %s",cuts[i+nrCuts_beforeKF].c_str()),"P(#chi^{2})","#",kf_prob_bins,Form("h_Probability_%s",cuts[i+nrCuts_beforeKF].c_str()),true);
+        h_Fit_zvert[i] = hf_OverviewKF->makeTH1D(Form("Fitted z-vertex %s",cuts[i+nrCuts_beforeKF].c_str()),"z [cm]","#",zVert_bins,Form("h_Fit_zvert_%s",cuts[i+nrCuts_beforeKF].c_str()),true);
+        h_fitEbeam[i] = hf_OverviewKF->makeTH1D(Form("Fitted beam energy %s",cuts[i+nrCuts_beforeKF].c_str()),"E [MeV]","#",BeamE_bins,Form("h_fitEbeam_%s",cuts[i+nrCuts_beforeKF].c_str()),true);
+        h_IMmissingP_Fit[i] = hf_invmassKF->makeTH1D(Form("Fitted mm(p) %s",cuts[i+nrCuts_beforeKF].c_str()),"mm(fitted_p) [MeV]","#",Im_proton_bins,Form("h_IMmissingP_Fit_%s",cuts[i+nrCuts_beforeKF].c_str()),true);
+        h_IM2gee_Fit[i] = hf_invmassKF->makeTH1D(Form("Fitted 2gee invariant mass %s",cuts[i+nrCuts_beforeKF].c_str()),"Im(fitted_2gee) [MeV]","#",Im_omega_bins,Form("h_IM2gee_Fit_%s",cuts[i+nrCuts_beforeKF].c_str()),true);
+        h_IM2g_Fit[i] = hf_invmassKF->makeTH1D(Form("Fitted 2g invariant mass %s",cuts[i+nrCuts_beforeKF].c_str()),"Im(fitted_2g) [MeV]", "#",Im_pi0_bins,Form("h_IM2g_Fit_%s",cuts[i+nrCuts_beforeKF].c_str()), true);
+        h_Probability_freeZ[i] = hf_OverviewKF_freeZ->makeTH1D(Form("Free Z Kinfitter probability %s",cuts[i+nrCuts_beforeKF].c_str()),"P(#chi^{2})","#",kf_prob_bins,Form("h_Probability_freeZ_%s",cuts[i+nrCuts_beforeKF].c_str()),true);
+        h_Fit_zvert_freeZ[i] = hf_OverviewKF_freeZ->makeTH1D(Form("Fitted unconstrained z-vertex %s",cuts[i+nrCuts_beforeKF].c_str()),"z [cm]","#",zVertFree_bins,Form("h_Fit_zvert_unconstrained_%s",cuts[i+nrCuts_beforeKF].c_str()), true);
 
         //-------------------PID stuff--------------------------------------
 
-        h_IMmissingP_Fit_samePID[i] = hf_PID_stuff->makeTH1D(Form("Fitted mm(p) with ee same PID %s",cuts_KF[i].c_str()),"mm(fitted_p) [MeV]","#",Im_proton_bins,Form("h_IMmissingP_Fit_samePID_%s",cuts_KF[i].c_str()),true);
-        h_IM2gee_Fit_samePID[i] = hf_PID_stuff->makeTH1D(Form("Fitted 2gee invariant mass with ee same PID %s",cuts_KF[i].c_str()),"Im(fitted_2gee) [MeV]","#",Im_omega_bins,Form("h_IM2gee_Fit_samePID_%s",cuts_KF[i].c_str()),true);
-        h_IM2g_Fit_samePID[i] = hf_PID_stuff->makeTH1D(Form("Fitted 2g invariant mass with ee same PID %s",cuts_KF[i].c_str()),"Im(fitted_2g) [MeV]", "#",Im_pi0_bins,Form("h_IM2g_Fit_samePID_%s",cuts_KF[i].c_str()), true);
-        h_IMmissingP_Fit_diffPID[i] = hf_PID_stuff->makeTH1D(Form("Fitted mm(p) with ee diff PID %s",cuts_KF[i].c_str()),"mm(fitted_p) [MeV]","#",Im_proton_bins,Form("h_IMmissingP_Fit_diffPID_%s",cuts_KF[i].c_str()),true);
-        h_IM2gee_Fit_diffPID[i] = hf_PID_stuff->makeTH1D(Form("Fitted 2gee invariant mass with ee diff PID %s",cuts_KF[i].c_str()),"Im(fitted_2gee) [MeV]","#",Im_omega_bins,Form("h_IM2gee_Fit_diffPID_%s",cuts_KF[i].c_str()),true);
-        h_IM2g_Fit_diffPID[i] = hf_PID_stuff->makeTH1D(Form("Fitted 2g invariant mass with ee diff PID %s",cuts_KF[i].c_str()),"Im(fitted_2g) [MeV]", "#",Im_pi0_bins,Form("h_IM2g_Fit_diffPID_%s",cuts_KF[i].c_str()), true);
+        h_IMmissingP_Fit_samePID[i] = hf_PID_stuff->makeTH1D(Form("Fitted mm(p) with ee same PID %s",cuts[i+nrCuts_beforeKF].c_str()),"mm(fitted_p) [MeV]","#",Im_proton_bins,Form("h_IMmissingP_Fit_samePID_%s",cuts[i+nrCuts_beforeKF].c_str()),true);
+        h_IM2gee_Fit_samePID[i] = hf_PID_stuff->makeTH1D(Form("Fitted 2gee invariant mass with ee same PID %s",cuts[i+nrCuts_beforeKF].c_str()),"Im(fitted_2gee) [MeV]","#",Im_omega_bins,Form("h_IM2gee_Fit_samePID_%s",cuts[i+nrCuts_beforeKF].c_str()),true);
+        h_IM2g_Fit_samePID[i] = hf_PID_stuff->makeTH1D(Form("Fitted 2g invariant mass with ee same PID %s",cuts[i+nrCuts_beforeKF].c_str()),"Im(fitted_2g) [MeV]", "#",Im_pi0_bins,Form("h_IM2g_Fit_samePID_%s",cuts[i+nrCuts_beforeKF].c_str()), true);
+        h_IMmissingP_Fit_diffPID[i] = hf_PID_stuff->makeTH1D(Form("Fitted mm(p) with ee diff PID %s",cuts[i+nrCuts_beforeKF].c_str()),"mm(fitted_p) [MeV]","#",Im_proton_bins,Form("h_IMmissingP_Fit_diffPID_%s",cuts[i+nrCuts_beforeKF].c_str()),true);
+        h_IM2gee_Fit_diffPID[i] = hf_PID_stuff->makeTH1D(Form("Fitted 2gee invariant mass with ee diff PID %s",cuts[i+nrCuts_beforeKF].c_str()),"Im(fitted_2gee) [MeV]","#",Im_omega_bins,Form("h_IM2gee_Fit_diffPID_%s",cuts[i+nrCuts_beforeKF].c_str()),true);
+        h_IM2g_Fit_diffPID[i] = hf_PID_stuff->makeTH1D(Form("Fitted 2g invariant mass with ee diff PID %s",cuts[i+nrCuts_beforeKF].c_str()),"Im(fitted_2g) [MeV]", "#",Im_pi0_bins,Form("h_IM2g_Fit_diffPID_%s",cuts[i+nrCuts_beforeKF].c_str()), true);
 
         //-------------------Form factor extraction stuff--------------------------------------
 
@@ -287,354 +288,354 @@ scratch_damaurer_omega_Dalitz::scratch_damaurer_omega_Dalitz(const string& name,
             ssUpperIM2gee << upperIM2gee;
             string myStringUpperIM2gee = ssUpperIM2gee.str();
 
-            h_IM2gee_Fit_TFF[i][j] = hf_IM2gee_Fit_TFF->makeTH1D(Form("Fitted IM(2gee) for IM(ee) in {%s,%s} MeV %s",myStringLowerIM2gee.c_str(),myStringUpperIM2gee.c_str(),cuts_KF[i].c_str()),"Im(fitted_2gee) [MeV]","#",Im_omega_bins,Form("h_IM2gee_Fit_TFF_IMee_%s_%s_MeV_%s",myStringLowerIM2gee.c_str(),myStringUpperIM2gee.c_str(),cuts_KF[i].c_str()),true);
-            h_IM2gee_Fit_TFFsamePID[i][j] = hf_IM2gee_Fit_TFFsamePID->makeTH1D(Form("Fitted IM(2gee) for IM(ee samePID) in {%s,%s} MeV %s",myStringLowerIM2gee.c_str(),myStringUpperIM2gee.c_str(),cuts_KF[i].c_str()),"Im(fitted_2gee) [MeV]","#",Im_omega_bins,Form("h_IM2gee_Fit_TFF_IMee_samePID_%s_%s_MeV_%s",myStringLowerIM2gee.c_str(),myStringUpperIM2gee.c_str(),cuts_KF[i].c_str()),true);
-            h_IM2gee_Fit_TFFdiffPID[i][j] = hf_IM2gee_Fit_TFFdiffPID->makeTH1D(Form("Fitted IM(2gee) for IM(ee diffPID) in {%s,%s} MeV %s",myStringLowerIM2gee.c_str(),myStringUpperIM2gee.c_str(),cuts_KF[i].c_str()),"Im(fitted_2gee) [MeV]","#",Im_omega_bins,Form("h_IM2gee_Fit_TFF_IMee_diffPID_%s_%s_MeV_%s",myStringLowerIM2gee.c_str(),myStringUpperIM2gee.c_str(),cuts_KF[i].c_str()),true);
+            h_IM2gee_Fit_TFF[i][j] = hf_IM2gee_Fit_TFF->makeTH1D(Form("Fitted IM(2gee) for IM(ee) in {%s,%s} MeV %s",myStringLowerIM2gee.c_str(),myStringUpperIM2gee.c_str(),cuts[i+nrCuts_beforeKF].c_str()),"Im(fitted_2gee) [MeV]","#",Im_omega_bins,Form("h_IM2gee_Fit_TFF_IMee_%s_%s_MeV_%s",myStringLowerIM2gee.c_str(),myStringUpperIM2gee.c_str(),cuts[i+nrCuts_beforeKF].c_str()),true);
+            h_IM2gee_Fit_TFFsamePID[i][j] = hf_IM2gee_Fit_TFFsamePID->makeTH1D(Form("Fitted IM(2gee) for IM(ee samePID) in {%s,%s} MeV %s",myStringLowerIM2gee.c_str(),myStringUpperIM2gee.c_str(),cuts[i+nrCuts_beforeKF].c_str()),"Im(fitted_2gee) [MeV]","#",Im_omega_bins,Form("h_IM2gee_Fit_TFF_IMee_samePID_%s_%s_MeV_%s",myStringLowerIM2gee.c_str(),myStringUpperIM2gee.c_str(),cuts[i+nrCuts_beforeKF].c_str()),true);
+            h_IM2gee_Fit_TFFdiffPID[i][j] = hf_IM2gee_Fit_TFFdiffPID->makeTH1D(Form("Fitted IM(2gee) for IM(ee diffPID) in {%s,%s} MeV %s",myStringLowerIM2gee.c_str(),myStringUpperIM2gee.c_str(),cuts[i+nrCuts_beforeKF].c_str()),"Im(fitted_2gee) [MeV]","#",Im_omega_bins,Form("h_IM2gee_Fit_TFF_IMee_diffPID_%s_%s_MeV_%s",myStringLowerIM2gee.c_str(),myStringUpperIM2gee.c_str(),cuts[i+nrCuts_beforeKF].c_str()),true);
         }
 
         //-------------------------------------------------------------------
 
-        h_cluster_effRvsCaloE[i] = hf_cluster_effRvsCaloE->makeTH2D("No Protons: Cluster energy vs effective radius "+cuts_KF[i],     // title
+        h_cluster_effRvsCaloE[i] = hf_cluster_effRvsCaloE->makeTH2D("No Protons: Cluster energy vs effective radius "+cuts[i+nrCuts_beforeKF],     // title
                                          "Cluster E [MeV]", "effR",  // xlabel, ylabel
                                          bins_Calo_Energy, effR_bins,    // our binnings
-                                         "h_cluster_effRvsCaloE_"+cuts_KF[i], true    // ROOT object name, auto-generated if omitted
+                                         "h_cluster_effRvsCaloE_"+cuts[i+nrCuts_beforeKF], true    // ROOT object name, auto-generated if omitted
                                          );
 
-        h_cluster_nCrystalsvsCaloE[i] = hf_cluster_nCrystalsvsCaloE->makeTH2D("No Protons: : Cluster energy vs number of crystals "+cuts_KF[i],     // title
+        h_cluster_nCrystalsvsCaloE[i] = hf_cluster_nCrystalsvsCaloE->makeTH2D("No Protons: : Cluster energy vs number of crystals "+cuts[i+nrCuts_beforeKF],     // title
                                          "Cluster E [MeV]", "nCrystals",  // xlabel, ylabel
                                          bins_Calo_Energy, nCrystal_bins,    // our binnings
-                                         "h_cluster_nCrystalsvsCaloE_"+cuts_KF[i], true    // ROOT object name, auto-generated if omitted
+                                         "h_cluster_nCrystalsvsCaloE_"+cuts[i+nrCuts_beforeKF], true    // ROOT object name, auto-generated if omitted
                                          );
 
         //Some side check hists:
 
-        h_NoProton_CaloEvsVetoE_CB[i] = hf_CaloEvsVetoE_CB_SideCheck->makeTH2D("No protons: Deposited calo vs veto energies in CB "+cuts_KF[i],     // title
+        h_NoProton_CaloEvsVetoE_CB[i] = hf_CaloEvsVetoE_CB_SideCheck->makeTH2D("No protons: Deposited calo vs veto energies in CB "+cuts[i+nrCuts_beforeKF],     // title
                                          "Calo E [MeV]", "Veto E [MeV]",  // xlabel, ylabel
                                          bins_Calo_Energy, bins_Veto_Energy,    // our binnings
-                                         "h_NoProton_CaloEvsVetoE_CB_"+cuts_KF[i], true    // ROOT object name, auto-generated if omitted
+                                         "h_NoProton_CaloEvsVetoE_CB_"+cuts[i+nrCuts_beforeKF], true    // ROOT object name, auto-generated if omitted
                                          );
 
-        h_NoProton_CaloEvsVetoE_TAPS[i] = hf_CaloEvsVetoE_TAPS_SideCheck->makeTH2D("No protons: Deposited calo vs veto energies in TAPS "+cuts_KF[i],     // title
+        h_NoProton_CaloEvsVetoE_TAPS[i] = hf_CaloEvsVetoE_TAPS_SideCheck->makeTH2D("No protons: Deposited calo vs veto energies in TAPS "+cuts[i+nrCuts_beforeKF],     // title
                                          "Calo E [MeV]", "Veto E [MeV]",  // xlabel, ylabel
                                          bins_Calo_Energy, bins_Veto_Energy,    // our binnings
-                                         "h_NoProton_CaloEvsVetoE_TAPS_"+cuts_KF[i], true    // ROOT object name, auto-generated if omitted
+                                         "h_NoProton_CaloEvsVetoE_TAPS_"+cuts[i+nrCuts_beforeKF], true    // ROOT object name, auto-generated if omitted
                                          );
 
-        h_Proton_CaloEvsVetoE_CB[i] = hf_CaloEvsVetoE_CB_SideCheck->makeTH2D("Protons: Deposited calo vs veto energies in CB "+cuts_KF[i],     // title
+        h_Proton_CaloEvsVetoE_CB[i] = hf_CaloEvsVetoE_CB_SideCheck->makeTH2D("Protons: Deposited calo vs veto energies in CB "+cuts[i+nrCuts_beforeKF],     // title
                                          "Calo E [MeV]", "Veto E [MeV]",  // xlabel, ylabel
                                          bins_Calo_Energy, bins_Veto_Energy,    // our binnings
-                                         "h_Proton_CaloEvsVetoE_CB_"+cuts_KF[i], true    // ROOT object name, auto-generated if omitted
+                                         "h_Proton_CaloEvsVetoE_CB_"+cuts[i+nrCuts_beforeKF], true    // ROOT object name, auto-generated if omitted
                                          );
 
-        h_Proton_CaloEvsVetoE_TAPS[i] = hf_CaloEvsVetoE_TAPS_SideCheck->makeTH2D("Protons: Deposited calo vs veto energies in TAPS "+cuts_KF[i],     // title
+        h_Proton_CaloEvsVetoE_TAPS[i] = hf_CaloEvsVetoE_TAPS_SideCheck->makeTH2D("Protons: Deposited calo vs veto energies in TAPS "+cuts[i+nrCuts_beforeKF],     // title
                                          "Calo E [MeV]", "Veto E [MeV]",  // xlabel, ylabel
                                          bins_Calo_Energy, bins_Veto_Energy,    // our binnings
-                                         "h_Proton_CaloEvsVetoE_TAPS_"+cuts_KF[i], true    // ROOT object name, auto-generated if omitted
+                                         "h_Proton_CaloEvsVetoE_TAPS_"+cuts[i+nrCuts_beforeKF], true    // ROOT object name, auto-generated if omitted
                                          );
 
-        h_Proton_PIDEvsTime[i] = hf_PIDEvsTime->makeTH2D("Protons: PID energy vs time "+cuts_KF[i],     // title
+        h_Proton_PIDEvsTime[i] = hf_PIDEvsTime->makeTH2D("Protons: PID energy vs time "+cuts[i+nrCuts_beforeKF],     // title
                                                                           "PID time [ns]", "PID E [MeV]",  // xlabel, ylabel
                                                                           PIDtime_bins,BinSettings(200,0.,20),    // our binnings
-                                                                          "h_Proton_PIDEvsTime_"+cuts_KF[i], true    // ROOT object name, auto-generated if omitted
+                                                                          "h_Proton_PIDEvsTime_"+cuts[i+nrCuts_beforeKF], true    // ROOT object name, auto-generated if omitted
                                                                           );
 
-        h_NoProton_PIDEvsTime[i] = hf_PIDEvsTime->makeTH2D("No Protons: PID energy vs time "+cuts_KF[i],     // title
+        h_NoProton_PIDEvsTime[i] = hf_PIDEvsTime->makeTH2D("No Protons: PID energy vs time "+cuts[i+nrCuts_beforeKF],     // title
                                                                           "PID time [ns]", "PID E [MeV]",  // xlabel, ylabel
                                                                           PIDtime_bins,BinSettings(200,0.,20),    // our binnings
-                                                                          "h_NoProton_PIDEvsTime_"+cuts_KF[i], true    // ROOT object name, auto-generated if omitted
+                                                                          "h_NoProton_PIDEvsTime_"+cuts[i+nrCuts_beforeKF], true    // ROOT object name, auto-generated if omitted
                                                                           );
 
-        h_Photon_EvsThetaCB[i] = hf_EvsThetaCB->makeTH2D("Photons in CB: Energy vs theta "+cuts_KF[i],     // title
+        h_Photon_EvsThetaCB[i] = hf_EvsThetaCB->makeTH2D("Photons in CB: Energy vs theta "+cuts[i+nrCuts_beforeKF],     // title
                                                                           "#Theta [deg]", "Calo E [MeV]",  // xlabel, ylabel
                                                                           theta_bins,bins_Calo_Energy,    // our binnings
-                                                                          "h_Photon_EvsThetaCB_"+cuts_KF[i], true    // ROOT object name, auto-generated if omitted
+                                                                          "h_Photon_EvsThetaCB_"+cuts[i+nrCuts_beforeKF], true    // ROOT object name, auto-generated if omitted
                                                                           );
 
-        h_NoProton_EvsThetaCB[i] = hf_EvsThetaCB->makeTH2D("No Protons in CB: Energy vs theta "+cuts_KF[i],     // title
+        h_NoProton_EvsThetaCB[i] = hf_EvsThetaCB->makeTH2D("No Protons in CB: Energy vs theta "+cuts[i+nrCuts_beforeKF],     // title
                                                                           "#Theta [deg]", "Calo E [MeV]",  // xlabel, ylabel
                                                                           theta_bins,bins_Calo_Energy,    // our binnings
-                                                                          "h_NoProton_EvsThetaCB_"+cuts_KF[i], true    // ROOT object name, auto-generated if omitted
+                                                                          "h_NoProton_EvsThetaCB_"+cuts[i+nrCuts_beforeKF], true    // ROOT object name, auto-generated if omitted
                                                                           );
 
-        h_Proton_EvsThetaCB[i] = hf_EvsThetaCB->makeTH2D("Protons in CB: Energy vs theta "+cuts_KF[i],     // title
+        h_Proton_EvsThetaCB[i] = hf_EvsThetaCB->makeTH2D("Protons in CB: Energy vs theta "+cuts[i+nrCuts_beforeKF],     // title
                                                                           "#Theta [deg]", "Calo E [MeV]",  // xlabel, ylabel
                                                                           theta_bins,bins_Calo_Energy,    // our binnings
-                                                                          "h_Proton_EvsThetaCB_"+cuts_KF[i], true    // ROOT object name, auto-generated if omitted
+                                                                          "h_Proton_EvsThetaCB_"+cuts[i+nrCuts_beforeKF], true    // ROOT object name, auto-generated if omitted
                                                                           );
 
-        h_Photon_EvsThetaTAPS[i] = hf_EvsThetaTAPS->makeTH2D("Photons in TAPS: Energy vs theta "+cuts_KF[i],     // title
+        h_Photon_EvsThetaTAPS[i] = hf_EvsThetaTAPS->makeTH2D("Photons in TAPS: Energy vs theta "+cuts[i+nrCuts_beforeKF],     // title
                                                                           "#Theta [deg]", "Calo E [MeV]",  // xlabel, ylabel
                                                                           theta_bins,bins_Calo_Energy,    // our binnings
-                                                                          "h_Photon_EvsThetaTAPS_"+cuts_KF[i], true    // ROOT object name, auto-generated if omitted
+                                                                          "h_Photon_EvsThetaTAPS_"+cuts[i+nrCuts_beforeKF], true    // ROOT object name, auto-generated if omitted
                                                                           );
 
-        h_NoProton_EvsThetaTAPS[i] = hf_EvsThetaTAPS->makeTH2D("No Protons in TAPS: Energy vs theta "+cuts_KF[i],     // title
+        h_NoProton_EvsThetaTAPS[i] = hf_EvsThetaTAPS->makeTH2D("No Protons in TAPS: Energy vs theta "+cuts[i+nrCuts_beforeKF],     // title
                                                                           "#Theta [deg]", "Calo E [MeV]",  // xlabel, ylabel
                                                                           theta_bins,bins_Calo_Energy,    // our binnings
-                                                                          "h_NoProton_EvsThetaTAPS_"+cuts_KF[i], true    // ROOT object name, auto-generated if omitted
+                                                                          "h_NoProton_EvsThetaTAPS_"+cuts[i+nrCuts_beforeKF], true    // ROOT object name, auto-generated if omitted
                                                                           );
 
-        h_Proton_EvsThetaTAPS[i] = hf_EvsThetaTAPS->makeTH2D("Protons in TAPS: Energy vs theta "+cuts_KF[i],     // title
+        h_Proton_EvsThetaTAPS[i] = hf_EvsThetaTAPS->makeTH2D("Protons in TAPS: Energy vs theta "+cuts[i+nrCuts_beforeKF],     // title
                                                                           "#Theta [deg]", "Calo E [MeV]",  // xlabel, ylabel
                                                                           theta_bins,bins_Calo_Energy,    // our binnings
-                                                                          "h_Proton_EvsThetaTAPS_"+cuts_KF[i], true    // ROOT object name, auto-generated if omitted
+                                                                          "h_Proton_EvsThetaTAPS_"+cuts[i+nrCuts_beforeKF], true    // ROOT object name, auto-generated if omitted
                                                                           );
-        h_Photon_EvsPhi[i] = hf_EvsPhi->makeTH2D("Photons: Energy vs phi "+cuts_KF[i],     // title
+        h_Photon_EvsPhi[i] = hf_EvsPhi->makeTH2D("Photons: Energy vs phi "+cuts[i+nrCuts_beforeKF],     // title
                                                                           "#Theta [deg]", "Calo E [MeV]",  // xlabel, ylabel
                                                                           phi_bins,bins_Calo_Energy,    // our binnings
-                                                                          "h_Photon_EvsPhi_"+cuts_KF[i], true    // ROOT object name, auto-generated if omitted
+                                                                          "h_Photon_EvsPhi_"+cuts[i+nrCuts_beforeKF], true    // ROOT object name, auto-generated if omitted
                                                                           );
 
-        h_NoProton_EvsPhi[i] = hf_EvsPhi->makeTH2D("No Protons: Energy vs phi "+cuts_KF[i],     // title
+        h_NoProton_EvsPhi[i] = hf_EvsPhi->makeTH2D("No Protons: Energy vs phi "+cuts[i+nrCuts_beforeKF],     // title
                                                                           "#Theta [deg]", "Calo E [MeV]",  // xlabel, ylabel
                                                                           phi_bins,bins_Calo_Energy,    // our binnings
-                                                                          "h_NoProton_EvsPhi_"+cuts_KF[i], true    // ROOT object name, auto-generated if omitted
+                                                                          "h_NoProton_EvsPhi_"+cuts[i+nrCuts_beforeKF], true    // ROOT object name, auto-generated if omitted
                                                                           );
 
-        h_Proton_EvsPhi[i] = hf_EvsPhi->makeTH2D("Protons: Energy vs phi "+cuts_KF[i],     // title
+        h_Proton_EvsPhi[i] = hf_EvsPhi->makeTH2D("Protons: Energy vs phi "+cuts[i+nrCuts_beforeKF],     // title
                                                                           "#Theta [deg]", "Calo E [MeV]",  // xlabel, ylabel
                                                                           phi_bins,bins_Calo_Energy,    // our binnings
-                                                                          "h_Proton_EvsPhi_"+cuts_KF[i], true    // ROOT object name, auto-generated if omitted
+                                                                          "h_Proton_EvsPhi_"+cuts[i+nrCuts_beforeKF], true    // ROOT object name, auto-generated if omitted
                                                                           );
 
-        h_Photon_CaloE[i] = hf_elClusterE->makeTH1D("Photons: Calorimeter energy "+cuts[i], //title
+        h_Photon_CaloE[i] = hf_elClusterE->makeTH1D("Photons: Calorimeter energy "+cuts[i+nrCuts_beforeKF], //title
                                                     "Calo E [MeV]", "#",  // xlabel, ylabel
                                                     bins_Calo_Energy,    // our binnings
-                                                    "h_Photon_CaloE_"+cuts[i], true    // ROOT object name, auto-generated if omitted
+                                                    "h_Photon_CaloE_"+cuts[i+nrCuts_beforeKF], true    // ROOT object name, auto-generated if omitted
                                                     );
 
-        h_NoProton_CaloE[i] = hf_elClusterE->makeTH1D("Leptons: Calorimeter energy "+cuts[i], //title
+        h_NoProton_CaloE[i] = hf_elClusterE->makeTH1D("Leptons: Calorimeter energy "+cuts[i+nrCuts_beforeKF], //title
                                                     "Calo E [MeV]", "#",  // xlabel, ylabel
                                                     bins_Calo_Energy,    // our binnings
-                                                    "h_NoProton_CaloE_"+cuts[i], true    // ROOT object name, auto-generated if omitted
+                                                    "h_NoProton_CaloE_"+cuts[i+nrCuts_beforeKF], true    // ROOT object name, auto-generated if omitted
                                                     );
 
-        h_Proton_CaloEvsT_CB[i] = hf_EvsT_CB->makeTH2D("Proton: Calo energy vs time in CB "+cuts[i],     // title
+        h_Proton_CaloEvsT_CB[i] = hf_EvsT_CB->makeTH2D("Proton: Calo energy vs time in CB "+cuts[i+nrCuts_beforeKF],     // title
                                                              "Calo E [MeV]","t_{CB} [ns]",     // xlabel, ylabel
                                                              bins_Calo_Energy,PIDtime_bins,  // our binnings
-                                                             "h_Proton_CaloEvsT_CB_"+cuts[i], true     // ROOT object name, auto-generated if omitted
+                                                             "h_Proton_CaloEvsT_CB_"+cuts[i+nrCuts_beforeKF], true     // ROOT object name, auto-generated if omitted
                                                              );
 
-        h_Proton_CaloEvsT_TAPS[i] = hf_EvsT_TAPS->makeTH2D("Proton: Calo energy vs time in TAPS "+cuts[i],     // title
+        h_Proton_CaloEvsT_TAPS[i] = hf_EvsT_TAPS->makeTH2D("Proton: Calo energy vs time in TAPS "+cuts[i+nrCuts_beforeKF],     // title
                                                              "Calo E [MeV]","t_{TAPS} [ns]",     // xlabel, ylabel
                                                              bins_Calo_Energy,PIDtime_bins,  // our binnings
-                                                             "h_Proton_CaloEvsT_TAPS_"+cuts[i], true     // ROOT object name, auto-generated if omitted
+                                                             "h_Proton_CaloEvsT_TAPS_"+cuts[i+nrCuts_beforeKF], true     // ROOT object name, auto-generated if omitted
                                                              );
 
-        h_NoProton_CaloEvsT_CB[i] = hf_EvsT_CB->makeTH2D("Leptons: Calo energy vs time in CB "+cuts[i],     // title
+        h_NoProton_CaloEvsT_CB[i] = hf_EvsT_CB->makeTH2D("Leptons: Calo energy vs time in CB "+cuts[i+nrCuts_beforeKF],     // title
                                                              "Calo E [MeV]","t_{CB} [ns]",     // xlabel, ylabel
                                                              bins_Calo_Energy,PIDtime_bins,  // our binnings
-                                                             "h_NoProton_CaloEvsT_CB_"+cuts[i], true     // ROOT object name, auto-generated if omitted
+                                                             "h_NoProton_CaloEvsT_CB_"+cuts[i+nrCuts_beforeKF], true     // ROOT object name, auto-generated if omitted
                                                              );
 
-        h_NoProton_CaloEvsT_TAPS[i] = hf_EvsT_TAPS->makeTH2D("Leptons: Calo energy vs time in TAPS "+cuts[i],     // title
+        h_NoProton_CaloEvsT_TAPS[i] = hf_EvsT_TAPS->makeTH2D("Leptons: Calo energy vs time in TAPS "+cuts[i+nrCuts_beforeKF],     // title
                                                              "Calo E [MeV]","t_{TAPS} [ns]",     // xlabel, ylabel
                                                              bins_Calo_Energy,PIDtime_bins,  // our binnings
-                                                             "h_NoProton_CaloEvsT_TAPS_"+cuts[i], true     // ROOT object name, auto-generated if omitted
+                                                             "h_NoProton_CaloEvsT_TAPS_"+cuts[i+nrCuts_beforeKF], true     // ROOT object name, auto-generated if omitted
                                                              );
 
-        h_Photon_CaloEvsT_CB[i] = hf_EvsT_CB->makeTH2D("Photons: Calo energy vs time in CB "+cuts[i],     // title
+        h_Photon_CaloEvsT_CB[i] = hf_EvsT_CB->makeTH2D("Photons: Calo energy vs time in CB "+cuts[i+nrCuts_beforeKF],     // title
                                                              "Calo E [MeV]","t_{CB} [ns]",     // xlabel, ylabel
                                                              bins_Calo_Energy,PIDtime_bins,  // our binnings
-                                                             "h_Photon_CaloEvsT_CB_"+cuts[i], true     // ROOT object name, auto-generated if omitted
+                                                             "h_Photon_CaloEvsT_CB_"+cuts[i+nrCuts_beforeKF], true     // ROOT object name, auto-generated if omitted
                                                              );
 
-        h_Photon_CaloEvsT_TAPS[i] = hf_EvsT_TAPS->makeTH2D("Photons: Calo energy vs time in TAPS "+cuts[i],     // title
+        h_Photon_CaloEvsT_TAPS[i] = hf_EvsT_TAPS->makeTH2D("Photons: Calo energy vs time in TAPS "+cuts[i+nrCuts_beforeKF],     // title
                                                              "Calo E [MeV]","t_{TAPS} [ns]",     // xlabel, ylabel
                                                              bins_Calo_Energy,PIDtime_bins,  // our binnings
-                                                             "h_Photon_CaloEvsT_TAPS_"+cuts[i], true     // ROOT object name, auto-generated if omitted
+                                                             "h_Photon_CaloEvsT_TAPS_"+cuts[i+nrCuts_beforeKF], true     // ROOT object name, auto-generated if omitted
                                                              );
 
-        h_IMee[i] = hf_eeChecks->makeTH1D("IM(ee) "+cuts_KF[i],     // title
+        h_IMee[i] = hf_eeChecks->makeTH1D("IM(ee) "+cuts[i+nrCuts_beforeKF],     // title
                                                              "IM(ee) [MeV]", "#",     // xlabel, ylabel
                                                              IM_ee_bins,  // our binnings
-                                                             "h_IMee_"+cuts_KF[i], true     // ROOT object name, auto-generated if omitted
+                                                             "h_IMee_"+cuts[i+nrCuts_beforeKF], true     // ROOT object name, auto-generated if omitted
                                                              );
 
-        h_IMee_samePID[i] = hf_PID_stuff->makeTH1D("IM(ee) with ee same PID "+cuts_KF[i],     // title
+        h_IMee_samePID[i] = hf_PID_stuff->makeTH1D("IM(ee) with ee same PID "+cuts[i+nrCuts_beforeKF],     // title
                                                              "IM(ee) [MeV]", "#",     // xlabel, ylabel
                                                              IM_ee_bins,  // our binnings
-                                                             "h_IMee_samePID_"+cuts_KF[i], true     // ROOT object name, auto-generated if omitted
+                                                             "h_IMee_samePID_"+cuts[i+nrCuts_beforeKF], true     // ROOT object name, auto-generated if omitted
                                                              );
 
-        h_IMee_diffPID[i] = hf_PID_stuff->makeTH1D("IM(ee) with ee diff PID "+cuts_KF[i],     // title
+        h_IMee_diffPID[i] = hf_PID_stuff->makeTH1D("IM(ee) with ee diff PID "+cuts[i+nrCuts_beforeKF],     // title
                                                              "IM(ee) [MeV]", "#",     // xlabel, ylabel
                                                              IM_ee_bins,  // our binnings
-                                                             "h_IMee_diffPID_"+cuts_KF[i], true     // ROOT object name, auto-generated if omitted
+                                                             "h_IMee_diffPID_"+cuts[i+nrCuts_beforeKF], true     // ROOT object name, auto-generated if omitted
                                                              );
 
-        h_IMeeFit[i] = hf_eeChecks->makeTH1D("IM(fitted_ee) "+cuts_KF[i],     // title
+        h_IMeeFit[i] = hf_eeChecks->makeTH1D("IM(fitted_ee) "+cuts[i+nrCuts_beforeKF],     // title
                                                              "IM(fitted_ee) [MeV]", "#",     // xlabel, ylabel
                                                              IM_ee_bins,  // our binnings
-                                                             "h_IMeeFit_"+cuts_KF[i], true     // ROOT object name, auto-generated if omitted
+                                                             "h_IMeeFit_"+cuts[i+nrCuts_beforeKF], true     // ROOT object name, auto-generated if omitted
                                                              );
 
-        h_IMeeFit_samePID[i] = hf_PID_stuff->makeTH1D("IM(fitted_ee) with ee same PID "+cuts_KF[i],     // title
+        h_IMeeFit_samePID[i] = hf_PID_stuff->makeTH1D("IM(fitted_ee) with ee same PID "+cuts[i+nrCuts_beforeKF],     // title
                                                              "IM(fitted_ee) [MeV]", "#",     // xlabel, ylabel
                                                              IM_ee_bins,  // our binnings
-                                                             "h_IMeeFit_samePID_"+cuts_KF[i], true     // ROOT object name, auto-generated if omitted
+                                                             "h_IMeeFit_samePID_"+cuts[i+nrCuts_beforeKF], true     // ROOT object name, auto-generated if omitted
                                                              );
 
-        h_IMeeFit_diffPID[i] = hf_PID_stuff->makeTH1D("IM(fitted_ee) with ee diff PID "+cuts_KF[i],     // title
+        h_IMeeFit_diffPID[i] = hf_PID_stuff->makeTH1D("IM(fitted_ee) with ee diff PID "+cuts[i+nrCuts_beforeKF],     // title
                                                              "IM(fitted_ee) [MeV]", "#",     // xlabel, ylabel
                                                              IM_ee_bins,  // our binnings
-                                                             "h_IMeeFit_diffPID_"+cuts_KF[i], true     // ROOT object name, auto-generated if omitted
+                                                             "h_IMeeFit_diffPID_"+cuts[i+nrCuts_beforeKF], true     // ROOT object name, auto-generated if omitted
                                                              );
 
-        h_wp_BackToBack[i] = hf_BackToBack->makeTH1D("Omega Proton Back-To-Back check "+cuts_KF[i],     // title
+        h_wp_BackToBack[i] = hf_BackToBack->makeTH1D("Omega Proton Back-To-Back check "+cuts[i+nrCuts_beforeKF],     // title
                                          "cos(#Theta_{cms})", "#",     // xlabel, ylabel
                                          cos_bins,  // our binnings
-                                         "h_wp_BackToBack_"+cuts_KF[i], true     // ROOT object name, auto-generated if omitted
+                                         "h_wp_BackToBack_"+cuts[i+nrCuts_beforeKF], true     // ROOT object name, auto-generated if omitted
                                          );
 
-        h_dilee_BackToBack[i] = hf_BackToBack->makeTH1D("Dilepton el pos Back-To-Back check "+cuts_KF[i],     // title
+        h_dilee_BackToBack[i] = hf_BackToBack->makeTH1D("Dilepton el pos Back-To-Back check "+cuts[i+nrCuts_beforeKF],     // title
                                          "cos(#Theta_{cms})", "#",     // xlabel, ylabel
                                          cos_bins,  // our binnings
-                                         "h_dilee_BackToBack_"+cuts_KF[i], true     // ROOT object name, auto-generated if omitted
+                                         "h_dilee_BackToBack_"+cuts[i+nrCuts_beforeKF], true     // ROOT object name, auto-generated if omitted
                                          );
 
-        h_pi0gg_BackToBack[i] = hf_BackToBack->makeTH1D("Pi0 gg Back-To-Back check "+cuts_KF[i],     // title
+        h_pi0gg_BackToBack[i] = hf_BackToBack->makeTH1D("Pi0 gg Back-To-Back check "+cuts[i+nrCuts_beforeKF],     // title
                                          "cos(#Theta_{cms})", "#",     // xlabel, ylabel
                                          cos_bins,  // our binnings
-                                         "h_pi0gg_BackToBack_"+cuts_KF[i], true     // ROOT object name, auto-generated if omitted
+                                         "h_pi0gg_BackToBack_"+cuts[i+nrCuts_beforeKF], true     // ROOT object name, auto-generated if omitted
                                          );
 
-        h_wpi0dil_BackToBack[i] = hf_BackToBack->makeTH1D("Pi0 dilepton Back-To-Back check "+cuts_KF[i],     // title
+        h_wpi0dil_BackToBack[i] = hf_BackToBack->makeTH1D("Pi0 dilepton Back-To-Back check "+cuts[i+nrCuts_beforeKF],     // title
                                                           "cos(#Theta_{cms})", "#",     // xlabel, ylabel
                                                           cos_bins,  // our binnings
-                                                          "h_wpi0dil_BackToBack_"+cuts_KF[i], true     // ROOT object name, auto-generated if omitted
+                                                          "h_wpi0dil_BackToBack_"+cuts[i+nrCuts_beforeKF], true     // ROOT object name, auto-generated if omitted
                                                           );
 
 
-        h_eePID[i] = hf_PID_stuff->makeTH1D("el/pos PID statistics "+cuts_KF[i],     // title
+        h_eePID[i] = hf_PID_stuff->makeTH1D("el/pos PID statistics "+cuts[i+nrCuts_beforeKF],     // title
                                                           "PID element", "#",     // xlabel, ylabel
                                                           pid_bins,  // our binnings
-                                                          "h_eePID_"+cuts_KF[i], true     // ROOT object name, auto-generated if omitted
+                                                          "h_eePID_"+cuts[i+nrCuts_beforeKF], true     // ROOT object name, auto-generated if omitted
                                                           );
 
         h_eePID[i]->GetXaxis()->SetBinLabel(1+1*steps_PID,PIDstat[0].c_str());
         h_eePID[i]->GetXaxis()->SetBinLabel(1+2*steps_PID,PIDstat[1].c_str());
 
-        h_eePIDelementNumbers[i] = hf_PID_stuff->makeTH2D("PID element numbers of leptons "+cuts_KF[i],     // title
+        h_eePIDelementNumbers[i] = hf_PID_stuff->makeTH2D("PID element numbers of leptons "+cuts[i+nrCuts_beforeKF],     // title
                                          "l1 PID nr", "l2 PID nr",  // xlabel, ylabel
                                          PIDelement_bins, PIDelement_bins,    // our binnings
-                                         "h_eePIDelementNumbers_"+cuts_KF[i], true    // ROOT object name, auto-generated if omitted
+                                         "h_eePIDelementNumbers_"+cuts[i+nrCuts_beforeKF], true    // ROOT object name, auto-generated if omitted
                                          );
 
-        h_eeOpeningAngles[i] = hf_openingAngles->makeTH1D("el/pos opening angles "+cuts_KF[i],     // title
+        h_eeOpeningAngles[i] = hf_openingAngles->makeTH1D("el/pos opening angles "+cuts[i+nrCuts_beforeKF],     // title
                                                           "#Theta [deg]", "#",     // xlabel, ylabel
                                                           theta_bins,  // our binnings
-                                                          "h_eeOpeningAngles_"+cuts_KF[i], true     // ROOT object name, auto-generated if omitted
+                                                          "h_eeOpeningAngles_"+cuts[i+nrCuts_beforeKF], true     // ROOT object name, auto-generated if omitted
                                                           );
 
-        h_ggOpeningAngles[i] = hf_openingAngles->makeTH1D("photons opening angles "+cuts_KF[i],     // title
+        h_ggOpeningAngles[i] = hf_openingAngles->makeTH1D("photons opening angles "+cuts[i+nrCuts_beforeKF],     // title
                                                           "#Theta [deg]", "#",     // xlabel, ylabel
                                                           theta_bins,  // our binnings
-                                                          "h_ggOpeningAngles_"+cuts_KF[i], true     // ROOT object name, auto-generated if omitted
+                                                          "h_ggOpeningAngles_"+cuts[i+nrCuts_beforeKF], true     // ROOT object name, auto-generated if omitted
                                                           );
 
-        h_helicity_angles[i] = hf_eeChecks->makeTH1D("Helicity angles "+cuts_KF[i],     // title
+        h_helicity_angles[i] = hf_eeChecks->makeTH1D("Helicity angles "+cuts[i+nrCuts_beforeKF],     // title
                                                           "cos(#Theta_{cms})", "#",     // xlabel, ylabel
                                                           cos_bins,  // our binnings
-                                                          "h_helicity_angles_"+cuts_KF[i], true     // ROOT object name, auto-generated if omitted
+                                                          "h_helicity_angles_"+cuts[i+nrCuts_beforeKF], true     // ROOT object name, auto-generated if omitted
                                                           );
 
         for (unsigned int j=0; j<nrPartType; j++){ //0 refers to proton, 1 to photons
 
-            h_Ek_dev_CB[i][j] = hf_CombCBKF->makeTH2D(Form("CB: Energy deviation of rec. vs fitted %s after %s",fitPartName[j].c_str(),cuts_KF[i].c_str()), //title
+            h_Ek_dev_CB[i][j] = hf_CombCBKF->makeTH2D(Form("CB: Energy deviation of rec. vs fitted %s after %s",fitPartName[j].c_str(),cuts[i+nrCuts_beforeKF].c_str()), //title
                                                 "E_{rec} [MeV]","E_{fit}-E_{rec} [MeV]", // xlabel, ylabel
                                                 partTypeEkBins.at(j), defEk_bins,    // our binnings
-                                                Form("h_Ek_dev_CB_%s_%s",fitPartName[j].c_str(),cuts_KF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                Form("h_Ek_dev_CB_%s_%s",fitPartName[j].c_str(),cuts[i+nrCuts_beforeKF].c_str()), true    // ROOT object name, auto-generated if omitted
                                                 );
 
-            h_Theta_dev_CB[i][j] = hf_CombCBKF->makeTH2D(Form("CB: Theta deviation of rec. vs fitted %s after %s",fitPartName[j].c_str(),cuts_KF[i].c_str()), //title
+            h_Theta_dev_CB[i][j] = hf_CombCBKF->makeTH2D(Form("CB: Theta deviation of rec. vs fitted %s after %s",fitPartName[j].c_str(),cuts[i+nrCuts_beforeKF].c_str()), //title
                                                 "#Theta_{rec} [deg]","#Theta_{fit}-#Theta_{rec} [deg]", // xlabel, ylabel
                                                 theta_bins, defTheta_bins,    // our binnings
-                                                Form("h_Theta_dev_CB_%s_%s",fitPartName[j].c_str(),cuts_KF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                Form("h_Theta_dev_CB_%s_%s",fitPartName[j].c_str(),cuts[i+nrCuts_beforeKF].c_str()), true    // ROOT object name, auto-generated if omitted
                                                 );
 
-            h_Phi_dev_CB[i][j] = hf_CombCBKF->makeTH2D(Form("CB: Phi deviation of rec. vs fitted %s after %s",fitPartName[j].c_str(),cuts_KF[i].c_str()), //title
+            h_Phi_dev_CB[i][j] = hf_CombCBKF->makeTH2D(Form("CB: Phi deviation of rec. vs fitted %s after %s",fitPartName[j].c_str(),cuts[i+nrCuts_beforeKF].c_str()), //title
                                                 "#Phi_{rec} [deg]","#Phi_{fit}-#Phi_{rec} [deg]", // xlabel, ylabel
                                                 phi_bins, defPhi_bins,    // our binnings
-                                                Form("h_Phi_dev_CB_%s_%s",fitPartName[j].c_str(),cuts_KF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                Form("h_Phi_dev_CB_%s_%s",fitPartName[j].c_str(),cuts[i+nrCuts_beforeKF].c_str()), true    // ROOT object name, auto-generated if omitted
                                                 );
 
-            h_Ek_dev_TAPS[i][j] = hf_CombTAPSKF->makeTH2D(Form("TAPS: Energy deviation of rec. vs fitted %s after %s",fitPartName[j].c_str(),cuts_KF[i].c_str()), //title
+            h_Ek_dev_TAPS[i][j] = hf_CombTAPSKF->makeTH2D(Form("TAPS: Energy deviation of rec. vs fitted %s after %s",fitPartName[j].c_str(),cuts[i+nrCuts_beforeKF].c_str()), //title
                                                 "E_{rec} [MeV]","E_{fit}-E_{rec} [MeV]", // xlabel, ylabel
                                                 partTypeEkBins.at(j), defEk_bins,    // our binnings
-                                                Form("h_Ek_dev_TAPS_%s_%s",fitPartName[j].c_str(),cuts_KF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                Form("h_Ek_dev_TAPS_%s_%s",fitPartName[j].c_str(),cuts[i+nrCuts_beforeKF].c_str()), true    // ROOT object name, auto-generated if omitted
                                                 );
 
-            h_Theta_dev_TAPS[i][j] = hf_CombTAPSKF->makeTH2D(Form("TAPS: Theta deviation of rec. vs fitted %s after %s",fitPartName[j].c_str(),cuts_KF[i].c_str()), //title
+            h_Theta_dev_TAPS[i][j] = hf_CombTAPSKF->makeTH2D(Form("TAPS: Theta deviation of rec. vs fitted %s after %s",fitPartName[j].c_str(),cuts[i+nrCuts_beforeKF].c_str()), //title
                                                 "#Theta_{rec} [deg]","#Theta_{fit}-#Theta_{rec} [deg]", // xlabel, ylabel
                                                 theta_bins, defTheta_bins,    // our binnings
-                                                Form("h_Theta_dev_TAPS_%s_%s",fitPartName[j].c_str(),cuts_KF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                Form("h_Theta_dev_TAPS_%s_%s",fitPartName[j].c_str(),cuts[i+nrCuts_beforeKF].c_str()), true    // ROOT object name, auto-generated if omitted
                                                 );
 
-            h_Phi_dev_TAPS[i][j] = hf_CombTAPSKF->makeTH2D(Form("TAPS: Theta deviation of rec. vs fitted %s after %s",fitPartName[j].c_str(),cuts_KF[i].c_str()), //title
+            h_Phi_dev_TAPS[i][j] = hf_CombTAPSKF->makeTH2D(Form("TAPS: Theta deviation of rec. vs fitted %s after %s",fitPartName[j].c_str(),cuts[i+nrCuts_beforeKF].c_str()), //title
                                                 "#Phi_{rec} [deg]","#Phi_{fit}-#Phi_{rec} [deg]", // xlabel, ylabel
                                                 phi_bins, defPhi_bins,    // our binnings
-                                                Form("h_Phi_dev_TAPS_%s_%s",fitPartName[j].c_str(),cuts_KF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                Form("h_Phi_dev_TAPS_%s_%s",fitPartName[j].c_str(),cuts[i+nrCuts_beforeKF].c_str()), true    // ROOT object name, auto-generated if omitted
                                                 );
 
-            h_Ek_dev_freeZ_CB[i][j] = hf_CombCBKF_freeZ->makeTH2D(Form("CB: Energy deviation of rec. vs fitted %s with free Z vertex after %s",fitPartName[j].c_str(),cuts_KF[i].c_str()), //title
+            h_Ek_dev_freeZ_CB[i][j] = hf_CombCBKF_freeZ->makeTH2D(Form("CB: Energy deviation of rec. vs fitted %s with free Z vertex after %s",fitPartName[j].c_str(),cuts[i+nrCuts_beforeKF].c_str()), //title
                                                 "E_{rec} [MeV]","E_{fit}-E_{rec} [MeV]", // xlabel, ylabel
                                                 partTypeEkBins.at(j), defEk_bins,    // our binnings
-                                                Form("h_Ek_dev_freeZ_CB_%s_%s",fitPartName[j].c_str(),cuts_KF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                Form("h_Ek_dev_freeZ_CB_%s_%s",fitPartName[j].c_str(),cuts[i+nrCuts_beforeKF].c_str()), true    // ROOT object name, auto-generated if omitted
                                                 );
 
-            h_Theta_dev_freeZ_CB[i][j] = hf_CombCBKF_freeZ->makeTH2D(Form("CB: Theta deviation of rec. vs fitted %s with free Z vertex after %s",fitPartName[j].c_str(),cuts_KF[i].c_str()), //title
+            h_Theta_dev_freeZ_CB[i][j] = hf_CombCBKF_freeZ->makeTH2D(Form("CB: Theta deviation of rec. vs fitted %s with free Z vertex after %s",fitPartName[j].c_str(),cuts[i+nrCuts_beforeKF].c_str()), //title
                                                 "#Theta_{rec} [deg]","#Theta_{fit}-#Theta_{rec} [deg]", // xlabel, ylabel
                                                 theta_bins, defTheta_bins,    // our binnings
-                                                Form("h_Theta_dev_freeZ_CB_%s_%s",fitPartName[j].c_str(),cuts_KF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                Form("h_Theta_dev_freeZ_CB_%s_%s",fitPartName[j].c_str(),cuts[i+nrCuts_beforeKF].c_str()), true    // ROOT object name, auto-generated if omitted
                                                 );
 
-            h_Phi_dev_freeZ_CB[i][j] = hf_CombCBKF_freeZ->makeTH2D(Form("CB: Phi deviation of rec. vs fitted %s with free Z vertex after %s",fitPartName[j].c_str(),cuts_KF[i].c_str()), //title
+            h_Phi_dev_freeZ_CB[i][j] = hf_CombCBKF_freeZ->makeTH2D(Form("CB: Phi deviation of rec. vs fitted %s with free Z vertex after %s",fitPartName[j].c_str(),cuts[i+nrCuts_beforeKF].c_str()), //title
                                                 "#Phi_{rec} [deg]","#Phi_{fit}-#Phi_{rec} [deg]", // xlabel, ylabel
                                                 phi_bins, defPhi_bins,    // our binnings
-                                                Form("h_Phi_dev_freeZ_CB_%s_%s",fitPartName[j].c_str(),cuts_KF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                Form("h_Phi_dev_freeZ_CB_%s_%s",fitPartName[j].c_str(),cuts[i+nrCuts_beforeKF].c_str()), true    // ROOT object name, auto-generated if omitted
                                                 );
 
-            h_Ek_dev_freeZ_TAPS[i][j] = hf_CombTAPSKF_freeZ->makeTH2D(Form("TAPS: Energy deviation of rec. vs fitted %s with free Z vertex after %s",fitPartName[j].c_str(),cuts_KF[i].c_str()), //title
+            h_Ek_dev_freeZ_TAPS[i][j] = hf_CombTAPSKF_freeZ->makeTH2D(Form("TAPS: Energy deviation of rec. vs fitted %s with free Z vertex after %s",fitPartName[j].c_str(),cuts[i+nrCuts_beforeKF].c_str()), //title
                                                 "E_{rec} [MeV]","E_{fit}-E_{rec} [MeV]", // xlabel, ylabel
                                                 partTypeEkBins.at(j), defEk_bins,    // our binnings
-                                                Form("h_Ek_dev_freeZ_TAPS_%s_%s",fitPartName[j].c_str(),cuts_KF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                Form("h_Ek_dev_freeZ_TAPS_%s_%s",fitPartName[j].c_str(),cuts[i+nrCuts_beforeKF].c_str()), true    // ROOT object name, auto-generated if omitted
                                                 );
 
-            h_Theta_dev_freeZ_TAPS[i][j] = hf_CombTAPSKF_freeZ->makeTH2D(Form("TAPS: Theta deviation of rec. vs fitted %s with free Z vertex after %s",fitPartName[j].c_str(),cuts_KF[i].c_str()), //title
+            h_Theta_dev_freeZ_TAPS[i][j] = hf_CombTAPSKF_freeZ->makeTH2D(Form("TAPS: Theta deviation of rec. vs fitted %s with free Z vertex after %s",fitPartName[j].c_str(),cuts[i+nrCuts_beforeKF].c_str()), //title
                                                 "#Theta_{rec} [deg]","#Theta_{fit}-#Theta_{rec} [deg]", // xlabel, ylabel
                                                 theta_bins, defTheta_bins,    // our binnings
-                                                Form("h_Theta_dev_freeZ_TAPS_%s_%s",fitPartName[j].c_str(),cuts_KF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                Form("h_Theta_dev_freeZ_TAPS_%s_%s",fitPartName[j].c_str(),cuts[i+nrCuts_beforeKF].c_str()), true    // ROOT object name, auto-generated if omitted
                                                 );
 
-            h_Phi_dev_freeZ_TAPS[i][j] = hf_CombTAPSKF_freeZ->makeTH2D(Form("TAPS: Theta deviation of rec. vs fitted %s with free Z vertex after %s",fitPartName[j].c_str(),cuts_KF[i].c_str()), //title
+            h_Phi_dev_freeZ_TAPS[i][j] = hf_CombTAPSKF_freeZ->makeTH2D(Form("TAPS: Theta deviation of rec. vs fitted %s with free Z vertex after %s",fitPartName[j].c_str(),cuts[i+nrCuts_beforeKF].c_str()), //title
                                                 "#Phi_{rec} [deg]","#Phi_{fit}-#Phi_{rec} [deg]", // xlabel, ylabel
                                                 phi_bins, defPhi_bins,    // our binnings
-                                                Form("h_Phi_dev_freeZ_TAPS_%s_%s",fitPartName[j].c_str(),cuts_KF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                Form("h_Phi_dev_freeZ_TAPS_%s_%s",fitPartName[j].c_str(),cuts[i+nrCuts_beforeKF].c_str()), true    // ROOT object name, auto-generated if omitted
                                                 );
 
             for (unsigned int k=0; k<nrFitVars; k++){
 
-                  h_PartPulls_CB[i][j][k] = hfPullsCBKF->makeTH1D(Form("CB: %s pulls of fitted %s after %s",fitvarnameCB[k].c_str(),fitPartName[j].c_str(), cuts_KF[i].c_str()), //title
+                  h_PartPulls_CB[i][j][k] = hfPullsCBKF->makeTH1D(Form("CB: %s pulls of fitted %s after %s",fitvarnameCB[k].c_str(),fitPartName[j].c_str(), cuts[i+nrCuts_beforeKF].c_str()), //title
                                                                Form("%s pull",fitvarnameCB[k].c_str()),"#", // xlabel, ylabel
                                                                BinSettings(200,-10.,10.),   // our binnings
-                                                               Form("h_Pulls_CB_%s_%s_%s",fitPartName[j].c_str(),fitvarnameCB[k].c_str(),cuts_KF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                               Form("h_Pulls_CB_%s_%s_%s",fitPartName[j].c_str(),fitvarnameCB[k].c_str(),cuts[i+nrCuts_beforeKF].c_str()), true    // ROOT object name, auto-generated if omitted
                                                                );
-                  h_PartPulls_TAPS[i][j][k] = hfPullsTAPSKF->makeTH1D(Form("TAPS: %s pulls of fitted %s after %s",fitvarnameTA[k].c_str(),fitPartName[j].c_str(),cuts_KF[i].c_str()), //title
+                  h_PartPulls_TAPS[i][j][k] = hfPullsTAPSKF->makeTH1D(Form("TAPS: %s pulls of fitted %s after %s",fitvarnameTA[k].c_str(),fitPartName[j].c_str(),cuts[i+nrCuts_beforeKF].c_str()), //title
                                                                    Form("%s pull",fitvarnameTA[k].c_str()),"#", // xlabel, ylabel
                                                                    BinSettings(200,-10.,10.),   // our binnings
-                                                                   Form("h_Pulls_TAPS_%s_%s_%s",fitPartName[j].c_str(),fitvarnameCB[k].c_str(),cuts_KF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                                   Form("h_Pulls_TAPS_%s_%s_%s",fitPartName[j].c_str(),fitvarnameCB[k].c_str(),cuts[i+nrCuts_beforeKF].c_str()), true    // ROOT object name, auto-generated if omitted
                                                                    );
 
-                  h_PartPulls_freeZ_CB[i][j][k] = hfPullsCBKF_freeZ->makeTH1D(Form("CB: %s with free Z vertex pulls of fitted %s after %s",fitvarnameCB[k].c_str(),fitPartName[j].c_str(), cuts_KF[i].c_str()), //title
+                  h_PartPulls_freeZ_CB[i][j][k] = hfPullsCBKF_freeZ->makeTH1D(Form("CB: %s with free Z vertex pulls of fitted %s after %s",fitvarnameCB[k].c_str(),fitPartName[j].c_str(), cuts[i+nrCuts_beforeKF].c_str()), //title
                                                                Form("%s pull",fitvarnameCB[k].c_str()),"#", // xlabel, ylabel
                                                                BinSettings(200,-10.,10.),   // our binnings
-                                                               Form("h_Pulls_freeZ_CB_%s_%s_%s",fitPartName[j].c_str(),fitvarnameCB[k].c_str(),cuts_KF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                               Form("h_Pulls_freeZ_CB_%s_%s_%s",fitPartName[j].c_str(),fitvarnameCB[k].c_str(),cuts[i+nrCuts_beforeKF].c_str()), true    // ROOT object name, auto-generated if omitted
                                                                );
-                  h_PartPulls_freeZ_TAPS[i][j][k] = hfPullsTAPSKF_freeZ->makeTH1D(Form("TAPS: %s pulls with free Z vertex of fitted %s after %s",fitvarnameTA[k].c_str(),fitPartName[j].c_str(),cuts_KF[i].c_str()), //title
+                  h_PartPulls_freeZ_TAPS[i][j][k] = hfPullsTAPSKF_freeZ->makeTH1D(Form("TAPS: %s pulls with free Z vertex of fitted %s after %s",fitvarnameTA[k].c_str(),fitPartName[j].c_str(),cuts[i+nrCuts_beforeKF].c_str()), //title
                                                                    Form("%s pull",fitvarnameTA[k].c_str()),"#", // xlabel, ylabel
                                                                    BinSettings(200,-10.,10.),   // our binnings
-                                                                   Form("h_Pulls_freeZ_TAPS_%s_%s_%s",fitPartName[j].c_str(),fitvarnameCB[k].c_str(),cuts_KF[i].c_str()), true    // ROOT object name, auto-generated if omitted
+                                                                   Form("h_Pulls_freeZ_TAPS_%s_%s_%s",fitPartName[j].c_str(),fitvarnameCB[k].c_str(),cuts[i+nrCuts_beforeKF].c_str()), true    // ROOT object name, auto-generated if omitted
                                                                    );
 
             }
@@ -898,20 +899,43 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         double cortagtime = triggersimu.GetCorrectedTaggerTime(taggerhit);
         promptrandom.SetTaggerTime(cortagtime);
 
-        if(promptrandom.State() == PromptRandom::Case::Outside)
-            continue;    
-
         const double TaggWeight = promptrandom.FillWeight();
-
-        cut_ind=0;
-        stat[cut_ind]+=TaggWeight;
-        h_RecData_Stat->Fill(cut_ind, TaggWeight);
 
         TLorentzVector InitialPhotonVec = taggerhit.GetPhotonBeam();
         TLorentzVector InitialProtonVec = LorentzVec(vec3(0,0,0),ParticleTypeDatabase::Proton.Mass());
         TLorentzVector Linitial = (TLorentzVector)(InitialPhotonVec+InitialProtonVec);
 
-        h_TaggerTime->Fill(taggerhit.Time, TaggWeight);
+        cut_ind=0;
+        stat[cut_ind]+=TaggWeight;
+        h_RecData_Stat->Fill(cut_ind, TaggWeight);
+
+        h_TaggerTime[cut_ind]->Fill(taggerhit.Time, TaggWeight);
+
+        for (unsigned int i=0; i<all.size(); i++){
+            if(allCanInCB[i]){
+                h_AllCaloEvsVetoE_CB[cut_ind]->Fill(allCanCaloE[i],allCanVetoE[i],TaggWeight);
+                h_AllVetoE_CB[cut_ind]->Fill(allCanVetoE[i],TaggWeight);
+            }
+            if(allCanInTAPS[i]){
+                h_AllCaloEvsVetoE_TAPS[cut_ind]->Fill(allCanCaloE[i],allCanVetoE[i],TaggWeight);
+                h_AllVetoE_TAPS[cut_ind]->Fill(allCanVetoE[i],TaggWeight);
+            }
+        }
+
+        h_nCandidates[cut_ind]->Fill(candidates.size(), TaggWeight);
+        h_nNeuChaCandidates[cut_ind]->Fill(charged.size(), neutral.size(), TaggWeight);
+
+        h_CBEsum[cut_ind]->Fill(triggersimu.GetCBEnergySum(),TaggWeight);
+        h_beamE[cut_ind]->Fill(InitialPhotonVec.E(),TaggWeight);
+
+        if(promptrandom.State() == PromptRandom::Case::Outside)
+            continue;
+
+        cut_ind++;
+        stat[cut_ind]+=TaggWeight;
+        h_RecData_Stat->Fill(cut_ind, TaggWeight);
+
+        h_TaggerTime[cut_ind]->Fill(taggerhit.Time, TaggWeight);
 
         for (unsigned int i=0; i<all.size(); i++){
             if(allCanInCB[i]){
@@ -937,7 +961,7 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         stat[cut_ind]+=TaggWeight;
         h_RecData_Stat->Fill(cut_ind, TaggWeight);
 
-        h_TaggerTime->Fill(taggerhit.Time, TaggWeight);
+        h_TaggerTime[cut_ind]->Fill(taggerhit.Time, TaggWeight);
 
         for (unsigned int i=0; i<all.size(); i++){
             if(allCanInCB[i]){
@@ -962,6 +986,8 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         cut_ind++;
         stat[cut_ind]+=TaggWeight;
         h_RecData_Stat->Fill(cut_ind, TaggWeight);
+
+        h_TaggerTime[cut_ind]->Fill(taggerhit.Time, TaggWeight);
 
         for (unsigned int i=0; i<all.size(); i++){
             if(allCanInCB[i]){
@@ -997,6 +1023,8 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         stat[cut_ind]+=TaggWeight;
         h_RecData_Stat->Fill(cut_ind, TaggWeight);
 
+        h_TaggerTime[cut_ind]->Fill(taggerhit.Time, TaggWeight);
+
         for (unsigned int i=0; i<all.size(); i++){
             if(allCanInCB[i]){
                 h_AllCaloEvsVetoE_CB[cut_ind]->Fill(allCanCaloE[i],allCanVetoE[i],TaggWeight);
@@ -1027,6 +1055,8 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         cut_ind++;
         stat[cut_ind]+=TaggWeight;
         h_RecData_Stat->Fill(cut_ind, TaggWeight);
+
+        h_TaggerTime[cut_ind]->Fill(taggerhit.Time, TaggWeight);
 
         for (unsigned int i=0; i<all.size(); i++){
             if(allCanInCB[i]){
@@ -1208,10 +1238,6 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         if(!((nr_mmpFails + nr_kfFails) != nrCombs && (nr_mmpFails_freeZ + nr_kfFails_freeZ) != nrCombs))
             continue;
 
-        cut_ind++;
-        stat[cut_ind]+=TaggWeight;
-        h_RecData_Stat->Fill(cut_ind, TaggWeight);
-
         //Calculating stuff or filling hists:
 
         vec3 vertshift{0,0,bestFitted_Zvert};
@@ -1327,6 +1353,12 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         }
 
         effR_l2 = sqrt(effR_l2/e_l2);  // normalize energy weighted distance of the crystals to the total energy
+
+        cut_ind++;
+        stat[cut_ind]+=TaggWeight;
+        h_RecData_Stat->Fill(cut_ind, TaggWeight);
+
+        h_TaggerTime[cut_ind]->Fill(taggerhit.Time, TaggWeight);
 
         for (unsigned int i=0; i<all.size(); i++){
             if(allCanInCB[i]){
@@ -1564,6 +1596,8 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         stat[cut_ind]+=TaggWeight;
         h_RecData_Stat->Fill(cut_ind, TaggWeight);
 
+        h_TaggerTime[cut_ind]->Fill(taggerhit.Time, TaggWeight);
+
         for (unsigned int i=0; i<all.size(); i++){
             if(allCanInCB[i]){
                 h_AllCaloEvsVetoE_CB[cut_ind]->Fill(allCanCaloE[i],allCanVetoE[i],TaggWeight);
@@ -1800,6 +1834,8 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         stat[cut_ind]+=TaggWeight;
         h_RecData_Stat->Fill(cut_ind, TaggWeight);
 
+        h_TaggerTime[cut_ind]->Fill(taggerhit.Time, TaggWeight);
+
         for (unsigned int i=0; i<all.size(); i++){
             if(allCanInCB[i]){
                 h_AllCaloEvsVetoE_CB[cut_ind]->Fill(allCanCaloE[i],allCanVetoE[i],TaggWeight);
@@ -1817,10 +1853,10 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         h_CBEsum[cut_ind]->Fill(triggersimu.GetCBEnergySum(),TaggWeight);
         h_beamE[cut_ind]->Fill(InitialPhotonVec.E(),TaggWeight);
 
-        h_2g_IM[cut_ind-2]->Fill(L2g.M(),TaggWeight);
+        h_2g_IM[cut_ind-nrCuts_beforeSel]->Fill(L2g.M(),TaggWeight);
 
-        h_missingP_IM[cut_ind-2]->Fill(best_mm_proton,TaggWeight);
-        h_2gee_IM[cut_ind-2]->Fill(best_mm_2gee,TaggWeight);
+        h_missingP_IM[cut_ind-nrCuts_beforeSel]->Fill(best_mm_proton,TaggWeight);
+        h_2gee_IM[cut_ind-nrCuts_beforeSel]->Fill(best_mm_2gee,TaggWeight);
 
         h_Probability[cut_ind-nrCuts_beforeKF]->Fill(best_probability,TaggWeight);
         h_Fit_zvert[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_Zvert,TaggWeight);
@@ -2066,6 +2102,8 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         stat[cut_ind]+=TaggWeight;
         h_RecData_Stat->Fill(cut_ind, TaggWeight);
 
+        h_TaggerTime[cut_ind]->Fill(taggerhit.Time, TaggWeight);
+
         for (unsigned int i=0; i<all.size(); i++){
             if(allCanInCB[i]){
                 h_AllCaloEvsVetoE_CB[cut_ind]->Fill(allCanCaloE[i],allCanVetoE[i],TaggWeight);
@@ -2083,10 +2121,10 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         h_CBEsum[cut_ind]->Fill(triggersimu.GetCBEnergySum(),TaggWeight);
         h_beamE[cut_ind]->Fill(InitialPhotonVec.E(),TaggWeight);
 
-        h_2g_IM[cut_ind-2]->Fill(L2g.M(),TaggWeight);
+        h_2g_IM[cut_ind-nrCuts_beforeSel]->Fill(L2g.M(),TaggWeight);
 
-        h_missingP_IM[cut_ind-2]->Fill(best_mm_proton,TaggWeight);
-        h_2gee_IM[cut_ind-2]->Fill(best_mm_2gee,TaggWeight);
+        h_missingP_IM[cut_ind-nrCuts_beforeSel]->Fill(best_mm_proton,TaggWeight);
+        h_2gee_IM[cut_ind-nrCuts_beforeSel]->Fill(best_mm_2gee,TaggWeight);
 
         h_Probability[cut_ind-nrCuts_beforeKF]->Fill(best_probability,TaggWeight);
         h_Fit_zvert[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_Zvert,TaggWeight);
@@ -2329,6 +2367,8 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         stat[cut_ind]+=TaggWeight;
         h_RecData_Stat->Fill(cut_ind, TaggWeight);
 
+        h_TaggerTime[cut_ind]->Fill(taggerhit.Time, TaggWeight);
+
         for (unsigned int i=0; i<all.size(); i++){
             if(allCanInCB[i]){
                 h_AllCaloEvsVetoE_CB[cut_ind]->Fill(allCanCaloE[i],allCanVetoE[i],TaggWeight);
@@ -2346,10 +2386,10 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         h_CBEsum[cut_ind]->Fill(triggersimu.GetCBEnergySum(),TaggWeight);
         h_beamE[cut_ind]->Fill(InitialPhotonVec.E(),TaggWeight);
 
-        h_2g_IM[cut_ind-2]->Fill(L2g.M(),TaggWeight);
+        h_2g_IM[cut_ind-nrCuts_beforeSel]->Fill(L2g.M(),TaggWeight);
 
-        h_missingP_IM[cut_ind-2]->Fill(best_mm_proton,TaggWeight);
-        h_2gee_IM[cut_ind-2]->Fill(best_mm_2gee,TaggWeight);
+        h_missingP_IM[cut_ind-nrCuts_beforeSel]->Fill(best_mm_proton,TaggWeight);
+        h_2gee_IM[cut_ind-nrCuts_beforeSel]->Fill(best_mm_2gee,TaggWeight);
 
         h_Probability[cut_ind-nrCuts_beforeKF]->Fill(best_probability,TaggWeight);
         h_Fit_zvert[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_Zvert,TaggWeight);
@@ -2570,6 +2610,8 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         stat[cut_ind]+=TaggWeight;
         h_RecData_Stat->Fill(cut_ind, TaggWeight);
 
+        h_TaggerTime[cut_ind]->Fill(taggerhit.Time, TaggWeight);
+
         for (unsigned int i=0; i<all.size(); i++){
             if(allCanInCB[i]){
                 h_AllCaloEvsVetoE_CB[cut_ind]->Fill(allCanCaloE[i],allCanVetoE[i],TaggWeight);
@@ -2587,10 +2629,10 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         h_CBEsum[cut_ind]->Fill(triggersimu.GetCBEnergySum(),TaggWeight);
         h_beamE[cut_ind]->Fill(InitialPhotonVec.E(),TaggWeight);
 
-        h_2g_IM[cut_ind-2]->Fill(L2g.M(),TaggWeight);
+        h_2g_IM[cut_ind-nrCuts_beforeSel]->Fill(L2g.M(),TaggWeight);
 
-        h_missingP_IM[cut_ind-2]->Fill(best_mm_proton,TaggWeight);
-        h_2gee_IM[cut_ind-2]->Fill(best_mm_2gee,TaggWeight);
+        h_missingP_IM[cut_ind-nrCuts_beforeSel]->Fill(best_mm_proton,TaggWeight);
+        h_2gee_IM[cut_ind-nrCuts_beforeSel]->Fill(best_mm_2gee,TaggWeight);
 
         h_Probability[cut_ind-nrCuts_beforeKF]->Fill(best_probability,TaggWeight);
         h_Fit_zvert[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_Zvert,TaggWeight);
@@ -2823,6 +2865,8 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         stat[cut_ind]+=TaggWeight;
         h_RecData_Stat->Fill(cut_ind, TaggWeight);
 
+        h_TaggerTime[cut_ind]->Fill(taggerhit.Time, TaggWeight);
+
         for (unsigned int i=0; i<all.size(); i++){
             if(allCanInCB[i]){
                 h_AllCaloEvsVetoE_CB[cut_ind]->Fill(allCanCaloE[i],allCanVetoE[i],TaggWeight);
@@ -2840,10 +2884,10 @@ void scratch_damaurer_omega_Dalitz::ProcessEvent(const TEvent& event, manager_t&
         h_CBEsum[cut_ind]->Fill(triggersimu.GetCBEnergySum(),TaggWeight);
         h_beamE[cut_ind]->Fill(InitialPhotonVec.E(),TaggWeight);
 
-        h_2g_IM[cut_ind-2]->Fill(L2g.M(),TaggWeight);
+        h_2g_IM[cut_ind-nrCuts_beforeSel]->Fill(L2g.M(),TaggWeight);
 
-        h_missingP_IM[cut_ind-2]->Fill(best_mm_proton,TaggWeight);
-        h_2gee_IM[cut_ind-2]->Fill(best_mm_2gee,TaggWeight);
+        h_missingP_IM[cut_ind-nrCuts_beforeSel]->Fill(best_mm_proton,TaggWeight);
+        h_2gee_IM[cut_ind-nrCuts_beforeSel]->Fill(best_mm_2gee,TaggWeight);
 
         h_Probability[cut_ind-nrCuts_beforeKF]->Fill(best_probability,TaggWeight);
         h_Fit_zvert[cut_ind-nrCuts_beforeKF]->Fill(bestFitted_Zvert,TaggWeight);
@@ -3067,12 +3111,16 @@ void scratch_damaurer_omega_Dalitz::ShowResult()
 
     // ant::canvas nice wrapper around TCanvas
 
+    cout << "" << endl;
+
     for (unsigned int i=0; i<nrCuts_total; i++){
         cout << "Amount events after " << i << " applied cuts: " << h_RecData_Stat->GetBinContent(i*steps+1) << endl;
         //h_RecData_Stat->SetBinContent(i*steps+1, stat[i]);
         //h_RecData_Stat->SetBinError(i*steps+1, sqrt(stat[i]));
         h_RecData_Stat->GetXaxis()->SetBinLabel(i*steps+1,cuts[i].c_str());
     }
+
+    cout << "" << endl;
 
     for (unsigned int i=0; i<(nrCuts_total-1); i++){
         cout << "Relative amount of events after " << (i+1) << " applied cuts: " << 100*(h_RecData_Stat->GetBinContent((i+1)*steps+1)/h_RecData_Stat->GetBinContent(1)) << " %" << endl;
@@ -3081,6 +3129,8 @@ void scratch_damaurer_omega_Dalitz::ShowResult()
         h_RecData_relStat->SetBinError((i+1)*steps+1, sqrt(pow((sqrt(h_RecData_Stat->GetBinError((i+1)*steps+1))/h_RecData_Stat->GetBinContent(1)),2)+pow((sqrt(h_RecData_Stat->GetBinError(1))*h_RecData_Stat->GetBinContent((i+1)*steps+1))/(pow(h_RecData_Stat->GetBinContent(1),2)),2)));
         h_RecData_relStat->GetXaxis()->SetBinLabel((i+1)*steps+1,cuts[i+1].c_str());
     }
+
+    cout << "" << endl;
 
     ant::canvas(GetName()+": Event statistics after applied cuts:")
             << drawoption("HIST")
@@ -3207,8 +3257,12 @@ void scratch_damaurer_omega_Dalitz::Finish()
 
     cout << "please work!" << endl;
 
+    cout << "" << endl;
+
     cout << "Finished processing events, total #events: " << h_nClusters->GetEntries() << endl;
     cout << "Integrated amount of found clusters in total: " << h_nClusters->Integral() << endl;
+
+    cout << "" << endl;
 
     LOG(INFO) << "Fit Model Statistics Data:\n" << *fit_model_data;
     LOG(INFO) << "Fit Model Statistics MC:\n" << *fit_model_mc;
