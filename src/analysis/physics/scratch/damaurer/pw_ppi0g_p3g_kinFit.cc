@@ -75,8 +75,9 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
     const BinSettings ETGBins(400,0.,1200.);
     const BinSettings PhiBins(500,-190.,190.);
     const BinSettings TheBins(500,0.,190.);
-    const BinSettings EnergyMBins(1500,-0.5,1499.5);
-    const BinSettings IMgggBins(200,0.,1000.);
+    const BinSettings EnergyMBins(1800,-0.5,1799.5);
+    const BinSettings IMgggBins(200,0.,1200.);
+    const BinSettings IMggBins(100,0.,600.);
     const BinSettings MMpBins(500,-0.5,1999.5);
 
     const BinSettings bins_tagger_time(2000, -200, 200);
@@ -164,14 +165,22 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
     //--- MC True hists:
 
     h_TrueGammaE = hf_TrueMC->makeTH1D("energies of true gammas","E_{#gamma}","",ETGBins,"h_TrueGammaE", true);
-    h_TrueIMggg = hf_TrueMC->makeTH1D("True IMggg","IM(#gamma#gamma#gamma)","",IMgggBins,"h_TrueIMggg",true);
-    h_TrueMMp = hf_TrueMC->makeTH1D("True MMp","MM(p)","",MMpBins,"TrueMMp",true);
+    h_TrueIMggg = hf_TrueMC->makeTH1D("True IM(ggg)","IM(#gamma#gamma#gamma)","",IMgggBins,"h_TrueIMggg",true);
+    h_TrueIMpi0gg = hf_TrueMC->makeTH1D("True IM(pi0)","IM(#pi0)","",IMggBins,"h_TrueIMpi0gg",true);
+    h_TrueIMggComb = hf_TrueMC->makeTH1D("True IM(gg) comb","IM(#gamma#gamma)","",IMggBins,"h_TrueIMggComb",true);
+    h_TrueMMp = hf_TrueMC->makeTH1D("True MM(p)","MM(p)","",MMpBins,"TrueMMp",true);
     h_TrueThevsEg = hf_TrueMC->makeTH2D("True Theta vs E for photons","#theta_{#gamma}","E_{#gamma}",TheBins, EnergyMBins,"h_TrueThevsEg",true);
     h_TruePhivsEg = hf_TrueMC->makeTH2D("True Phi vs E for photons","#phi_{#gamma}","E_{#gamma}",PhiBins, EnergyMBins,"h_TruePhivsEg",true);
     h_TrueThevsPhig = hf_TrueMC->makeTH2D("True Theta vs Phi for photons","#theta_{#gamma}","#phi_{#gamma}",TheBins, PhiBins,"h_TrueThevsPhig",true);
     h_TrueThevsEw = hf_TrueMC->makeTH2D("True Theta vs E for w","#theta_{#omega}","E_{#omega}",TheBins, EnergyMBins,"h_TrueThevsEw",true);
     h_TruePhivsEw = hf_TrueMC->makeTH2D("True Phi vs E for w","#phi_{#omega}","E_{#omega}",PhiBins, EnergyMBins,"h_TruePhivsEw",true);
     h_TrueThevsPhiw = hf_TrueMC->makeTH2D("True Theta vs Phi for w","#theta_{#omega}","#phi_{#omega}",TheBins, PhiBins,"h_TrueThevsPhiw",true);
+    h_TrueThevsEp = hf_TrueMC->makeTH2D("True Theta vs E for p","#theta_{p}","E_{p}",TheBins, EnergyMBins,"h_TrueThevsEp",true);
+    h_TruePhivsEp = hf_TrueMC->makeTH2D("True Phi vs E for p","#phi_{p}","E_{p}",PhiBins, EnergyMBins,"h_TruePhivsEp",true);
+    h_TrueThevsPhip = hf_TrueMC->makeTH2D("True Theta vs Phi for p","#theta_{p}","#phi_{p}",TheBins, PhiBins,"h_TrueThevsPhip",true);
+    h_TrueThevsEpi = hf_TrueMC->makeTH2D("True Theta vs E for pi0","#theta_{#pi}","E_{#pi}",TheBins, EnergyMBins,"h_TrueThevsEpi",true);
+    h_TruePhivsEpi = hf_TrueMC->makeTH2D("True Phi vs E for pi0","#phi_{#pi}","E_{#pi}",PhiBins, EnergyMBins,"h_TruePhivsEpi",true);
+    h_TrueThevsPhipi = hf_TrueMC->makeTH2D("True Theta vs Phi for pi0","#theta_{#pi}","#phi_{#pi}",TheBins, PhiBins,"h_TrueThevsPhipi",true);
 
     //--- Reco hists:
 
@@ -647,6 +656,8 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
     //-- MC true stuff
     vector<TLorentzVector> GammasTrue;
     TLorentzVector TrueVecw;
+    TLorentzVector TrueVecp;
+    TLorentzVector TrueVecpi;
 
     if(is_MC){
         const auto& particletree = event.MCTrue().ParticleTree;
@@ -662,6 +673,8 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
                     GammasTrue.push_back(*g);
                 }
                 TrueVecw = *utils::ParticleTools::FindParticle(ParticleTypeDatabase::Omega,particletree);
+                TrueVecp = *utils::ParticleTools::FindParticle(ParticleTypeDatabase::Proton,particletree);
+                TrueVecpi = *utils::ParticleTools::FindParticle(ParticleTypeDatabase::Pi0,particletree);
             }
 
         }
@@ -979,13 +992,35 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
                 h_TrueThevsEg->Fill(tg.Theta()*radtodeg,tg.E(),weight);
                 h_TruePhivsEg->Fill(tg.Phi()*radtodeg,tg.E(),weight);
                 h_TrueThevsPhig->Fill(tg.Theta()*radtodeg,tg.Phi()*radtodeg,weight);
-
             }
+
+            double trueIMggComb[neu_nrSel] = {(GammasTrue[0]+GammasTrue[1]).M(),(GammasTrue[0]+GammasTrue[2]).M(),(GammasTrue[1]+GammasTrue[2]).M()};
+
+            for(int i = 0; i<neu_nrSel; i++){
+                h_TrueIMggComb->Fill(trueIMggComb[i],weight);
+            }
+
+            if((abs(trueIMggComb[0]-mpi0)<=abs(trueIMggComb[1]-mpi0)) && (abs(trueIMggComb[0]-mpi0)<=abs(trueIMggComb[2]-mpi0))){
+                h_TrueIMpi0gg->Fill(trueIMggComb[0],weight);
+            }
+            else if((abs(trueIMggComb[1]-mpi0)<=abs(trueIMggComb[0]-mpi0)) && (abs(trueIMggComb[1]-mpi0)<=abs(trueIMggComb[2]-mpi0))){
+                h_TrueIMpi0gg->Fill(trueIMggComb[1],weight);
+            }
+            else{
+                h_TrueIMpi0gg->Fill(trueIMggComb[2],weight);
+            }
+
             h_TrueIMggg->Fill((GammasTrue[0]+GammasTrue[1]+GammasTrue[2]).M(),weight);
             h_TrueMMp->Fill((InitialPhotonVec + InitialProtonVec - GammasTrue[0] - GammasTrue[1] - GammasTrue[2]).M(), weight);
             h_TrueThevsEw->Fill(TrueVecw.Theta()*radtodeg,TrueVecw.E(),weight);
             h_TruePhivsEw->Fill(TrueVecw.Phi()*radtodeg,TrueVecw.E(),weight);
             h_TrueThevsPhiw->Fill(TrueVecw.Theta()*radtodeg,TrueVecw.Phi()*radtodeg,weight);
+            h_TrueThevsEp->Fill(TrueVecp.Theta()*radtodeg,TrueVecp.E(),weight);
+            h_TruePhivsEp->Fill(TrueVecp.Phi()*radtodeg,TrueVecp.E(),weight);
+            h_TrueThevsPhip->Fill(TrueVecp.Theta()*radtodeg,TrueVecp.Phi()*radtodeg,weight);
+            h_TrueThevsEpi->Fill(TrueVecpi.Theta()*radtodeg,TrueVecpi.E(),weight);
+            h_TruePhivsEpi->Fill(TrueVecpi.Phi()*radtodeg,TrueVecpi.E(),weight);
+            h_TrueThevsPhipi->Fill(TrueVecpi.Theta()*radtodeg,TrueVecpi.Phi()*radtodeg,weight);
         }
 
         //---- Fill Reco stuff:

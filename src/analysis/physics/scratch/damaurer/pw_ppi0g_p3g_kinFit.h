@@ -96,8 +96,11 @@ private:
     tree_t t;
 
     //--- MC True
-    TH1D *h_TrueGammaE, *h_TrueIMggg, *h_TrueMMp;
-    TH2D *h_TrueThevsEg, *h_TruePhivsEg, *h_TrueThevsPhig, *h_TrueThevsEw, *h_TruePhivsEw, *h_TrueThevsPhiw;
+    TH1D *h_TrueGammaE, *h_TrueIMpi0gg, *h_TrueIMggComb, *h_TrueIMggg, *h_TrueMMp;
+    TH2D *h_TrueThevsEg, *h_TruePhivsEg, *h_TrueThevsPhig,
+         *h_TrueThevsEw, *h_TruePhivsEw, *h_TrueThevsPhiw,
+         *h_TrueThevsEp, *h_TruePhivsEp, *h_TrueThevsPhip,
+         *h_TrueThevsEpi, *h_TruePhivsEpi, *h_TrueThevsPhipi;
 
     //Histograms directly after data readout:
 
