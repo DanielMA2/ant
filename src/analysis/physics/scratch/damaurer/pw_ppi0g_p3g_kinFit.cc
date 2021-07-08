@@ -643,6 +643,11 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
     //-- Check the decay string for signal MC pattern
     bool MCwpi0g_particletree  = false;
     string decay;
+
+    //-- MC true stuff
+    vector<TLorentzVector> GammasTrue;
+    TLorentzVector TrueVecw;
+
     if(is_MC){
         const auto& particletree = event.MCTrue().ParticleTree;
         if (particletree) {
@@ -650,20 +655,19 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
             MCwpi0g_particletree = particletree->IsEqual(ParticleTypeTreeDatabase::Get(ParticleTypeTreeDatabase::Channel::Omega_gPi0_3g),
                                                         utils::ParticleTools::MatchByParticleName);
             decay = utils::ParticleTools::GetDecayString(particletree);
+
+            if(MCwpi0g_particletree){
+                //--- Fetches a list of all gammas in the MCTrue tree
+                for (const auto& g: utils::ParticleTools::FindParticles(ParticleTypeDatabase::Photon,particletree)){
+                    GammasTrue.push_back(*g);
+                }
+                TrueVecw = *utils::ParticleTools::FindParticle(ParticleTypeDatabase::Omega,particletree);
+            }
+
         }
     }
-    else
+    else{
         decay = "data" + ExpConfig::Setup::Get().GetName();
-
-    //-- MC true stuff
-    vector<TLorentzVector> GammasTrue;
-    TLorentzVector TrueVecw;
-    if(MCwpi0g_particletree){
-        //--- Fetches a list of all gammas in the MCTrue tree
-        for (const auto& g: utils::ParticleTools::FindParticles(ParticleTypeDatabase::Photon,event.MCTrue().ParticleTree)){
-            GammasTrue.push_back(*g);
-        }
-        TrueVecw = *utils::ParticleTools::FindParticle(ParticleTypeDatabase::Omega,event.MCTrue().ParticleTree);
     }
 
     h_nClusters->Fill(data.Clusters.size());
