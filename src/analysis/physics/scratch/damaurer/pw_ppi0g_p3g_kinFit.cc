@@ -71,7 +71,17 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
     //const BinSettings timeDiffCorTaggCB_bins(200, -5,10);
     //const BinSettings timeDiffCorTaggTAPS_bins(200, -5,20);
 
+    //True data binSettings:
+    const BinSettings ETGBins(400,0.,1200.);
+    const BinSettings PhiBins(500,-190.,190.);
+    const BinSettings TheBins(500,0.,190.);
+    const BinSettings EnergyMBins(1500,-0.5,1499.5);
+    const BinSettings IMgggBins(200,0.,1000.);
+    const BinSettings MMpBins(500,-0.5,1999.5);
+
     const BinSettings bins_tagger_time(2000, -200, 200);
+
+    //Reco data binSettings:
 
     const BinSettings Veto_Energy_bins(500, 0, 12);
     const BinSettings Calo_Energy_bins(500, 0, 1200);
@@ -112,6 +122,7 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
     // use it to conveniently create histograms (and other ROOT objects) at the right location
     // using the make methods
 
+    auto hf_TrueMC = new HistogramFactory("hf_TrueMC", HistFac, "");
     auto hf_missingP_IM = new HistogramFactory("hf_missingP_IM", HistFac, "");
     auto hf_3g_IM = new HistogramFactory("hf_3g_IM", HistFac, "");
     auto hf_2gComb_IM = new HistogramFactory("hf_2gComb_IM", HistFac, "");
@@ -149,6 +160,20 @@ scratch_damaurer_pw_ppi0g_p3g_kinFit::scratch_damaurer_pw_ppi0g_p3g_kinFit(const
     auto hf_CaloEvsVetoE_CB_SideCheck = new HistogramFactory("hf_CaloEvsVetoE_CB_SideCheck", HistFac, "");
     auto hf_CaloEvsVetoE_TAPS_SideCheck = new HistogramFactory("hf_CaloEvsVetoE_TAPS_SideCheck", HistFac, "");
     auto hf_PIDEvsTime = new HistogramFactory("hf_PIDEvsTime", HistFac, "");
+
+    //--- MC True hists:
+
+    h_TrueGammaE = hf_TrueMC->makeTH1D("energies of true gammas","E_{#gamma}","",ETGBins,"h_TrueGammaE", true);
+    h_TrueIMggg = hf_TrueMC->makeTH1D("True IMggg","IM(#gamma#gamma#gamma)","",IMgggBins,"h_TrueIMggg",true);
+    h_TrueMMp = hf_TrueMC->makeTH1D("True MMp","MM(p)","",MMpBins,"TrueMMp",true);
+    h_TrueThevsEg = hf_TrueMC->makeTH2D("True Theta vs E for photons","#theta_{#gamma}","E_{#gamma}",TheBins, EnergyMBins,"h_TrueThevsEg",true);
+    h_TruePhivsEg = hf_TrueMC->makeTH2D("True Phi vs E for photons","#phi_{#gamma}","E_{#gamma}",PhiBins, EnergyMBins,"h_TruePhivsEg",true);
+    h_TrueThevsPhig = hf_TrueMC->makeTH2D("True Theta vs Phi for photons","#theta_{#gamma}","#phi_{#gamma}",TheBins, PhiBins,"h_TrueThevsPhig",true);
+    h_TrueThevsEw = hf_TrueMC->makeTH2D("True Theta vs E for w","#theta_{#omega}","E_{#omega}",TheBins, EnergyMBins,"h_TrueThevsEw",true);
+    h_TruePhivsEw = hf_TrueMC->makeTH2D("True Phi vs E for w","#phi_{#omega}","E_{#omega}",PhiBins, EnergyMBins,"h_TruePhivsEw",true);
+    h_TrueThevsPhiw = hf_TrueMC->makeTH2D("True Theta vs Phi for w","#theta_{#omega}","#phi_{#omega}",TheBins, PhiBins,"h_TrueThevsPhiw",true);
+
+    //--- Reco hists:
 
     h_RecData_Stat = hf_RecData_CandStat->makeTH1D("Amount of events after cuts:",     // title
                                      "Cuts", "#",     // xlabel, ylabel
@@ -609,9 +634,37 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
     //set fitter uncertainty model:
     //fitter.SetUncertaintyModel(fit_model);
 
+    //-- Check the decay string for MC pattern
+    const bool is_MC = data.ID.isSet(ant::TID::Flags_t::MC);
+
     // choose uncertainty depending on Data/MC input
-    const bool is_MC = data.ID.isSet(TID::Flags_t::MC);
     fitter.SetUncertaintyModel(is_MC ? fit_model_mc : fit_model_data);
+
+    //-- Check the decay string for signal MC pattern
+    bool MCwpi0g_particletree  = false;
+    string decay;
+    if(is_MC){
+        const auto& particletree = event.MCTrue().ParticleTree;
+        if (particletree) {
+            // check if the current event is the signal
+            MCwpi0g_particletree = particletree->IsEqual(ParticleTypeTreeDatabase::Get(ParticleTypeTreeDatabase::Channel::Omega_gPi0_3g),
+                                                        utils::ParticleTools::MatchByParticleName);
+            decay = utils::ParticleTools::GetDecayString(particletree);
+        }
+    }
+    else
+        decay = "data" + ExpConfig::Setup::Get().GetName();
+
+    //-- MC true stuff
+    vector<TLorentzVector> GammasTrue;
+    TLorentzVector TrueVecw;
+    if(MCwpi0g_particletree){
+        //--- Fetches a list of all gammas in the MCTrue tree
+        for (const auto& g: utils::ParticleTools::FindParticles(ParticleTypeDatabase::Photon,event.MCTrue().ParticleTree)){
+            GammasTrue.push_back(*g);
+        }
+        TrueVecw = *utils::ParticleTools::FindParticle(ParticleTypeDatabase::Omega,event.MCTrue().ParticleTree);
+    }
 
     h_nClusters->Fill(data.Clusters.size());
 
@@ -645,12 +698,14 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
     vector<double> chaCanTime;
     vector<double> chaThe;
     vector<double> chaPhi;
+    /*
     vector<double> protonCanCluSize;
     vector<double> protonCanCaloE;
     vector<double> protonCanVetoE;
     vector<double> protonCanTime;
     vector<double> protonThe;
     vector<double> protonPhi;
+    */
 
     for(const auto& cand : candidates.get_iter()) {
         //h_VetoEnergies->Fill(cand->VetoEnergy);
@@ -709,8 +764,13 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
                 chaCanInPID.push_back(false);
             }
 
+            // --------- Set additional conditions on protons (currently only veto 0.2 MeV threshold!)
             //if(cand->Theta*radtodeg < 50){
 
+            protonCand.emplace_back(cand);
+            protons.emplace_back(std::make_shared<TParticle>(ParticleTypeDatabase::Proton, cand));
+
+            /*
             if(cand->FindCaloCluster()->DetectorType == Detector_t::Type_t::CB){
                 protonCanInCB.push_back(true);
             }
@@ -739,9 +799,8 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
             protonCanCaloE.push_back(cand->CaloEnergy);
             protonCanVetoE.push_back(cand->VetoEnergy);
             protonCanTime.push_back(cand->Time);
-            //}
+            */
         }
-
     }
 
     //getting access to the pi0 decay photons
@@ -908,6 +967,24 @@ void scratch_damaurer_pw_ppi0g_p3g_kinFit::ProcessEvent(const TEvent& event, man
 
         if(!triggersimu.HasTriggered())
             continue;
+
+        //---- Fill MC True stuff:
+        if (MCwpi0g_particletree) {
+            for(const auto& tg : GammasTrue){
+                h_TrueGammaE->Fill(tg.E(),weight);
+                h_TrueThevsEg->Fill(tg.Theta()*radtodeg,tg.E(),weight);
+                h_TruePhivsEg->Fill(tg.Phi()*radtodeg,tg.E(),weight);
+                h_TrueThevsPhig->Fill(tg.Theta()*radtodeg,tg.Phi()*radtodeg,weight);
+
+            }
+            h_TrueIMggg->Fill((GammasTrue[0]+GammasTrue[1]+GammasTrue[2]).M(),weight);
+            h_TrueMMp->Fill((InitialPhotonVec + InitialProtonVec - GammasTrue[0] - GammasTrue[1] - GammasTrue[2]).M(), weight);
+            h_TrueThevsEw->Fill(TrueVecw.Theta()*radtodeg,TrueVecw.E(),weight);
+            h_TruePhivsEw->Fill(TrueVecw.Phi()*radtodeg,TrueVecw.E(),weight);
+            h_TrueThevsPhiw->Fill(TrueVecw.Theta()*radtodeg,TrueVecw.Phi()*radtodeg,weight);
+        }
+
+        //---- Fill Reco stuff:
 
         cut_ind++;
 

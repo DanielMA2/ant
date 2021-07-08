@@ -95,6 +95,10 @@ private:
 
     tree_t t;
 
+    //--- MC True
+    TH1D *h_TrueGammaE, *h_TrueIMggg, *h_TrueMMp;
+    TH2D *h_TrueThevsEg, *h_TruePhivsEg, *h_TrueThevsPhig, *h_TrueThevsEw, *h_TruePhivsEw, *h_TrueThevsPhiw;
+
     //Histograms directly after data readout:
 
     TH2D* h_AllCaloEvsVetoE_CB[nrCuts_total];
